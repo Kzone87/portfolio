@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="업무시스템, Excel 자동화, API 연동 프로젝트의 1차 범위와 예산 구간을 브라우저에서 확인하는 무료 가이드입니다." />
+  <meta name="description" content="업무시스템, Excel 자동화, AI Workflow, API 연동 프로젝트의 1차 범위와 예산 구간을 브라우저에서 확인하는 무료 가이드입니다." />
   <meta property="og:title" content="1분 개발 범위 · 예산 가이드" />
   <meta property="og:description" content="몇 가지 선택으로 STANDARD, DELUXE, PREMIUM, CUSTOM 범위와 1차 개발 방향을 확인합니다." />
   <meta property="og:type" content="website" />
@@ -34,6 +34,7 @@
             <option value="feature">작은 기능 / 기존 서비스 보완</option>
             <option value="excel">Excel / CSV 업무자동화</option>
             <option value="admin">관리자페이지 / 업무관리 시스템</option>
+            <option value="ai">AI Workflow / 업무자동화</option>
             <option value="integration">REST API / 시스템 연동</option>
           </select>
         </div>
@@ -51,12 +52,12 @@
           <select id="data" name="data"><option value="simple">단순 데이터 1개 중심</option><option value="relational">고객-업무-주문 등 관계형 데이터</option></select>
         </div>
         <div class="question">
-          <label for="integrations">5. 외부 서비스/API 연동은?</label>
-          <select id="integrations" name="integrations"><option value="none">없음</option><option value="one">1개</option><option value="multiple">2개 이상</option></select>
+          <label for="integrations">5. 외부 서비스/API/AI provider 연동은?</label>
+          <select id="integrations" name="integrations"><option value="none">없음 / 공개 mock·local 검증</option><option value="one">1개</option><option value="multiple">2개 이상</option></select>
         </div>
         <div class="question">
           <label for="operation">6. 운영 고도화가 필요한가요?</label>
-          <select id="operation" name="operation"><option value="basic">기본 CRUD/검증 정도</option><option value="advanced">Audit, 실시간, 대량처리 등 필요</option></select>
+          <select id="operation" name="operation"><option value="basic">기본 CRUD/검증 정도</option><option value="advanced">Audit, Evaluation, 실시간, 대량처리 등 필요</option></select>
         </div>
         <div class="question">
           <label for="schedule">7. 일정 제약은?</label>
@@ -74,7 +75,7 @@
       <ul id="reasonList" class="reason-list"></ul>
       <div class="phase"><strong>추천 1차 범위</strong><p id="firstPhase"></p></div>
       <div class="brief"><h3>상담용 Brief</h3><textarea id="briefText" readonly></textarea><div class="actions"><button id="copyButton" class="primary" type="button">Brief 복사</button><a class="button" href="../PROJECT-BRIEF.md">상세 양식 ↗</a></div><p id="copyStatus" class="copy-status" role="status"></p></div>
-      <p class="disclaimer">이 결과는 계약 견적이 아닙니다. 실제 금액은 샘플 데이터, 기존 소스 상태, 권한·상태 흐름, 외부 API 문서, 배포 조건 등을 확인한 뒤 고정합니다. 외부 서비스 사용료는 개발비와 별도입니다.</p>
+      <p class="disclaimer">이 결과는 계약 견적이 아닙니다. 실제 금액은 샘플 데이터, 기존 소스 상태, 권한·상태 흐름, AI/외부 API 문서, 배포 조건 등을 확인한 뒤 고정합니다. 외부 서비스와 AI provider 사용료는 개발비와 별도입니다.</p>
     </aside>
   </section>
 </main>
