@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="외부 시스템 간 데이터 동기화 작업, 상태, 재시도 정책을 운영하는 Integration Control Center 공개 포트폴리오 Lab" />
-  <title>Integration Control Center · V1 Lab</title>
+  <meta name="description" content="외부 시스템 간 데이터 동기화 작업과 실행 이력을 운영하는 Integration Control Center V2 공개 포트폴리오" />
+  <title>Integration Control Center · V2</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <header class="topbar">
     <div>
-      <p class="eyebrow">PUBLIC PORTFOLIO LAB · V1</p>
+      <p class="eyebrow">PUBLIC PORTFOLIO LAB · V2</p>
       <h1>Integration Control Center</h1>
-      <p>외부 시스템 연결과 동기화 작업을 운영하는 상황을 가정한 API integration control-plane 데모입니다.</p>
+      <p>Connection → Sync Job → Run 운영 UI와 별도 Node REST API reference implementation을 함께 제공합니다.</p>
     </div>
     <a href="../">← Portfolio</a>
   </header>
@@ -52,7 +52,7 @@
 
     <section class="panel jobs-panel">
       <div class="panel-heading">
-        <div><p class="eyebrow">SYNC OPERATIONS</p><h2>동기화 작업</h2><p>실제 네트워크 호출 없이 운영 제어 흐름을 재현합니다.</p></div>
+        <div><p class="eyebrow">SYNC OPERATIONS · STATIC DEMO MODE</p><h2>동기화 작업</h2><p>웹 데모는 credential-free localStorage 모드이며, 저장소에는 동일 도메인의 V2 REST API 서버와 HTTP 통합 테스트가 포함됩니다.</p></div>
         <button id="resetDemo" class="secondary" type="button">데모 초기화</button>
       </div>
       <div class="table-wrap">
@@ -68,15 +68,16 @@
         <div class="panel-heading"><div><p class="eyebrow">RUN HISTORY</p><h2>실행 이력</h2></div><button id="clearHistory" class="secondary" type="button">이력 비우기</button></div>
         <div id="historyList" class="history-list"></div>
       </article>
+
       <article class="panel">
-        <p class="eyebrow">CONTROL-PLANE PRINCIPLES</p>
-        <h2>V1에서 보여주는 설계 기준</h2>
+        <p class="eyebrow">V2 DESIGN PRINCIPLES</p>
+        <h2>UI와 서버 경계를 함께 보여줍니다.</h2>
         <ul class="principles">
           <li><strong>Credential separation</strong><span>실제 API Key를 프런트 코드나 데모 데이터에 넣지 않습니다.</span></li>
           <li><strong>Explicit state</strong><span>Connection, Job, Run 상태를 구분합니다.</span></li>
-          <li><strong>Failure policy</strong><span>재시도·중단·행 건너뛰기를 작업 계약으로 둡니다.</span></li>
-          <li><strong>Auditability</strong><span>실행 결과와 처리 건수를 이력으로 남깁니다.</span></li>
-          <li><strong>Safe demo</strong><span>모든 동작은 localStorage 기반 시뮬레이션입니다.</span></li>
+          <li><strong>Failure contract</strong><span>서버에서 validation과 400/404/409 오류를 명시적으로 처리합니다.</span></li>
+          <li><strong>Idempotency</strong><span>동일 실행 요청의 중복 기록을 Idempotency-Key로 방지합니다.</span></li>
+          <li><strong>Auditability</strong><span>성공·실패 결과와 처리 건수를 Run history로 남깁니다.</span></li>
         </ul>
       </article>
     </section>
