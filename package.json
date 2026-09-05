@@ -1,0 +1,9 @@
+{
+  "name": "kzone87-business-portfolio",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
