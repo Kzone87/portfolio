@@ -7,6 +7,11 @@ const readme = await readFile(new URL('../README.md', import.meta.url), 'utf8');
 const services = await readFile(new URL('../SERVICES.md', import.meta.url), 'utf8');
 const brief = await readFile(new URL('../PROJECT-BRIEF.md', import.meta.url), 'utf8');
 const salesCss = await readFile(new URL('../sales.css', import.meta.url), 'utf8');
+const kmong = await readFile(new URL('../sales/KMONG-LISTINGS.md', import.meta.url), 'utf8');
+const soomgo = await readFile(new URL('../sales/SOOMGO-QUOTES.md', import.meta.url), 'utf8');
+const assets = await readFile(new URL('../sales/PORTFOLIO-ASSETS.md', import.meta.url), 'utf8');
+const scopeRules = await readFile(new URL('../sales/SCOPE-RULES.md', import.meta.url), 'utf8');
+const salesIndex = await readFile(new URL('../sales/README.md', import.meta.url), 'utf8');
 const integrationHtml = await readFile(new URL('../integration-control-center/index.html', import.meta.url), 'utf8');
 const integrationJs = await readFile(new URL('../integration-control-center/app.js', import.meta.url), 'utf8');
 const integrationReadme = await readFile(new URL('../integration-control-center/README.md', import.meta.url), 'utf8');
@@ -43,11 +48,39 @@ test('commercial packages expose consistent starting prices', () => {
     assert.match(readme, new RegExp(price));
     assert.match(services, new RegExp(price));
     assert.match(brief, new RegExp(price));
+    assert.match(salesIndex, new RegExp(price));
   }
   assert.match(html, /STANDARD/);
   assert.match(html, /DELUXE/);
   assert.match(html, /PREMIUM/);
   assert.match(salesCss, /package-grid/);
+});
+
+test('marketplace sales kit covers three service categories', () => {
+  assert.match(kmong, /관리자페이지 \/ 사내 업무관리 웹 시스템/);
+  assert.match(kmong, /Excel \/ CSV 반복업무 자동화/);
+  assert.match(kmong, /REST API \/ 외부 시스템 연동/);
+  assert.match(soomgo, /관리자페이지 \/ 업무관리 시스템/);
+  assert.match(soomgo, /Excel \/ CSV 자동화/);
+  assert.match(soomgo, /API \/ 기존 시스템 연동/);
+});
+
+test('sales kit protects scope and customer-facing evidence', () => {
+  assert.match(scopeRules, /수정과 기능추가를 분리/);
+  assert.match(scopeRules, /포함\/제외/);
+  assert.match(scopeRules, /가격을 내리면 기능 범위도 같이 줄입니다/);
+  assert.match(assets, /Business Ops Dashboard V6/);
+  assert.match(assets, /Customer Data Workbench V2\.4/);
+  assert.match(assets, /Integration Control Center V2/);
+  assert.match(assets, /60초 영상/);
+});
+
+test('readme links the marketplace sales kit', () => {
+  assert.match(readme, /Marketplace sales kit/);
+  assert.match(readme, /sales\/KMONG-LISTINGS\.md/);
+  assert.match(readme, /sales\/SOOMGO-QUOTES\.md/);
+  assert.match(readme, /sales\/PORTFOLIO-ASSETS\.md/);
+  assert.match(readme, /sales\/SCOPE-RULES\.md/);
 });
 
 test('inquiry flow asks for the four minimum estimate inputs', () => {
@@ -71,7 +104,7 @@ test('integration case separates credential-free UI from the V2 server boundary'
   assert.match(integrationServer, /Idempotency-Key|idempotency-key/);
   assert.match(integrationServer, /\/api\/jobs/);
   assert.doesNotMatch(integrationJs, /sk-[A-Za-z0-9_-]{20,}/);
-  assert.doesNotMatch(integrationJs, /AIza[0-9A-Za-z_-]{20,}/);
+  assert.doesNotMatch(integrationJs, /AIza[0-9A-Za-z0-9_-]{20,}/);
 });
 
 test('portfolio states public-only evidence policy', () => {
