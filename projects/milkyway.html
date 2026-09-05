@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MilkyWay team project contribution and maintenance case study">
+    <title>MilkyWay · Kzone87 Portfolio</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../project.css">
+</head>
+<body class="project-page">
+<header class="site-header">
+    <a class="brand" href="../index.html">Kzone87</a>
+    <nav><a href="../index.html#projects">Projects</a><a href="https://github.com/fullstackteampj/MillkyWay" target="_blank" rel="noreferrer">Team Repo</a></nav>
+</header>
+<main>
+    <section class="project-hero section-shell">
+        <div class="project-breadcrumb"><a href="../index.html">Portfolio</a><span>/</span><span>MilkyWay</span></div>
+        <p class="eyebrow">TEAM COLLABORATION · VERIFIED PR HISTORY</p>
+        <h1>MilkyWay · 은하수책방</h1>
+        <p class="lead">최신 기술 데모가 아니라, 실제 팀 프로젝트에서 어떤 기능을 맡았고 어떻게 통합했는지 GitHub PR을 근거로 설명하는 협업 Case Study입니다. 2024년 기능 기여와 2026년 보안 유지보수도 명확히 분리했습니다.</p>
+        <div class="detail-actions"><a class="primary" href="https://github.com/Kzone87/milkyway-bookstore-case-study" target="_blank" rel="noreferrer">Contribution Case Study ↗</a><a href="https://github.com/fullstackteampj/MillkyWay" target="_blank" rel="noreferrer">Original Repo ↗</a><a href="https://github.com/fullstackteampj/MillkyWay/pull/49" target="_blank" rel="noreferrer">Security PR ↗</a></div>
+        <div class="fact-grid"><article><span>Period</span><strong>2024.09–10</strong></article><article><span>Role evidence</span><strong>20 merged PRs</strong></article><article><span>Stack</span><strong>Java · JSP · Servlet · MySQL</strong></article><article><span>Maintenance</span><strong>2026 security hardening</strong></article></div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>기여 증거</h2>
+        <ul class="evidence-list">
+            <li><span>도서 검색 / 외부·내부 검색 흐름</span><a href="https://github.com/fullstackteampj/MillkyWay/pull/1" target="_blank" rel="noreferrer">PR #1 ↗</a></li>
+            <li><span>장바구니 ↔ 위시리스트 / 검색 UI</span><a href="https://github.com/fullstackteampj/MillkyWay/pull/5" target="_blank" rel="noreferrer">PR #5 ↗</a></li>
+            <li><span>비밀번호 hash + 사용자별 salt</span><span><a href="https://github.com/fullstackteampj/MillkyWay/pull/7" target="_blank" rel="noreferrer">#7</a> · <a href="https://github.com/fullstackteampj/MillkyWay/pull/9" target="_blank" rel="noreferrer">#9</a> · <a href="https://github.com/fullstackteampj/MillkyWay/pull/11" target="_blank" rel="noreferrer">#11</a></span></li>
+            <li><span>Naver 로그인 / 회원·마이페이지 상태</span><a href="https://github.com/fullstackteampj/MillkyWay/pull/23" target="_blank" rel="noreferrer">PR #23 ↗</a></li>
+            <li><span>관리자 / 주문취소 / 회원 상태</span><a href="https://github.com/fullstackteampj/MillkyWay/pull/33" target="_blank" rel="noreferrer">PR #33 ↗</a></li>
+            <li><span>Tomcat 10 / Jakarta Servlet 전환</span><a href="https://github.com/fullstackteampj/MillkyWay/pull/43" target="_blank" rel="noreferrer">PR #43 ↗</a></li>
+            <li><span>2026 보안 hardening</span><a href="https://github.com/fullstackteampj/MillkyWay/pull/49" target="_blank" rel="noreferrer">PR #49 ↗</a></li>
+        </ul>
+        <div class="boundary-note">PR #49는 2024년 팀 개발 당시 기능 기여와 별개의 2026년 유지보수 작업입니다. 포트폴리오에서는 두 시점을 합쳐 과장하지 않고 각각의 목적을 분리합니다.</div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>제가 다룬 서비스 흐름</h2>
+        <div class="decision-grid">
+            <article class="detail-card"><span class="index">SEARCH</span><h3>외부 API + 내부 DB</h3><p>Naver Book Search 결과와 내부 도서 DB 검색을 별도 경로로 연결하고 JSON으로 브라우저에 전달했습니다.</p></article>
+            <article class="detail-card"><span class="index">AUTH</span><h3>비밀번호와 소셜 로그인</h3><p>당시 사용자별 salt 기반 hash 검증과 Naver 사용자 등록/로그인 흐름을 구현했습니다.</p></article>
+            <article class="detail-card"><span class="index">STATE</span><h3>장바구니 / 위시리스트</h3><p>레코드 조회→대상 삽입→원본 삭제로 이어지는 상태 이동을 구현했습니다.</p></article>
+            <article class="detail-card"><span class="index">ORDER</span><h3>마이페이지 / 주문취소</h3><p>구매 식별자, 수량, 가격과 취소 데이터를 연결하고 회원 상태 변화까지 다뤘습니다.</p></article>
+            <article class="detail-card"><span class="index">ADMIN</span><h3>관리자 라우팅</h3><p>관리자 로그인과 `/admin/*` 요청을 JSP 화면에 연결하는 Servlet routing을 보완했습니다.</p></article>
+            <article class="detail-card"><span class="index">MIGRATION</span><h3>Jakarta 전환</h3><p>프로젝트 후반 Tomcat 10 실행환경에 맞춰 `javax.servlet`에서 `jakarta.servlet`로의 전환에 참여했습니다.</p></article>
+        </div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>당시 구조</h2>
+        <div class="flow"><div class="flow-node"><strong>Browser</strong><span>JSP · JavaScript</span></div><div class="flow-node"><strong>Servlet</strong><span>routing · request handling</span></div><div class="flow-node"><strong>Manager</strong><span>business logic + JDBC</span></div><div class="flow-node"><strong>MySQL</strong><span>member · book · order</span></div><div class="flow-node"><strong>Naver API</strong><span>book search · social login</span></div></div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>현재 다시 만든다면</h2>
+        <div class="problem-grid"><article class="detail-card"><h3>Layered architecture</h3><p>JSP와 JDBC에 섞인 책임을 Controller–Service–Repository와 DTO 경계로 분리합니다.</p></article><article class="detail-card"><h3>Transactional state changes</h3><p>장바구니→위시리스트, 구매→취소 같은 다중 SQL을 하나의 transaction으로 묶습니다.</p></article><article class="detail-card"><h3>Modern authentication</h3><p>직접 SHA-256을 조합하지 않고 Argon2id/bcrypt와 검증된 security framework를 사용합니다.</p></article></div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>2026 보안 유지보수</h2>
+        <p>과거 학습 프로젝트에 남아 있던 hardcoded API/DB credential, OAuth token 출력, debug profile 정보와 tracked build/ZIP을 현재 main에서 제거했습니다. OAuth state 검증과 환경변수 기반 설정도 추가했습니다.</p>
+        <div class="verify-grid"><article class="detail-card"><h3>Credential boundary</h3><p>현재 코드는 실제 credential 없이 환경변수 이름과 연결 구조만 유지합니다.</p></article><article class="detail-card"><h3>Token exposure</h3><p>callback과 후처리에서 token/사용자 프로필을 로그·화면에 출력하던 경로를 제거했습니다.</p></article><article class="detail-card"><h3>History decision</h3><p>폐기한 credential의 과거 Git 이력은 협업 증거 보존을 위해 rewrite하지 않았습니다.</p><a href="https://github.com/fullstackteampj/MillkyWay/pull/49">PR #49 ↗</a></article></div>
+    </section>
+</main>
+<footer class="site-footer section-shell"><p>MilkyWay · Contribution detail</p><a href="../index.html">← Portfolio</a></footer>
+</body>
+</html>
