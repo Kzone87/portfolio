@@ -17,6 +17,15 @@
 상세 범위: [SERVICES.md](./SERVICES.md)  
 빠른 견적 요청: [PROJECT-BRIEF.md](./PROJECT-BRIEF.md)
 
+## Marketplace sales kit
+
+실제 플랫폼 등록과 견적 대응에 사용할 판매 문서는 [`sales/`](./sales/)에 분리했습니다.
+
+- [크몽 3개 상품 등록 원고](./sales/KMONG-LISTINGS.md)
+- [숨고 맞춤견적 응답 템플릿](./sales/SOOMGO-QUOTES.md)
+- [포트폴리오 이미지·60초 영상 구성](./sales/PORTFOLIO-ASSETS.md)
+- [외주 범위·가격 방어 규칙](./sales/SCOPE-RULES.md)
+
 ## Positioning
 
 단순 홈페이지 제작보다 **회사의 반복 업무를 운영 가능한 시스템으로 바꾸는 개발**을 중심으로 합니다.
