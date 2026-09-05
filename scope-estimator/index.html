@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="업무시스템, Excel 자동화, API 연동 프로젝트의 1차 범위와 예산 구간을 브라우저에서 확인하는 무료 가이드입니다." />
+  <meta property="og:title" content="1분 개발 범위 · 예산 가이드" />
+  <meta property="og:description" content="몇 가지 선택으로 STANDARD, DELUXE, PREMIUM, CUSTOM 범위와 1차 개발 방향을 확인합니다." />
+  <meta property="og:type" content="website" />
+  <title>1분 개발 범위 · 예산 가이드 | Kzone87</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<header class="topbar shell">
+  <a class="brand" href="../">KZONE87</a>
+  <a href="../PROJECT-BRIEF.md">상세 견적 양식 ↗</a>
+</header>
+
+<main>
+  <section class="hero shell">
+    <p class="eyebrow">1-MINUTE SCOPE GUIDE</p>
+    <h1>내 개발 의뢰는<br>어느 범위일까?</h1>
+    <p>정확한 계약 견적이 아니라, 상담 전에 프로젝트 복잡도와 현실적인 시작 범위를 가늠하는 무료 가이드입니다. 선택 내용은 서버로 전송하거나 저장하지 않습니다.</p>
+  </section>
+
+  <section class="layout shell">
+    <form id="scopeForm" class="panel" autocomplete="off">
+      <h2>프로젝트 조건</h2>
+      <p class="panel-copy">모르는 항목은 가장 단순한 조건을 선택해도 됩니다. 실제 견적에서는 현재 업무와 완료 조건을 다시 확인합니다.</p>
+      <div class="questions">
+        <div class="question">
+          <label for="projectType">1. 어떤 개발이 필요한가요?</label>
+          <select id="projectType" name="projectType">
+            <option value="feature">작은 기능 / 기존 서비스 보완</option>
+            <option value="excel">Excel / CSV 업무자동화</option>
+            <option value="admin">관리자페이지 / 업무관리 시스템</option>
+            <option value="integration">REST API / 시스템 연동</option>
+          </select>
+        </div>
+        <div class="question">
+          <label for="existing">2. 신규 개발인가요?</label>
+          <select id="existing" name="existing"><option value="new">새로 개발</option><option value="existing">기존 소스 수정/확장</option></select>
+          <small>기존 소스는 실행·빌드·DB·의존성 분석이 추가될 수 있습니다.</small>
+        </div>
+        <div class="question">
+          <label for="roles">3. 사용자 권한이 나뉘나요?</label>
+          <select id="roles" name="roles"><option value="single">관리자 1종 중심</option><option value="multi">관리자/직원/고객 등 복수 역할</option></select>
+        </div>
+        <div class="question">
+          <label for="data">4. 여러 데이터가 서로 연결되나요?</label>
+          <select id="data" name="data"><option value="simple">단순 데이터 1개 중심</option><option value="relational">고객-업무-주문 등 관계형 데이터</option></select>
+        </div>
+        <div class="question">
+          <label for="integrations">5. 외부 서비스/API 연동은?</label>
+          <select id="integrations" name="integrations"><option value="none">없음</option><option value="one">1개</option><option value="multiple">2개 이상</option></select>
+        </div>
+        <div class="question">
+          <label for="operation">6. 운영 고도화가 필요한가요?</label>
+          <select id="operation" name="operation"><option value="basic">기본 CRUD/검증 정도</option><option value="advanced">Audit, 실시간, 대량처리 등 필요</option></select>
+        </div>
+        <div class="question">
+          <label for="schedule">7. 일정 제약은?</label>
+          <select id="schedule" name="schedule"><option value="normal">일반 일정</option><option value="urgent">특정 날짜 고정 / 긴급</option></select>
+        </div>
+      </div>
+      <div class="actions"><button class="primary" type="submit">범위 가이드 계산</button><button id="resetButton" type="button">기본값으로</button></div>
+    </form>
+
+    <aside class="panel result" aria-live="polite">
+      <div class="result-head"><div><p class="eyebrow">GUIDE RESULT</p><h2 id="projectLabel">작은 기능 / 기존 서비스 보완</h2></div><span id="packageBadge" class="badge">STANDARD</span></div>
+      <p id="budget" class="budget">49~99만원</p>
+      <p class="budget-label">1차 예산 참고 구간</p>
+      <p id="packageNote" class="result-note"></p>
+      <ul id="reasonList" class="reason-list"></ul>
+      <div class="phase"><strong>추천 1차 범위</strong><p id="firstPhase"></p></div>
+      <div class="brief"><h3>상담용 Brief</h3><textarea id="briefText" readonly></textarea><div class="actions"><button id="copyButton" class="primary" type="button">Brief 복사</button><a class="button" href="../PROJECT-BRIEF.md">상세 양식 ↗</a></div><p id="copyStatus" class="copy-status" role="status"></p></div>
+      <p class="disclaimer">이 결과는 계약 견적이 아닙니다. 실제 금액은 샘플 데이터, 기존 소스 상태, 권한·상태 흐름, 외부 API 문서, 배포 조건 등을 확인한 뒤 고정합니다. 외부 서비스 사용료는 개발비와 별도입니다.</p>
+    </aside>
+  </section>
+</main>
+
+<footer class="footer shell">Kzone87 · Commercial Scope Guide · 입력 내용은 저장하거나 전송하지 않습니다.</footer>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
