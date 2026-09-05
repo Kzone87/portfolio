@@ -1,32 +1,44 @@
 # Kzone87 Portfolio
 
-공개 포트폴리오 허브입니다. 대표 프로젝트를 선별해 각 프로젝트의 문제 정의, 기술 선택, 구현 범위와 운영 관점을 한곳에서 보여주는 역할을 합니다.
+공개 포트폴리오 허브입니다. 서로 다른 역량을 검증할 수 있는 공개 프로젝트 세 개만 선별해 문제 정의, 구현 범위와 검증 가능한 증거를 한곳에서 연결합니다.
 
-## Portfolio structure
+**Live portfolio:** https://kzone87.github.io/portfolio/
 
-### Active private services
+## Selected work
 
-- **PrintHub** — 인쇄 견적·책등/표지 계산·브라우저 PDF 프리프레스 도구를 중심으로 개발 중인 서비스
-- **Exchange Dashboard** — React/TypeScript + Cloudflare Workers/D1/R2 기반 금융 운영 대시보드
+### 1. Customer Map Planner
 
-두 프로젝트는 실서비스 개발 중이므로 소스 코드는 비공개 상태를 유지합니다.
+Excel 거래처 데이터를 Kakao Maps에 지오코딩하고, 거리 기반 연결 클러스터링·라벨 배치·A4 출력을 수행하는 브라우저 업무 자동화 도구입니다.
 
-### Public engineering projects
+- Live Demo: https://kzone87.github.io/customer-map-planner/
+- Repository: https://github.com/Kzone87/customer-map-planner
+- CI: https://github.com/Kzone87/customer-map-planner/actions
+- Focus: workflow automation, geocoding, clustering, browser-side data handling, print layout
 
-- **Customer Map Planner** (`Kzone87/customer-map-planner`) — Excel 거래처 데이터를 Kakao Maps에 지오코딩하고, 거리 기반 클러스터링·라벨 배치·A4 출력을 수행하는 업무 도구. GitHub Actions 회귀 테스트와 Pages 데모 배포를 사용합니다.
-  - Live Demo: https://kzone87.github.io/customer-map-planner/
-- **User Directory API** (`Kzone87/user-directory-api`) — Spring Boot + MyBatis + Validation + H2 + Excel export + MockMvc + GitHub Actions CI로 재구성한 백엔드 프로젝트.
+### 2. User Directory API
 
-### Team project experience
+초기 Spring/MyBatis 학습 코드를 다시 설계해 CRUD, 검색, validation, 예외 계약, Excel export와 MockMvc 통합 테스트를 갖춘 실행 가능한 REST API로 재구성한 백엔드 프로젝트입니다.
 
-- **MilkyWay · 은하수책방** — Java/JSP/Servlet/MySQL 기반 온라인 서점 팀 프로젝트. Kzone87은 도서 검색 흐름, SHA-256 + salt 기반 비밀번호 처리, 네이버 로그인 연동, 장바구니↔위시리스트 이동, 마이페이지 주문취소·회원 상태 처리, 관리자 로그인/라우팅, Tomcat 10 Jakarta Servlet 전환에 기여했습니다.
-  - Contribution Case Study: https://github.com/Kzone87/milkyway-bookstore-case-study
-  - Original Team Repository: https://github.com/fullstackteampj/MillkyWay
-  - Security hardening PR: https://github.com/fullstackteampj/MillkyWay/pull/49
+- Repository: https://github.com/Kzone87/user-directory-api
+- CI: https://github.com/Kzone87/user-directory-api/actions
+- Focus: layered backend architecture, MyBatis, REST error contract, OpenAPI, automated tests
 
-## Why this repository is intentionally small
+### 3. MilkyWay · 은하수책방
 
-포트폴리오 허브 안에 다른 프로젝트의 소스 사본을 복제하지 않습니다. 각 프로젝트는 독립 저장소에서 이력과 README를 관리하고, 이 저장소는 프로젝트 간 맥락과 개발 방향을 보여주는 역할만 합니다.
+Java/JSP/Servlet/MySQL 기반 온라인 서점 팀 프로젝트입니다. 개인 Case Study에서 실제 Git 이력으로 확인되는 기여 범위와 현재 기준의 개선 판단을 분리해 설명합니다.
+
+- Contribution Case Study: https://github.com/Kzone87/milkyway-bookstore-case-study
+- Original Team Repository: https://github.com/fullstackteampj/MillkyWay
+- Security hardening PR: https://github.com/fullstackteampj/MillkyWay/pull/49
+- Focus: team Git/PR workflow, authentication, external API integration, order/cancellation state handling, legacy security modernization
+
+## Portfolio principle
+
+이 허브에는 개인사업용 비공개 프로젝트나 다른 저장소의 소스 사본을 넣지 않습니다. 공개 가능한 작업 중에서 다음 세 축을 증명하는 프로젝트만 유지합니다.
+
+1. **실제 업무 문제 해결** — Customer Map Planner
+2. **개인 백엔드 설계 역량** — User Directory API
+3. **팀 협업 및 기여 증거** — MilkyWay
 
 ## Run locally
 
