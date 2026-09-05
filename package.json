@@ -1,7 +1,7 @@
 {
   "name": "kzone87-business-portfolio",
   "private": true,
-  "version": "4.1.0",
+  "version": "5.0.0",
   "type": "module",
   "scripts": {
     "test": "node --test && node --check integration-control-center/app.js && node --check integration-control-center/server/app.mjs && node --check integration-control-center/server/store.mjs",
