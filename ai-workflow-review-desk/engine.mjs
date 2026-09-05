@@ -27,8 +27,8 @@ export const PROMPTS = Object.freeze({
 const CATEGORY_RULES = [
   ['billing', ['invoice', 'payment', 'refund', 'charge', 'billing', '결제', '환불', '청구']],
   ['access', ['login', 'password', 'permission', 'account', '로그인', '비밀번호', '권한', '계정']],
-  ['incident', ['down', 'error', 'broken', 'outage', 'fail', '장애', '오류', '실패', '접속불가']],
   ['data', ['excel', 'csv', 'import', 'export', 'mapping', '엑셀', '데이터', '업로드', '다운로드']],
+  ['incident', ['down', 'error', 'broken', 'outage', 'fail', '장애', '오류', '실패', '접속불가']],
   ['general', []]
 ];
 
