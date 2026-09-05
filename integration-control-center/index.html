@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="외부 시스템 간 데이터 동기화 작업, 상태, 재시도 정책을 운영하는 Integration Control Center 공개 포트폴리오 Lab" />
+  <title>Integration Control Center · V1 Lab</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">PUBLIC PORTFOLIO LAB · V1</p>
+      <h1>Integration Control Center</h1>
+      <p>외부 시스템 연결과 동기화 작업을 운영하는 상황을 가정한 API integration control-plane 데모입니다.</p>
+    </div>
+    <a href="../">← Portfolio</a>
+  </header>
+
+  <main class="shell">
+    <section class="metrics" aria-label="통합 운영 현황">
+      <article><span>Connections</span><strong id="metricConnections">0</strong><small>등록된 연결</small></article>
+      <article><span>Active jobs</span><strong id="metricActive">0</strong><small>실행 가능 작업</small></article>
+      <article><span>Failed runs</span><strong id="metricFailed">0</strong><small>최근 실패</small></article>
+      <article><span>Run history</span><strong id="metricRuns">0</strong><small>브라우저 저장 기록</small></article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">CONNECTION REGISTRY</p><h2>시스템 연결 현황</h2></div>
+          <span class="demo-badge">NO REAL CREDENTIALS</span>
+        </div>
+        <div id="connectionList" class="connection-list"></div>
+      </article>
+
+      <aside class="panel">
+        <p class="eyebrow">CREATE SYNC JOB</p>
+        <h2>동기화 작업 구성</h2>
+        <form id="jobForm" class="form-grid">
+          <label>작업명<input id="jobName" maxlength="80" placeholder="예: 고객 마스터 동기화" required /></label>
+          <label>Source<select id="jobSource" required></select></label>
+          <label>Target<select id="jobTarget" required></select></label>
+          <label>Entity<select id="jobEntity"><option value="customers">Customers</option><option value="orders">Orders</option><option value="inventory">Inventory</option><option value="invoices">Invoices</option></select></label>
+          <label>Schedule<select id="jobSchedule"><option value="manual">Manual</option><option value="hourly">Hourly</option><option value="daily">Daily</option></select></label>
+          <label>Failure policy<select id="jobPolicy"><option value="retry-3">Retry ×3</option><option value="stop">Stop immediately</option><option value="skip-row">Skip invalid row</option></select></label>
+          <button type="submit">작업 추가</button>
+        </form>
+        <p id="formStatus" class="form-status" role="status"></p>
+      </aside>
+    </section>
+
+    <section class="panel jobs-panel">
+      <div class="panel-heading">
+        <div><p class="eyebrow">SYNC OPERATIONS</p><h2>동기화 작업</h2><p>실제 네트워크 호출 없이 운영 제어 흐름을 재현합니다.</p></div>
+        <button id="resetDemo" class="secondary" type="button">데모 초기화</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Job</th><th>Flow</th><th>Entity</th><th>Schedule</th><th>Policy</th><th>Status</th><th>Last run</th><th>Action</th></tr></thead>
+          <tbody id="jobTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid two lower-grid">
+      <article class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">RUN HISTORY</p><h2>실행 이력</h2></div><button id="clearHistory" class="secondary" type="button">이력 비우기</button></div>
+        <div id="historyList" class="history-list"></div>
+      </article>
+      <article class="panel">
+        <p class="eyebrow">CONTROL-PLANE PRINCIPLES</p>
+        <h2>V1에서 보여주는 설계 기준</h2>
+        <ul class="principles">
+          <li><strong>Credential separation</strong><span>실제 API Key를 프런트 코드나 데모 데이터에 넣지 않습니다.</span></li>
+          <li><strong>Explicit state</strong><span>Connection, Job, Run 상태를 구분합니다.</span></li>
+          <li><strong>Failure policy</strong><span>재시도·중단·행 건너뛰기를 작업 계약으로 둡니다.</span></li>
+          <li><strong>Auditability</strong><span>실행 결과와 처리 건수를 이력으로 남깁니다.</span></li>
+          <li><strong>Safe demo</strong><span>모든 동작은 localStorage 기반 시뮬레이션입니다.</span></li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>

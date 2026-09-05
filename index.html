@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Kzone87 외주 개발 포트폴리오. React/Spring 업무관리 시스템, Excel·CSV 데이터 자동화, REST API와 레거시 개선 사례를 공개 저장소로 검증합니다." />
+  <meta name="description" content="Kzone87 외주 개발 포트폴리오. React/Spring 고객·업무관리, Excel·CSV 검증·컬럼 매핑, API integration control-plane과 레거시 개선 사례를 공개 코드로 검증합니다." />
   <meta name="theme-color" content="#0f172a" />
   <title>Kzone87 · Business Web Development</title>
   <link rel="stylesheet" href="./styles.css" />
@@ -22,11 +22,11 @@
 
 <main id="top">
   <section class="hero section-shell">
-    <p class="eyebrow">BUSINESS WEB SYSTEMS · DATA WORKFLOW AUTOMATION</p>
+    <p class="eyebrow">BUSINESS WEB SYSTEMS · DATA WORKFLOW · INTEGRATION</p>
     <h1>회사에서 계속 쓰는<br><span>업무용 웹 시스템</span>을 만듭니다.</h1>
     <p class="hero-copy">
-      단순 화면 제작보다 데이터가 들어오고, 검증되고, 상태가 바뀌고, 다시 결과로 나가는 실제 업무 흐름을 구현합니다.
-      관리자페이지, 고객·업무 관리, Excel/CSV 자동화, REST API, 기존 서비스 개선을 공개 코드와 자동화 테스트로 증명합니다.
+      단순 화면 제작보다 데이터가 들어오고, 검증되고, 권한에 따라 처리되고, 상태가 바뀌고, 다른 시스템이나 파일로 나가는 실제 업무 흐름을 구현합니다.
+      고객·업무 관리, Excel/CSV 자동화, REST API와 시스템 연동 운영을 공개 코드와 테스트 기록으로 증명합니다.
     </p>
     <div class="hero-actions">
       <a class="button primary" href="#work">대표 사례 보기</a>
@@ -34,8 +34,8 @@
     </div>
     <div class="proof-strip">
       <article><strong>Full-stack</strong><span>React · Spring · DB</span></article>
-      <article><strong>Workflow</strong><span>상태 머신 · 업무 처리</span></article>
-      <article><strong>Data</strong><span>Excel · CSV · Validation</span></article>
+      <article><strong>Workflow</strong><span>RBAC · State · Audit</span></article>
+      <article><strong>Data</strong><span>Excel · Rules · Mapping</span></article>
       <article><strong>Quality</strong><span>Test · CI · Error contract</span></article>
     </div>
   </section>
@@ -50,20 +50,20 @@
       <article class="service-card">
         <span class="service-no">01</span>
         <h3>업무용 웹 시스템</h3>
-        <p>관리자가 고객, 신청, 업무 건을 검색하고 등록·수정하며 상태를 처리하는 시스템을 구성합니다.</p>
-        <ul><li>관리자 Dashboard</li><li>CRUD · 검색 · 필터</li><li>업무 상태 전이</li></ul>
+        <p>고객·거래처, 신청, 업무 건을 검색하고 등록·수정하며 역할과 상태를 관리하는 시스템을 구성합니다.</p>
+        <ul><li>관리자 Dashboard</li><li>CRUD · 검색 · 필터</li><li>RBAC · 상태 전이 · Audit</li></ul>
       </article>
       <article class="service-card">
         <span class="service-no">02</span>
         <h3>Excel · CSV 자동화</h3>
         <p>반복해서 정리하는 파일 업무를 브라우저 도구나 내부 시스템으로 전환합니다.</p>
-        <ul><li>Import · Validation</li><li>정규화 · 중복 제거</li><li>Excel/CSV Export</li></ul>
+        <ul><li>Import · Validation</li><li>정규화 · Rule Builder</li><li>Column Mapping · Export</li></ul>
       </article>
       <article class="service-card">
         <span class="service-no">03</span>
-        <h3>REST API · Backend</h3>
-        <p>프런트엔드가 안정적으로 사용할 데이터 경계와 비즈니스 규칙을 서버에 구현합니다.</p>
-        <ul><li>Spring Boot · MyBatis</li><li>400/404/409 오류 계약</li><li>OpenAPI · Integration test</li></ul>
+        <h3>REST API · 시스템 연동</h3>
+        <p>프런트엔드와 외부 시스템이 안정적으로 사용할 데이터 경계, 상태, 실패 처리 기준을 구현합니다.</p>
+        <ul><li>Spring Boot · MyBatis</li><li>HTTP 오류 계약</li><li>Sync job · retry model</li></ul>
       </article>
       <article class="service-card">
         <span class="service-no">04</span>
@@ -78,10 +78,10 @@
     <div class="section-shell fit-grid">
       <div><p class="eyebrow">PROJECT FIT</p><h2>특히 잘 맞는 의뢰</h2></div>
       <div class="fit-list">
-        <p><strong>01</strong><span>“엑셀로 관리하는 업무를 웹에서 처리하고 싶습니다.”</span></p>
-        <p><strong>02</strong><span>“접수 → 진행 → 완료처럼 관리자 상태 처리가 필요합니다.”</span></p>
-        <p><strong>03</strong><span>“기존 화면과 연결할 API와 DB가 필요합니다.”</span></p>
-        <p><strong>04</strong><span>“기존 웹서비스를 버리지 않고 문제부터 고치고 싶습니다.”</span></p>
+        <p><strong>01</strong><span>“엑셀로 관리하는 고객·업무를 웹에서 처리하고 싶습니다.”</span></p>
+        <p><strong>02</strong><span>“권한과 접수 → 진행 → 완료 같은 업무 상태가 필요합니다.”</span></p>
+        <p><strong>03</strong><span>“업체마다 다른 Excel 컬럼을 표준 형식으로 바꾸고 싶습니다.”</span></p>
+        <p><strong>04</strong><span>“기존 서비스나 외부 API를 안전하게 연결하고 운영하고 싶습니다.”</span></p>
       </div>
     </div>
   </section>
@@ -95,21 +95,21 @@
 
     <div class="project-stack">
       <article class="project-card featured">
-        <div class="project-topline"><span class="project-index">01</span><span class="badge">FULL-STACK · STATE MACHINE · CI</span></div>
+        <div class="project-topline"><span class="project-index">01</span><span class="badge">FULL-STACK · CRM · RBAC · AUDIT</span></div>
         <div class="project-layout">
           <div>
             <p class="project-kicker">BUSINESS OPERATIONS SYSTEM</p>
-            <h3>Business Ops Dashboard · V2</h3>
-            <p class="project-summary">React/TypeScript 관리자 화면과 Spring Boot/MyBatis API를 연결한 업무관리 시스템입니다. 연락처 CRUD, 검색, Excel export와 함께 신규 업무의 접수·진행·완료/취소 상태를 서버 상태 머신으로 관리합니다.</p>
+            <h3>Business Ops Dashboard · V6</h3>
+            <p class="project-summary">React/TypeScript 관리자 UI와 Spring Boot/MyBatis API를 연결한 고객·업무 운영 시스템입니다. Customer와 Work Order를 FK로 연결하고 역할 권한, 상태 머신, 변경 이력, 우선순위·마감일 planning까지 서버 데이터 흐름으로 관리합니다.</p>
             <div class="challenge-result">
-              <p><span>Workflow</span>RECEIVED → IN_PROGRESS → DONE / CANCELLED</p>
-              <p><span>Reliability</span>조건부 상태 UPDATE · 409 충돌 · MockMvc Integration Test</p>
+              <p><span>Workflow</span>Customer → Work Order → State transition → Audit History</p>
+              <p><span>Planning</span>URGENT/HIGH/NORMAL/LOW · Due date · Overdue/Today KPI</p>
             </div>
-            <ul class="tech-list"><li>React</li><li>TypeScript</li><li>Spring Boot</li><li>MyBatis</li><li>H2</li><li>OpenAPI</li></ul>
+            <ul class="tech-list"><li>React</li><li>TypeScript</li><li>Spring Boot</li><li>Spring Security</li><li>MyBatis</li><li>OpenAPI</li></ul>
           </div>
           <aside class="evidence-panel">
             <p class="evidence-title">외주 관점에서 보여주는 역량</p>
-            <ul><li>관리자 UI와 REST API 연결</li><li>서버 비즈니스 상태 전이</li><li>검색 · CRUD · Excel export</li><li>Validation · 400/404/409 오류 계약</li><li>백엔드/프런트 CI 분리 검증</li></ul>
+            <ul><li>고객 CRM + 관계형 업무 데이터</li><li>ADMIN/STAFF RBAC</li><li>조건부 상태 UPDATE · 409 충돌 방어</li><li>트랜잭션 Audit History</li><li>Priority / Due date 업무 접수와 Planning Panel</li><li>MockMvc + frontend/backend CI</li></ul>
           </aside>
         </div>
         <div class="project-links">
@@ -119,32 +119,56 @@
       </article>
 
       <article class="project-card featured alt">
-        <div class="project-topline"><span class="project-index">02</span><span class="badge">LOCAL-FIRST · NO API KEY · LIVE</span></div>
+        <div class="project-topline"><span class="project-index">02</span><span class="badge">LOCAL-FIRST · RULES · MAPPING · LIVE</span></div>
         <div class="project-layout">
           <div>
             <p class="project-kicker">DATA WORKFLOW AUTOMATION</p>
-            <h3>Customer Data Workbench · V2</h3>
-            <p class="project-summary">Excel/CSV 거래처 데이터를 서버로 업로드하지 않고 브라우저에서 분석·검증·정규화·중복 제거한 뒤 다시 파일로 내보내는 local-first 업무자동화 도구입니다. 핵심 기능에 외부 API Key나 Backend가 필요하지 않습니다.</p>
+            <h3>Customer Data Workbench · V2.4</h3>
+            <p class="project-summary">Excel/CSV 데이터를 서버로 업로드하지 않고 브라우저에서 분석·정리·규칙 검증·컬럼 표준화한 뒤 다시 파일로 내보내는 local-first 업무자동화 도구입니다. 업체마다 다른 원본 컬럼을 표준 스키마로 바꾸는 별도 Mapping Workspace까지 제공합니다.</p>
             <div class="challenge-result">
-              <p><span>Problem</span>매달 반복되는 Excel 데이터 정리와 형식 불일치</p>
-              <p><span>Solution</span>Import → Profile → Clean → Recipe → Export</p>
+              <p><span>Validation</span>Quality profile + required/email/number/enum Rule Builder</p>
+              <p><span>Standardize</span>Source column → Standard column → Preview → Safe export</p>
             </div>
             <ul class="tech-list"><li>TypeScript</li><li>Vite</li><li>SheetJS</li><li>Vitest</li><li>localStorage</li><li>GitHub Pages</li></ul>
           </div>
           <aside class="evidence-panel">
             <p class="evidence-title">외주 관점에서 보여주는 역량</p>
-            <ul><li>XLSX/XLS/CSV 브라우저 처리</li><li>빈 값·이메일·전화번호·중복 품질검사</li><li>Undo/Redo · 원본 복원</li><li>반복 변환 Recipe 저장</li><li>API Key 없는 저비용 배포</li></ul>
+            <ul><li>XLSX/XLS/CSV 브라우저 처리</li><li>정규화 · Undo/Redo · Recipe</li><li>사용자 정의 validation rules</li><li>중복 source/target·기존 컬럼 충돌 방어</li><li>Column Mapping multi-page build</li><li>API Key 없는 저비용 배포</li></ul>
           </aside>
         </div>
         <div class="project-links">
           <a href="https://kzone87.github.io/customer-map-planner/" target="_blank" rel="noreferrer">Live Demo ↗</a>
+          <a href="https://kzone87.github.io/customer-map-planner/mapping.html" target="_blank" rel="noreferrer">Mapping Workspace ↗</a>
           <a href="https://github.com/Kzone87/customer-map-planner" target="_blank" rel="noreferrer">Repository ↗</a>
           <a href="https://github.com/Kzone87/customer-map-planner/actions" target="_blank" rel="noreferrer">CI ↗</a>
         </div>
       </article>
 
       <article class="project-card compact">
-        <div class="project-topline"><span class="project-index">03</span><span class="badge muted">TEAM · LEGACY MODERNIZATION</span></div>
+        <div class="project-topline"><span class="project-index">03</span><span class="badge">INTEGRATION · CONTROL PLANE · LAB</span></div>
+        <div class="project-layout">
+          <div>
+            <p class="project-kicker">SYSTEM INTEGRATION OPERATIONS</p>
+            <h3>Integration Control Center · V1 Lab</h3>
+            <p class="project-summary">외부 시스템 연동을 Connection → Sync Job → Run 단위로 운영하는 상황을 가정한 정적 공개 Lab입니다. 실제 API Key나 외부 호출은 사용하지 않고 작업 상태, 실패 정책, 실행 이력과 운영 UX를 구현했습니다.</p>
+            <div class="challenge-result">
+              <p><span>Control</span>Source / Target · Schedule · Failure policy · Pause/Resume</p>
+              <p><span>Audit</span>SUCCESS/FAILED run · 처리 건수 · 실행 시각 · localStorage</p>
+            </div>
+          </div>
+          <aside class="evidence-panel">
+            <p class="evidence-title">설계 포인트</p>
+            <ul><li>Connection / Job / Run 상태 분리</li><li>Retry ×3 / Stop / Skip-row 계약</li><li>저장 데이터 allow-list 재검증</li><li>실제 credential 없는 안전한 공개 데모</li><li>향후 queue/cron/secret manager 확장 경계</li></ul>
+          </aside>
+        </div>
+        <div class="project-links">
+          <a href="./integration-control-center/" target="_blank" rel="noreferrer">Live Lab ↗</a>
+          <a href="https://github.com/Kzone87/portfolio/tree/main/integration-control-center" target="_blank" rel="noreferrer">Source ↗</a>
+        </div>
+      </article>
+
+      <article class="project-card compact">
+        <div class="project-topline"><span class="project-index">04</span><span class="badge muted">TEAM · LEGACY MODERNIZATION</span></div>
         <div class="project-layout">
           <div>
             <p class="project-kicker">COLLABORATION & MAINTENANCE EVIDENCE</p>
