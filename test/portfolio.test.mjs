@@ -11,6 +11,9 @@ const serviceCss = await readFile(new URL('../services/service-page.css', import
 const adminService = await readFile(new URL('../services/admin-system.html', import.meta.url), 'utf8');
 const excelService = await readFile(new URL('../services/excel-automation.html', import.meta.url), 'utf8');
 const apiService = await readFile(new URL('../services/api-integration.html', import.meta.url), 'utf8');
+const estimatorHtml = await readFile(new URL('../scope-estimator/index.html', import.meta.url), 'utf8');
+const estimatorJs = await readFile(new URL('../scope-estimator/app.js', import.meta.url), 'utf8');
+const estimatorEngine = await readFile(new URL('../scope-estimator/engine.mjs', import.meta.url), 'utf8');
 const kmong = await readFile(new URL('../sales/KMONG-LISTINGS.md', import.meta.url), 'utf8');
 const soomgo = await readFile(new URL('../sales/SOOMGO-QUOTES.md', import.meta.url), 'utf8');
 const assets = await readFile(new URL('../sales/PORTFOLIO-ASSETS.md', import.meta.url), 'utf8');
@@ -60,6 +63,29 @@ test('commercial packages expose consistent starting prices', () => {
   assert.match(salesCss, /package-grid/);
 });
 
+test('main commercial page links the one-minute estimator', () => {
+  assert.ok(html.includes('./scope-estimator/'));
+  assert.match(html, /1분 예산 가이드/);
+});
+
+test('scope estimator is explicit about its guide-only and no-storage boundary', () => {
+  assert.match(estimatorHtml, /정확한 계약 견적이 아니라/);
+  assert.match(estimatorHtml, /서버로 전송하거나 저장하지 않습니다/);
+  assert.match(estimatorHtml, /49~99만원/);
+  assert.match(estimatorEngine, /149~299만원/);
+  assert.match(estimatorEngine, /299~499만원/);
+  assert.match(estimatorEngine, /499만원 이상/);
+  assert.doesNotMatch(estimatorJs, /localStorage|sessionStorage|fetch\s*\(/);
+});
+
+test('scope estimator uses allow-listed selections and generated brief', () => {
+  assert.match(estimatorEngine, /sanitizeScopeInput/);
+  assert.match(estimatorEngine, /ALLOWED/);
+  assert.match(estimatorEngine, /buildBrief/);
+  assert.match(estimatorJs, /navigator\.clipboard/);
+  assert.match(estimatorHtml, /상담용 Brief/);
+});
+
 test('flagship cases deep-link to dedicated commercial service pages', () => {
   assert.ok(html.includes('./services/admin-system.html'));
   assert.ok(html.includes('./services/excel-automation.html'));
@@ -93,8 +119,8 @@ test('api integration service page exposes price, V2 evidence and secret boundar
   assert.ok(apiService.includes('../integration-control-center/'));
 });
 
-test('commercial service pages do not embed common credential patterns', () => {
-  const pages = [adminService, excelService, apiService].join('\n');
+test('commercial pages do not embed common credential patterns', () => {
+  const pages = [adminService, excelService, apiService, estimatorHtml, estimatorJs, estimatorEngine].join('\n');
   assert.doesNotMatch(pages, /sk-[A-Za-z0-9_-]{20,}/);
   assert.doesNotMatch(pages, /AIza[0-9A-Za-z_-]{20,}/);
 });
