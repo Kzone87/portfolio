@@ -1,10 +1,10 @@
 {
   "name": "kzone87-business-portfolio",
   "private": true,
-  "version": "5.2.0",
+  "version": "5.3.0",
   "type": "module",
   "scripts": {
-    "test": "node --test && node --check integration-control-center/app.js && node --check integration-control-center/server/app.mjs && node --check integration-control-center/server/store.mjs",
+    "test": "node --test && node --check scope-estimator/app.js && node --check scope-estimator/engine.mjs && node --check integration-control-center/app.js && node --check integration-control-center/server/app.mjs && node --check integration-control-center/server/store.mjs",
     "start:integration-api": "node integration-control-center/server/app.mjs"
   }
 }
