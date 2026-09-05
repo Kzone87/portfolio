@@ -8,7 +8,7 @@
 
 - **업무용 웹 시스템 / 관리자 기능** — 거래처, 회원, 주문, 신청 데이터의 조회·등록·수정·상태 처리
 - **Excel / 반복 업무 자동화** — XLSX/CSV 입력 검증, 데이터 가공, 검색 결과 export, 지도·출력 자동화
-- **REST API / 데이터 연동** — CRUD, 검색, 정렬, pagination, validation, 오류 계약, 외부 API 연동
+- **풀스택 관리 시스템** — React/TypeScript 관리 UI + Spring Boot REST API + DB 연동
 - **기존 서비스 개선** — 버그 수정, 기능 추가, credential 정리, 레거시 코드의 단계적 개선
 
 ## Public case studies
@@ -21,12 +21,13 @@ Excel 거래처 데이터를 읽어 주소를 지오코딩하고, 거리 기반�
 - Repository: https://github.com/Kzone87/customer-map-planner
 - Evidence: input validation, geocoding cache, clustering logic, print layout, regression tests, CI
 
-### 2. User Directory API — Business data backend
+### 2. Business Ops Dashboard — Full-stack admin system
 
-관리자/내부 업무시스템에서 사용할 수 있는 사용자 데이터 REST API 예제입니다. 검색, CRUD, pagination/sort, Excel export, validation, OpenAPI와 MockMvc 통합 테스트를 포함합니다.
+기존 Spring Boot/MyBatis 관리 API 위에 React/TypeScript 관리 화면을 연결한 풀스택 업무시스템 사례입니다. 검색, 등록, 수정, 삭제, validation, 오류 응답, Excel export와 백엔드/프런트 분리 CI를 포함합니다.
 
 - Repository: https://github.com/Kzone87/user-directory-api
-- Evidence: layered architecture, MyBatis, error contract, Excel export, OpenAPI, automated tests, CI
+- Evidence: React admin UI, typed API client, Spring Boot/MyBatis, error contract, Excel export, OpenAPI, MockMvc, frontend/backend CI
+- Current phase: V1 complete — 다음 단계는 Customer / Work-order / RBAC 모듈 확장
 
 ### 3. MilkyWay — Team & legacy maintenance evidence
 
