@@ -7,6 +7,10 @@ const readme = await readFile(new URL('../README.md', import.meta.url), 'utf8');
 const services = await readFile(new URL('../SERVICES.md', import.meta.url), 'utf8');
 const brief = await readFile(new URL('../PROJECT-BRIEF.md', import.meta.url), 'utf8');
 const salesCss = await readFile(new URL('../sales.css', import.meta.url), 'utf8');
+const serviceCss = await readFile(new URL('../services/service-page.css', import.meta.url), 'utf8');
+const adminService = await readFile(new URL('../services/admin-system.html', import.meta.url), 'utf8');
+const excelService = await readFile(new URL('../services/excel-automation.html', import.meta.url), 'utf8');
+const apiService = await readFile(new URL('../services/api-integration.html', import.meta.url), 'utf8');
 const kmong = await readFile(new URL('../sales/KMONG-LISTINGS.md', import.meta.url), 'utf8');
 const soomgo = await readFile(new URL('../sales/SOOMGO-QUOTES.md', import.meta.url), 'utf8');
 const assets = await readFile(new URL('../sales/PORTFOLIO-ASSETS.md', import.meta.url), 'utf8');
@@ -54,6 +58,45 @@ test('commercial packages expose consistent starting prices', () => {
   assert.match(html, /DELUXE/);
   assert.match(html, /PREMIUM/);
   assert.match(salesCss, /package-grid/);
+});
+
+test('flagship cases deep-link to dedicated commercial service pages', () => {
+  assert.ok(html.includes('./services/admin-system.html'));
+  assert.ok(html.includes('./services/excel-automation.html'));
+  assert.ok(html.includes('./services/api-integration.html'));
+  assert.match(serviceCss, /price-grid/);
+  assert.match(serviceCss, /faq-grid/);
+});
+
+test('admin system service page exposes price, evidence and inquiry path', () => {
+  assert.match(adminService, /149만원/);
+  assert.match(adminService, /299만원/);
+  assert.match(adminService, /499만원/);
+  assert.match(adminService, /Business Ops Dashboard · V6/);
+  assert.ok(adminService.includes('https://github.com/Kzone87/user-directory-api'));
+  assert.match(adminService, /\.\.\/PROJECT-BRIEF\.md/);
+});
+
+test('excel automation service page exposes price, live evidence and local-first value', () => {
+  for (const price of ['49만원', '149만원', '299만원']) assert.match(excelService, new RegExp(price));
+  assert.match(excelService, /Customer Data Workbench · V2\.4/);
+  assert.match(excelService, /local-first/);
+  assert.ok(excelService.includes('https://kzone87.github.io/customer-map-planner/'));
+  assert.ok(excelService.includes('https://kzone87.github.io/customer-map-planner/mapping.html'));
+});
+
+test('api integration service page exposes price, V2 evidence and secret boundary', () => {
+  for (const price of ['49만원', '149만원', '299만원']) assert.match(apiService, new RegExp(price));
+  assert.match(apiService, /Integration Control Center · V2/);
+  assert.match(apiService, /Idempotency/);
+  assert.match(apiService, /secret/);
+  assert.ok(apiService.includes('../integration-control-center/'));
+});
+
+test('commercial service pages do not embed common credential patterns', () => {
+  const pages = [adminService, excelService, apiService].join('\n');
+  assert.doesNotMatch(pages, /sk-[A-Za-z0-9_-]{20,}/);
+  assert.doesNotMatch(pages, /AIza[0-9A-Za-z_-]{20,}/);
 });
 
 test('marketplace sales kit covers three service categories', () => {
@@ -104,7 +147,7 @@ test('integration case separates credential-free UI from the V2 server boundary'
   assert.match(integrationServer, /Idempotency-Key|idempotency-key/);
   assert.match(integrationServer, /\/api\/jobs/);
   assert.doesNotMatch(integrationJs, /sk-[A-Za-z0-9_-]{20,}/);
-  assert.doesNotMatch(integrationJs, /AIza[0-9A-Za-z0-9_-]{20,}/);
+  assert.doesNotMatch(integrationJs, /AIza[0-9A-Za-z_-]{20,}/);
 });
 
 test('portfolio states public-only evidence policy', () => {

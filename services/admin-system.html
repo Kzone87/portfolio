@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="고객·거래처·업무를 검색, 등록, 상태처리하는 관리자 웹 시스템 개발 서비스. React, Spring Boot, DB, 권한, Audit까지 범위별로 제공합니다." />
+  <meta property="og:title" content="관리자페이지 · 사내 업무관리 시스템 개발" />
+  <meta property="og:description" content="Excel·수기 업무를 고객관리와 업무상태가 연결된 웹 시스템으로 전환합니다." />
+  <meta property="og:type" content="website" />
+  <title>관리자페이지 · 업무관리 시스템 개발 | Kzone87</title>
+  <link rel="stylesheet" href="./service-page.css" />
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../">KZONE87</a>
+  <nav><a href="#scope">Scope</a><a href="#price">Price</a><a href="#faq">FAQ</a><a href="../PROJECT-BRIEF.md">Inquiry ↗</a></nav>
+</header>
+
+<main>
+  <section class="hero shell">
+    <p class="eyebrow">ADMIN SYSTEM · CRM · WORKFLOW</p>
+    <h1>엑셀·수기 업무를<br>운영 가능한 관리자 시스템으로.</h1>
+    <p class="hero-copy">거래처, 고객, 신청, 주문, 업무 건을 검색·등록·수정하고 담당자가 상태를 처리할 수 있는 웹 시스템을 개발합니다. 화면만 만드는 대신 사용자 권한, 데이터 관계, 상태 전이, 변경 이력까지 실제 운영 흐름을 기준으로 설계합니다.</p>
+    <span class="price-chip">관리자 기능 149만원부터 · 풀스택 업무시스템 299만원부터</span>
+    <div class="actions"><a class="button primary" href="../PROJECT-BRIEF.md">견적 요청 양식 ↗</a><a class="button" href="https://github.com/Kzone87/user-directory-api" target="_blank" rel="noreferrer">공개 구현 보기 ↗</a></div>
+    <div class="proof">
+      <article><strong>고객·업무 관계</strong><span>Customer → Work Order 관계형 데이터</span></article>
+      <article><strong>운영 권한</strong><span>ADMIN / STAFF 역할 경계</span></article>
+      <article><strong>검증 가능한 납품</strong><span>MockMvc · frontend/backend CI</span></article>
+    </div>
+  </section>
+
+  <section class="section shell">
+    <p class="eyebrow">PROJECT FIT</p>
+    <h2 class="section-title">이런 의뢰에 적합합니다.</h2>
+    <div class="fit-grid">
+      <article class="fit-card"><strong>거래처를 Excel로 관리 중</strong><p>여러 사람이 파일을 주고받는 대신 검색·수정 가능한 중앙 관리 화면이 필요할 때.</p></article>
+      <article class="fit-card"><strong>업무 상태를 추적해야 함</strong><p>접수 → 진행 → 완료/취소처럼 담당자가 처리하는 순서와 상태가 있을 때.</p></article>
+      <article class="fit-card"><strong>관리자와 직원 권한이 다름</strong><p>조회·수정·삭제처럼 역할별 접근 범위를 나눠야 할 때.</p></article>
+      <article class="fit-card"><strong>누가 무엇을 바꿨는지 필요</strong><p>업무 상태 변경 이력이나 운영 책임 추적이 필요한 경우.</p></article>
+    </div>
+    <div class="workflow">고객 등록
+  ↓
+업무 접수
+  ↓
+담당자 배정
+  ↓
+RECEIVED → IN_PROGRESS → DONE / CANCELLED
+  ↓
+Audit History / Dashboard / Excel</div>
+  </section>
+
+  <section id="scope" class="section shell">
+    <p class="eyebrow">DEVELOPMENT SCOPE</p>
+    <h2 class="section-title">필요한 업무 모듈만 범위에 넣습니다.</h2>
+    <p class="section-copy">처음부터 ERP 전체를 만들 필요는 없습니다. 실제로 사용하는 핵심 흐름부터 독립적으로 완료 가능한 1차 버전으로 나눌 수 있습니다.</p>
+    <div class="scope-grid">
+      <article class="scope-card"><h3>Customer / CRM</h3><p>고객·거래처 기본정보와 상태 관리.</p><ul><li>등록 / 수정 / 검색</li><li>상태 필터</li><li>연락처 / 메모</li></ul></article>
+      <article class="scope-card"><h3>Work / Order</h3><p>업무·신청·주문 같은 처리 건 관리.</p><ul><li>담당자</li><li>상태 머신</li><li>Priority / Due date</li></ul></article>
+      <article class="scope-card"><h3>Operations</h3><p>실제 운영에 필요한 안전장치.</p><ul><li>RBAC</li><li>Audit History</li><li>Excel / CSV</li><li>REST API / DB</li></ul></article>
+    </div>
+  </section>
+
+  <section id="price" class="section shell">
+    <p class="eyebrow">STARTING PRICE</p>
+    <h2 class="section-title">복잡도에 따라 단계적으로 시작합니다.</h2>
+    <div class="price-grid">
+      <article class="price-card"><h3>ADMIN MODULE</h3><p class="price">149만원<small>부터</small></p><p>업무 도메인 1개 중심 관리자 기능.</p><ul><li>CRUD</li><li>검색 / 필터</li><li>기본 관리자 UI</li><li>기본 validation</li></ul></article>
+      <article class="price-card recommended"><h3>OPERATIONS</h3><p class="price">299만원<small>부터</small></p><p>고객과 업무가 연결되는 실사용 시스템.</p><ul><li>2개 이상 관계형 도메인</li><li>상태 처리</li><li>DB / REST API</li><li>기본 권한</li></ul></article>
+      <article class="price-card"><h3>ADVANCED</h3><p class="price">499만원<small>부터</small></p><p>권한·Audit·Excel·Dashboard까지 확장.</p><ul><li>RBAC</li><li>Audit History</li><li>Excel import/export</li><li>배포 범위 협의</li></ul></article>
+    </div>
+    <p class="notice">최종 견적은 화면 수보다 데이터 관계, 사용자 역할, 상태 전이, 외부 연동, 기존 소스 수정 여부에 따라 달라집니다. 결제·문자·유료 API·서버 비용·대규모 데이터 이관은 별도 협의합니다.</p>
+  </section>
+
+  <section class="section shell">
+    <p class="eyebrow">PUBLIC EVIDENCE</p>
+    <div class="evidence">
+      <h3>Business Ops Dashboard · V6</h3>
+      <p>React/TypeScript + Spring Boot/MyBatis 기반 공개 사례입니다. Customer FK, Work Order 상태 머신, ADMIN/STAFF RBAC, Audit History, Priority/Due date Planning, 400/401/403/404/409 오류 계약과 CI를 공개 코드로 확인할 수 있습니다.</p>
+      <div class="evidence-links"><a class="button primary" href="https://github.com/Kzone87/user-directory-api" target="_blank" rel="noreferrer">Repository ↗</a><a class="button" href="https://github.com/Kzone87/user-directory-api/actions" target="_blank" rel="noreferrer">CI ↗</a></div>
+    </div>
+  </section>
+
+  <section id="faq" class="section shell">
+    <p class="eyebrow">FAQ</p>
+    <h2 class="section-title">상담 전에 자주 확인하는 내용</h2>
+    <div class="faq-grid">
+      <article class="faq-card"><h3>화면 수만 알려주면 견적이 나오나요?</h3><p>화면 수보다 사용자 권한, DB 관계, 상태 전이와 외부 연동이 비용에 더 큰 영향을 줍니다.</p></article>
+      <article class="faq-card"><h3>Excel로 관리하던 데이터를 옮길 수 있나요?</h3><p>기존 양식과 데이터 규모를 확인한 뒤 import 또는 migration 범위를 별도로 산정할 수 있습니다.</p></article>
+      <article class="faq-card"><h3>전체 시스템이 부담되면 작게 시작할 수 있나요?</h3><p>가능합니다. 핵심 CRUD와 상태 처리부터 1차 버전으로 완료하고 권한·Audit·연동을 후속 단계로 분리할 수 있습니다.</p></article>
+      <article class="faq-card"><h3>기존 프로젝트 수정도 가능한가요?</h3><p>가능하지만 먼저 로컬 실행, 빌드, DB, 환경변수, 변경 대상 의존성을 확인한 뒤 범위를 정합니다.</p></article>
+    </div>
+  </section>
+
+  <section class="cta shell">
+    <div><p class="eyebrow">FAST ESTIMATE</p><h2>현재 업무 방식만 적어도 1차 범위를 잡을 수 있습니다.</h2><p>현재 방식 / 가장 불편한 점 / 반드시 필요한 결과 / 예산·일정 네 가지부터 보내주시면 됩니다.</p></div>
+    <div class="actions"><a class="button primary" href="../PROJECT-BRIEF.md">견적 양식 ↗</a><a class="button" href="../SERVICES.md">전체 서비스 ↗</a></div>
+  </section>
+</main>
+
+<footer class="shell"><span>Kzone87 · Business Web Development</span><a href="../">Portfolio로 돌아가기 ↑</a></footer>
+</body>
+</html>
