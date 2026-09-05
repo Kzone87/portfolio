@@ -68,7 +68,7 @@ test('marketplace sales kit covers three service categories', () => {
 test('sales kit protects scope and customer-facing evidence', () => {
   assert.match(scopeRules, /수정과 기능추가를 분리/);
   assert.match(scopeRules, /포함\/제외/);
-  assert.match(scopeRules, /가격을 낮추면 기능 범위도 같이 줄입니다/);
+  assert.match(scopeRules, /가격을 내리면 기능 범위도 같이 줄입니다/);
   assert.match(assets, /Business Ops Dashboard V6/);
   assert.match(assets, /Customer Data Workbench V2\.4/);
   assert.match(assets, /Integration Control Center V2/);
@@ -104,7 +104,7 @@ test('integration case separates credential-free UI from the V2 server boundary'
   assert.match(integrationServer, /Idempotency-Key|idempotency-key/);
   assert.match(integrationServer, /\/api\/jobs/);
   assert.doesNotMatch(integrationJs, /sk-[A-Za-z0-9_-]{20,}/);
-  assert.doesNotMatch(integrationJs, /AIza[0-9A-Za-z_-]{20,}/);
+  assert.doesNotMatch(integrationJs, /AIza[0-9A-Za-z0-9_-]{20,}/);
 });
 
 test('portfolio states public-only evidence policy', () => {
