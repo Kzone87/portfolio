@@ -3,187 +3,291 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Kzone87 developer portfolio — practical workflow automation, backend API engineering, and verified team-project contributions.">
-    <title>Kzone87 · Developer Portfolio</title>
+    <meta name="description" content="Kzone87 외주 개발 포트폴리오. 업무용 웹 시스템, 관리자 페이지, Excel 자동화, REST API와 기존 서비스 개선을 설계하고 구현합니다.">
+    <meta name="theme-color" content="#0b1020">
+    <title>Kzone87 · Business Web Development</title>
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 <header class="site-header">
-    <a class="brand" href="#top" aria-label="홈으로">Kzone87</a>
+    <a class="brand" href="#top" aria-label="홈으로 이동">KZONE87</a>
     <nav aria-label="주요 메뉴">
-        <a href="#projects">Projects</a>
-        <a href="#approach">Approach</a>
-        <a href="https://github.com/Kzone87" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="#services">Services</a>
+        <a href="#work">Work</a>
+        <a href="#process">Process</a>
+        <a href="#delivery">Delivery</a>
+        <a href="https://github.com/Kzone87" target="_blank" rel="noreferrer">GitHub ↗</a>
     </nav>
 </header>
 
 <main id="top">
     <section class="hero section-shell">
-        <p class="eyebrow">FULL-STACK · PRODUCT ENGINEERING</p>
-        <h1>현장의 문제를<br>작동하는 소프트웨어로 바꿉니다.</h1>
+        <p class="eyebrow">BUSINESS WEB DEVELOPMENT · WORKFLOW AUTOMATION</p>
+        <h1>반복 업무를 줄이고,<br><span>운영 가능한 웹 시스템</span>을 만듭니다.</h1>
         <p class="hero-copy">
-            반복 업무를 줄이는 브라우저 도구, 실행 가능한 백엔드 API, 실제 팀 협업 이력까지.
-            화면 구현에 그치지 않고 데이터 흐름, 예외, 테스트와 운영 경계를 함께 설계합니다.
+            단순 화면 제작보다 실제 업무 흐름을 이해하고 정리하는 개발을 지향합니다.
+            관리자 기능, 데이터 조회·처리, Excel 업무, 외부 API 연동, 기존 서비스 개선처럼
+            운영 과정에서 계속 쓰이는 기능을 구현합니다.
         </p>
         <div class="hero-actions">
-            <a class="button primary" href="#projects">대표 프로젝트 보기</a>
-            <a class="button secondary" href="https://github.com/Kzone87" target="_blank" rel="noreferrer">GitHub 열기</a>
+            <a class="button primary" href="#services">개발 가능 범위 보기</a>
+            <a class="button secondary" href="#work">대표 사례 보기</a>
         </div>
 
-        <div class="signal-grid" aria-label="포트폴리오 요약">
+        <div class="proof-strip" aria-label="핵심 역량">
             <article>
-                <strong>3</strong>
-                <span>Selected public projects</span>
+                <strong>Workflow</strong>
+                <span>업무 흐름 분석 · 자동화</span>
             </article>
             <article>
-                <strong>LIVE</strong>
-                <span>Browser workflow demo</span>
+                <strong>Backend</strong>
+                <span>REST API · DB · Validation</span>
             </article>
             <article>
-                <strong>CI</strong>
-                <span>Automated regression checks</span>
+                <strong>Data</strong>
+                <span>Excel · 검색 · Export</span>
             </article>
             <article>
-                <strong>20</strong>
-                <span>Merged team-project PRs</span>
+                <strong>Quality</strong>
+                <span>테스트 · CI · 문서화</span>
             </article>
         </div>
     </section>
 
-    <section id="projects" class="section-shell section-block">
+    <section id="services" class="section-shell section-block">
         <div class="section-heading">
-            <p class="eyebrow">SELECTED WORK</p>
-            <h2>대표 프로젝트</h2>
-            <p>프로젝트 수를 늘리기보다 서로 다른 역량을 검증할 수 있는 공개 작업 세 개에 집중했습니다.</p>
+            <p class="eyebrow">SERVICES</p>
+            <h2>이런 개발을 맡을 수 있습니다.</h2>
+            <p>기능 목록부터 받는 방식보다 현재 업무가 어떻게 돌아가는지 확인한 뒤 필요한 범위를 정리합니다.</p>
+        </div>
+
+        <div class="service-grid">
+            <article class="service-card">
+                <span class="service-no">01</span>
+                <h3>업무용 웹 시스템 · 관리자 기능</h3>
+                <p>엑셀이나 메신저로 흩어진 업무를 한 화면에서 조회·등록·수정·처리하도록 구성합니다.</p>
+                <ul>
+                    <li>거래처 / 회원 / 주문 / 신청 데이터 관리</li>
+                    <li>검색 · 필터 · 페이지네이션 · 상태 처리</li>
+                    <li>운영자용 관리 화면과 업무 흐름 설계</li>
+                </ul>
+            </article>
+
+            <article class="service-card">
+                <span class="service-no">02</span>
+                <h3>Excel · 반복 업무 자동화</h3>
+                <p>기존 Excel 데이터를 버리지 않고 웹 업무와 연결하거나 반복 작업을 줄이는 도구를 만듭니다.</p>
+                <ul>
+                    <li>XLSX / CSV 입력 검증 및 가공</li>
+                    <li>검색 결과 Excel 다운로드</li>
+                    <li>주소 · 지도 · 보고서 · 출력 자동화</li>
+                </ul>
+            </article>
+
+            <article class="service-card">
+                <span class="service-no">03</span>
+                <h3>REST API · 데이터 연동</h3>
+                <p>프런트엔드나 다른 서비스가 안정적으로 사용할 수 있는 API와 데이터 경계를 구성합니다.</p>
+                <ul>
+                    <li>CRUD · 검색 · 정렬 · 페이지네이션</li>
+                    <li>Validation · 오류 응답 계약 · API 문서</li>
+                    <li>외부 API와 내부 데이터 연결</li>
+                </ul>
+            </article>
+
+            <article class="service-card">
+                <span class="service-no">04</span>
+                <h3>기존 웹서비스 개선 · 유지보수</h3>
+                <p>이미 운영 중이거나 과거에 만든 웹 프로젝트의 문제를 분석하고 필요한 범위부터 정리합니다.</p>
+                <ul>
+                    <li>버그 수정 · 기능 추가 · 코드 구조 개선</li>
+                    <li>환경변수 / credential 정리</li>
+                    <li>레거시 코드의 단계적 현대화</li>
+                </ul>
+            </article>
+        </div>
+    </section>
+
+    <section class="fit-section">
+        <div class="section-shell fit-grid">
+            <div>
+                <p class="eyebrow">PROJECT FIT</p>
+                <h2>특히 잘 맞는 의뢰</h2>
+            </div>
+            <div class="fit-list">
+                <p><strong>01</strong><span>“엑셀로 관리하던 업무를 웹으로 옮기고 싶습니다.”</span></p>
+                <p><strong>02</strong><span>“관리자가 데이터를 검색하고 처리하는 화면이 필요합니다.”</span></p>
+                <p><strong>03</strong><span>“외부 API 데이터를 내부 시스템과 연결하고 싶습니다.”</span></p>
+                <p><strong>04</strong><span>“기존 웹 프로젝트가 있는데 오류 수정과 기능 개선이 필요합니다.”</span></p>
+            </div>
+        </div>
+    </section>
+
+    <section id="work" class="section-shell section-block">
+        <div class="section-heading">
+            <p class="eyebrow">PUBLIC CASE STUDIES</p>
+            <h2>공개 가능한 개발 사례</h2>
+            <p>사업상 비공개 작업은 포트폴리오에 포함하지 않고, 공개 검증이 가능한 작업만 연결합니다.</p>
         </div>
 
         <div class="project-stack">
             <article class="project-card featured">
                 <div class="project-topline">
                     <span class="project-index">01</span>
-                    <span class="badge public">PUBLIC · LIVE</span>
+                    <span class="badge">WORKFLOW AUTOMATION · LIVE</span>
                 </div>
                 <div class="project-layout">
                     <div>
-                        <p class="project-kicker">WORKFLOW AUTOMATION</p>
+                        <p class="project-kicker">BUSINESS AUTOMATION</p>
                         <h3>Customer Map Planner</h3>
                         <p class="project-summary">
-                            Excel 거래처 목록을 Kakao Maps 좌표로 변환하고, 근접 거래처를 연결 기반으로 클러스터링한 뒤 라벨 충돌을 줄여 A4 지도로 출력하는 브라우저 업무 도구입니다.
+                            Excel 거래처 목록을 읽고 주소를 지도 좌표로 변환한 뒤, 가까운 거래처를 자동 그룹화하고
+                            라벨 충돌을 줄여 A4 가로 지도로 출력하는 브라우저 기반 업무 도구입니다.
                         </p>
+                        <div class="challenge-result">
+                            <p><span>Problem</span>반복적인 주소 검색과 수동 지도 정리</p>
+                            <p><span>Solution</span>Excel → 지오코딩 → 거리 클러스터링 → 출력 자동화</p>
+                        </div>
                         <ul class="tech-list" aria-label="기술 스택">
                             <li>JavaScript</li><li>Kakao Maps</li><li>SheetJS</li><li>Canvas</li><li>Geocoding</li><li>GitHub Pages</li>
                         </ul>
                     </div>
-                    <div class="evidence-panel">
-                        <p class="evidence-title">What it proves</p>
+                    <aside class="evidence-panel">
+                        <p class="evidence-title">외주 관점에서 보여주는 역량</p>
                         <ul>
-                            <li>Excel → geocoding → clustering → print의 완결된 사용자 흐름</li>
-                            <li>Haversine 거리 계산과 transitive clustering 회귀 테스트</li>
-                            <li>브라우저 데이터 처리와 credential 비저장 설계</li>
+                            <li>기존 Excel 업무를 웹 도구로 전환</li>
+                            <li>사용자 입력 검증과 실패 상황 처리</li>
+                            <li>거리 계산 · 클러스터링 로직 테스트</li>
+                            <li>설치 없이 사용할 수 있는 정적 배포</li>
                         </ul>
-                    </div>
+                    </aside>
                 </div>
                 <div class="project-links">
                     <a href="https://kzone87.github.io/customer-map-planner/" target="_blank" rel="noreferrer">Live Demo ↗</a>
                     <a href="https://github.com/Kzone87/customer-map-planner" target="_blank" rel="noreferrer">Repository ↗</a>
-                    <a href="https://github.com/Kzone87/customer-map-planner/actions" target="_blank" rel="noreferrer">CI History ↗</a>
+                    <a href="https://github.com/Kzone87/customer-map-planner/actions" target="_blank" rel="noreferrer">CI ↗</a>
                 </div>
             </article>
 
             <article class="project-card">
                 <div class="project-topline">
                     <span class="project-index">02</span>
-                    <span class="badge public">PUBLIC · API · CI</span>
+                    <span class="badge">BACKEND · API · CI</span>
                 </div>
                 <div class="project-layout">
                     <div>
-                        <p class="project-kicker">BACKEND ENGINEERING</p>
+                        <p class="project-kicker">BUSINESS DATA BACKEND</p>
                         <h3>User Directory API</h3>
                         <p class="project-summary">
-                            초기 Spring/MyBatis 학습 코드를 계층형 REST API로 다시 설계해 검색, CRUD, validation, 예외 처리, Excel export와 자동화 테스트를 갖춘 백엔드 프로젝트입니다.
+                            사용자 데이터를 검색·등록·수정·삭제하고 페이지 단위 조회, 정렬, Excel export를 제공하는
+                            Spring Boot / MyBatis REST API입니다.
                         </p>
+                        <div class="challenge-result">
+                            <p><span>Use case</span>관리자 화면이나 내부 업무시스템의 데이터 API</p>
+                            <p><span>Quality</span>Validation · 오류 계약 · OpenAPI · MockMvc · CI</p>
+                        </div>
                         <ul class="tech-list" aria-label="기술 스택">
-                            <li>Java 17</li><li>Spring Boot</li><li>MyBatis</li><li>H2</li><li>OpenAPI</li><li>JUnit</li><li>MockMvc</li>
+                            <li>Java 17</li><li>Spring Boot</li><li>MyBatis</li><li>H2</li><li>OpenAPI</li><li>JUnit</li>
                         </ul>
                     </div>
-                    <div class="evidence-panel">
-                        <p class="evidence-title">What it proves</p>
+                    <aside class="evidence-panel">
+                        <p class="evidence-title">외주 관점에서 보여주는 역량</p>
                         <ul>
-                            <li>Controller → Service → Mapper 계층과 DTO 경계</li>
-                            <li>400 / 404 / 409 오류 계약과 Bean Validation</li>
-                            <li>MockMvc 통합 테스트와 GitHub Actions 품질 게이트</li>
+                            <li>Controller / Service / Mapper 책임 분리</li>
+                            <li>검색 · 정렬 · pagination 서버 검증</li>
+                            <li>400 / 404 / 409 오류 응답 계약</li>
+                            <li>Excel 생성과 API 문서화</li>
                         </ul>
-                    </div>
+                    </aside>
                 </div>
                 <div class="project-links">
                     <a href="https://github.com/Kzone87/user-directory-api" target="_blank" rel="noreferrer">Repository ↗</a>
-                    <a href="https://github.com/Kzone87/user-directory-api/actions" target="_blank" rel="noreferrer">CI History ↗</a>
+                    <a href="https://github.com/Kzone87/user-directory-api/actions" target="_blank" rel="noreferrer">CI ↗</a>
                 </div>
             </article>
 
-            <article class="project-card">
+            <article class="project-card compact">
                 <div class="project-topline">
                     <span class="project-index">03</span>
-                    <span class="badge public">TEAM PROJECT · CONTRIBUTOR</span>
+                    <span class="badge muted">TEAM · LEGACY MAINTENANCE</span>
                 </div>
                 <div class="project-layout">
                     <div>
-                        <p class="project-kicker">COLLABORATION · LEGACY MODERNIZATION</p>
+                        <p class="project-kicker">COLLABORATION EVIDENCE</p>
                         <h3>MilkyWay · 은하수책방</h3>
                         <p class="project-summary">
-                            Java/JSP/Servlet/MySQL 기반 온라인 서점 팀 프로젝트입니다. 기능 구현뿐 아니라 브랜치/PR 협업, 인증·주문 상태 처리, 외부 API 연동과 이후 보안 정리까지 실제 Git 이력으로 확인할 수 있습니다.
+                            Java/JSP/Servlet/MySQL 온라인 서점 팀 프로젝트의 개인 기여 Case Study입니다.
+                            기능 구현, 브랜치/PR 협업, 외부 API 연동과 이후 보안 정리까지 원본 Git 이력으로 구분해 기록했습니다.
                         </p>
-                        <ul class="tech-list" aria-label="기술 스택">
-                            <li>Java</li><li>JSP</li><li>Servlet</li><li>MySQL</li><li>JavaScript</li><li>Naver API</li>
-                        </ul>
                     </div>
-                    <div class="evidence-panel">
-                        <p class="evidence-title">My contribution</p>
+                    <aside class="evidence-panel">
+                        <p class="evidence-title">보조 증거</p>
                         <ul>
-                            <li>도서 검색·Naver 로그인·장바구니↔위시리스트 흐름</li>
-                            <li>비밀번호 hash+salt, 주문취소·회원 상태·관리자 라우팅</li>
-                            <li>20 merged PRs, Tomcat 10/Jakarta 전환, 보안 hardening</li>
+                            <li>팀 Git / PR 협업</li>
+                            <li>인증 · 주문 · 상태 처리 경험</li>
+                            <li>과거 credential / OAuth 흐름 보안 정리</li>
                         </ul>
-                    </div>
+                    </aside>
                 </div>
                 <div class="project-links">
-                    <a href="https://github.com/Kzone87/milkyway-bookstore-case-study" target="_blank" rel="noreferrer">Contribution Case Study ↗</a>
-                    <a href="https://github.com/fullstackteampj/MillkyWay" target="_blank" rel="noreferrer">Original Repository ↗</a>
-                    <a href="https://github.com/fullstackteampj/MillkyWay/pull/49" target="_blank" rel="noreferrer">Security PR #49 ↗</a>
+                    <a href="https://github.com/Kzone87/milkyway-bookstore-case-study" target="_blank" rel="noreferrer">Case Study ↗</a>
+                    <a href="https://github.com/fullstackteampj/MillkyWay" target="_blank" rel="noreferrer">Original Team Repo ↗</a>
                 </div>
             </article>
         </div>
     </section>
 
-    <section id="approach" class="section-shell section-block">
-        <div class="section-heading">
-            <p class="eyebrow">ENGINEERING APPROACH</p>
-            <h2>프로젝트에서 중요하게 보는 것</h2>
-            <p>기능의 존재보다 문제 정의, 경계, 검증 가능성을 우선합니다.</p>
+    <section id="process" class="process-section">
+        <div class="section-shell section-block">
+            <div class="section-heading light">
+                <p class="eyebrow">PROCESS</p>
+                <h2>개발보다 먼저 범위를 명확히 합니다.</h2>
+                <p>외주에서 가장 큰 문제는 코드보다 요구사항이 계속 바뀌는 것입니다. 시작 전에 완료 기준부터 맞춥니다.</p>
+            </div>
+            <ol class="process-grid">
+                <li><span>01</span><h3>업무 확인</h3><p>현재 사용 방식, 불편한 지점, 입력·출력 데이터를 확인합니다.</p></li>
+                <li><span>02</span><h3>범위 확정</h3><p>필수 기능과 제외 범위, 완료 조건을 문서로 정리합니다.</p></li>
+                <li><span>03</span><h3>구현 · 검증</h3><p>핵심 흐름부터 구현하고 예외 상황과 데이터 처리까지 검증합니다.</p></li>
+                <li><span>04</span><h3>검수 · 수정</h3><p>확정된 범위를 기준으로 실제 사용 흐름을 점검하고 수정합니다.</p></li>
+                <li><span>05</span><h3>납품 · 인수인계</h3><p>소스, 실행/배포 방법, 필요한 설정과 운영 주의사항을 전달합니다.</p></li>
+            </ol>
         </div>
-        <div class="principle-grid">
-            <article>
-                <span>01</span>
-                <h3>문제부터 정의</h3>
-                <p>사용자가 어디에서 시간을 잃고 오류가 발생하는지 먼저 정리하고, 그 흐름을 줄이는 기능만 구현합니다.</p>
-            </article>
-            <article>
-                <span>02</span>
-                <h3>경계와 상태를 명확히</h3>
-                <p>입력 검증, 권한, 상태 전이, 실패 시점과 데이터 책임을 코드 구조에 드러냅니다.</p>
-            </article>
-            <article>
-                <span>03</span>
-                <h3>검증 가능한 결과</h3>
-                <p>Live Demo, 자동화 테스트, CI, PR 이력처럼 제3자가 확인할 수 있는 증거를 프로젝트와 함께 남깁니다.</p>
-            </article>
+    </section>
+
+    <section id="delivery" class="section-shell section-block">
+        <div class="section-heading">
+            <p class="eyebrow">DELIVERY STANDARD</p>
+            <h2>납품할 때 남기는 것</h2>
+        </div>
+        <div class="delivery-grid">
+            <article><strong>01</strong><h3>범위가 보이는 소스</h3><p>기능별 책임을 구분하고 유지보수 가능한 구조를 우선합니다.</p></article>
+            <article><strong>02</strong><h3>Git 변경 이력</h3><p>수정 범위와 변경 이유를 추적할 수 있도록 버전 관리를 사용합니다.</p></article>
+            <article><strong>03</strong><h3>검증 수단</h3><p>프로젝트 성격에 따라 자동화 테스트, CI 또는 재현 가능한 확인 절차를 둡니다.</p></article>
+            <article><strong>04</strong><h3>실행 · 배포 문서</h3><p>환경설정, 실행 방법, 필요한 외부 서비스와 운영상 주의사항을 정리합니다.</p></article>
+            <article><strong>05</strong><h3>Secret 분리</h3><p>API key와 credential은 소스에 직접 포함하지 않는 것을 기본 원칙으로 합니다.</p></article>
+            <article><strong>06</strong><h3>완료 기준 확인</h3><p>“대충 동작”이 아니라 합의한 사용자 흐름을 기준으로 검수합니다.</p></article>
+        </div>
+    </section>
+
+    <section class="cta-section section-shell">
+        <div>
+            <p class="eyebrow">PROJECT BRIEF</p>
+            <h2>의뢰 전에 이것만 정리해도 견적이 훨씬 정확해집니다.</h2>
+            <p>현재 업무 방식, 꼭 필요한 기능, 사용자 종류, 입력·출력 데이터, 희망 일정이 핵심입니다.</p>
+        </div>
+        <div class="cta-actions">
+            <a class="button primary" href="https://github.com/Kzone87/portfolio/blob/main/PROJECT-BRIEF.md" target="_blank" rel="noreferrer">의뢰 정리 양식 보기 ↗</a>
+            <a class="button secondary" href="https://github.com/Kzone87/portfolio/blob/main/SERVICES.md" target="_blank" rel="noreferrer">서비스 범위 보기 ↗</a>
         </div>
     </section>
 </main>
 
 <footer class="site-footer section-shell">
-    <p>Selected public engineering work by Kzone87.</p>
-    <a href="https://github.com/Kzone87" target="_blank" rel="noreferrer">github.com/Kzone87 ↗</a>
+    <p>Kzone87 · Business Web Development Portfolio</p>
+    <div>
+        <a href="https://github.com/Kzone87" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <a href="#top">Back to top ↑</a>
+    </div>
 </footer>
 </body>
 </html>
