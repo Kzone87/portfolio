@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="User Directory Spring Boot MyBatis engineering case study">
+    <title>User Directory · Kzone87 Portfolio</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../project.css">
+</head>
+<body class="project-page">
+<header class="site-header">
+    <a class="brand" href="../index.html">Kzone87</a>
+    <nav><a href="../index.html#projects">Projects</a><a href="https://github.com/Kzone87/user-directory-api" target="_blank" rel="noreferrer">Repository</a></nav>
+</header>
+<main>
+    <section class="project-hero section-shell">
+        <div class="project-breadcrumb"><a href="../index.html">Portfolio</a><span>/</span><span>User Directory</span></div>
+        <p class="eyebrow">BACKEND APPLICATION · PUBLIC · CI</p>
+        <h1>User Directory</h1>
+        <p class="lead">초기 Spring/MyBatis 학습 코드를 API 예제로만 남기지 않고, 실제 브라우저 관리 UI·오류 계약·pagination/sort·Excel export·MySQL 검증·컨테이너 실행까지 연결한 작은 운영형 애플리케이션으로 재구성했습니다.</p>
+        <div class="detail-actions"><a class="primary" href="https://github.com/Kzone87/user-directory-api" target="_blank" rel="noreferrer">Repository ↗</a><a href="https://github.com/Kzone87/user-directory-api/actions" target="_blank" rel="noreferrer">CI ↗</a></div>
+        <div class="fact-grid"><article><span>Runtime</span><strong>Spring Boot 3.3 / Java 17</strong></article><article><span>Persistence</span><strong>MyBatis · H2 · MySQL</strong></article><article><span>Surface</span><strong>Browser UI · REST · Swagger</strong></article><article><span>Verification</span><strong>MockMvc · Testcontainers · Docker build</strong></article></div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>왜 CRUD API에서 더 확장했는가</h2>
+        <div class="problem-grid">
+            <article class="detail-card"><span class="index">01</span><h3>API만 있으면 사용 흐름이 보이지 않는다</h3><p>검토자가 curl을 직접 작성하지 않아도 검색·등록·수정·삭제와 오류 처리를 체험할 수 있도록 작은 management console을 함께 제공합니다.</p></article>
+            <article class="detail-card"><span class="index">02</span><h3>H2 통과만으로 MySQL 호환을 증명하기 어렵다</h3><p>기본 실행은 H2로 가볍게 유지하면서 Testcontainers에서 실제 MySQL 8.4를 띄워 Mapper SQL을 검증합니다.</p></article>
+            <article class="detail-card"><span class="index">03</span><h3>실행 가능성도 품질의 일부다</h3><p>Dockerfile과 Compose를 제공하고 CI에서 image build까지 실행해 “코드는 있지만 실행이 안 되는” 상태를 차단합니다.</p></article>
+        </div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>Application flow</h2>
+        <div class="flow"><div class="flow-node"><strong>Management UI</strong><span>검색 · CRUD · Excel export</span></div><div class="flow-node"><strong>Controller</strong><span>HTTP contract · validation</span></div><div class="flow-node"><strong>Service</strong><span>normalization · safe sort rules</span></div><div class="flow-node"><strong>MyBatis</strong><span>dynamic SQL · pagination</span></div><div class="flow-node"><strong>DB</strong><span>H2 quick start / MySQL runtime</span></div></div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>제품 표면</h2>
+        <div class="decision-grid">
+            <article class="detail-card"><span class="index">UI</span><h3>Browser management console</h3><p>검색어, 이메일 도메인, 정렬, 페이지 크기를 조절하고 사용자 등록·수정·삭제를 API에 직접 연결합니다.</p></article>
+            <article class="detail-card"><span class="index">DOC</span><h3>OpenAPI / Swagger</h3><p>API 계약을 자동 문서화해 UI에서 다루지 않는 endpoint와 request/response도 검토할 수 있습니다.</p></article>
+            <article class="detail-card"><span class="index">OPS</span><h3>Actuator health</h3><p>컨테이너와 운영 확인을 위해 최소 health/info endpoint만 노출합니다.</p></article>
+            <article class="detail-card"><span class="index">DATA</span><h3>Excel export</h3><p>현재 검색 조건을 사용해 사용자를 XLSX로 내려받을 수 있도록 문서 생성 책임을 별도 service에 둡니다.</p></article>
+            <article class="detail-card"><span class="index">DB</span><h3>Dual runtime</h3><p>설치 없는 H2 경로와 실제 MySQL profile을 분리해 빠른 검토와 실환경 SQL 검증을 동시에 지원합니다.</p></article>
+            <article class="detail-card"><span class="index">CONTAINER</span><h3>Docker Compose</h3><p>MySQL health 이후 애플리케이션을 시작하고 `/actuator/health`로 앱 상태까지 확인합니다.</p></article>
+        </div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>HTTP 오류 계약</h2>
+        <div class="code-contract">400 VALIDATION_ERROR  → request body validation
+400 INVALID_QUERY     → page / size / sort / direction validation
+404 USER_NOT_FOUND    → unknown user id
+409 DATA_CONFLICT     → duplicated email
+
+{
+  "code": "VALIDATION_ERROR",
+  "message": "Request validation failed",
+  "timestamp": "...",
+  "fieldErrors": { "email": "..." }
+}</div>
+        <div class="boundary-note">정렬 컬럼은 요청 문자열을 SQL `${...}`에 그대로 삽입하지 않습니다. Service whitelist와 MyBatis `<choose>`가 허용된 DB column만 선택합니다.</div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>검증 구조</h2>
+        <div class="verify-grid">
+            <article class="detail-card"><h3>MockMvc integration</h3><p>UI 제공, health, 조회, 검색, 등록, 수정, 삭제, validation, conflict, pagination, Excel, OpenAPI를 애플리케이션 context에서 검증합니다.</p></article>
+            <article class="detail-card"><h3>Testcontainers MySQL</h3><p>실제 MySQL container에서 pagination과 createdAt 정렬 query가 정상 작동하는지 확인합니다.</p></article>
+            <article class="detail-card"><h3>Container build gate</h3><p>GitHub Actions에서 Maven verify와 Docker image build를 별도 job으로 수행합니다.</p><a href="https://github.com/Kzone87/user-directory-api/actions">Actions history ↗</a></article>
+        </div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>로컬 실행 경로</h2>
+        <div class="code-contract"># 빠른 검토: H2
+mvn spring-boot:run
+
+# 실제 MySQL + app container
+docker compose up --build
+
+# Browser UI
+http://localhost:8080/
+
+# API docs
+http://localhost:8080/swagger-ui.html</div>
+    </section>
+</main>
+<footer class="site-footer section-shell"><p>User Directory · Engineering detail</p><a href="../index.html">← Portfolio</a></footer>
+</body>
+</html>
