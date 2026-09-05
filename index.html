@@ -3,34 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Kzone87 외주 개발 포트폴리오. React/Spring 고객·업무관리, Excel·CSV 검증·컬럼 매핑, API integration control-plane과 레거시 개선 사례를 공개 코드로 검증합니다." />
+  <meta name="description" content="Kzone87 외주 개발 포트폴리오. 업무용 웹시스템, Excel·CSV 자동화, REST API·시스템 연동을 시작가와 공개 사례 중심으로 안내합니다." />
   <meta name="theme-color" content="#0f172a" />
   <title>Kzone87 · Business Web Development</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./sales.css" />
 </head>
 <body>
 <header class="site-header">
   <a class="brand" href="#top">KZONE87</a>
   <nav aria-label="주요 메뉴">
-    <a href="#services">Services</a>
+    <a href="#packages">Packages</a>
     <a href="#work">Work</a>
     <a href="#process">Process</a>
-    <a href="#delivery">Delivery</a>
+    <a href="#inquiry">Inquiry</a>
     <a href="https://github.com/Kzone87" target="_blank" rel="noreferrer">GitHub ↗</a>
   </nav>
 </header>
 
 <main id="top">
   <section class="hero section-shell">
-    <p class="eyebrow">BUSINESS WEB SYSTEMS · DATA WORKFLOW · INTEGRATION</p>
-    <h1>회사에서 계속 쓰는<br><span>업무용 웹 시스템</span>을 만듭니다.</h1>
+    <p class="eyebrow">BUSINESS WEB SYSTEMS · DATA AUTOMATION · INTEGRATION</p>
+    <h1>반복 업무를 줄이고<br><span>운영 가능한 시스템</span>으로 바꿉니다.</h1>
     <p class="hero-copy">
-      단순 화면 제작보다 데이터가 들어오고, 검증되고, 권한에 따라 처리되고, 상태가 바뀌고, 다른 시스템이나 파일로 나가는 실제 업무 흐름을 구현합니다.
-      고객·업무 관리, Excel/CSV 자동화, REST API와 시스템 연동 운영을 공개 코드와 테스트 기록으로 증명합니다.
+      고객·업무 관리, Excel/CSV 자동화, 관리자 기능, REST API와 시스템 연동을 개발합니다.
+      화면만 만드는 대신 데이터 입력 → 검증 → 상태 변경 → 결과 출력까지 실제 업무 흐름을 구현하고 공개 코드와 CI로 검증합니다.
     </p>
+    <div class="sales-note">작은 기능 개발 49만원부터 · 업무자동화 149만원부터 · 풀스택 업무시스템 299만원부터</div>
     <div class="hero-actions">
-      <a class="button primary" href="#work">대표 사례 보기</a>
-      <a class="button secondary" href="https://github.com/Kzone87/portfolio/blob/main/PROJECT-BRIEF.md" target="_blank" rel="noreferrer">의뢰 정리 양식 ↗</a>
+      <a class="button primary" href="#packages">개발 패키지 보기</a>
+      <a class="button secondary" href="https://github.com/Kzone87/portfolio/blob/main/PROJECT-BRIEF.md" target="_blank" rel="noreferrer">견적 요청 양식 ↗</a>
     </div>
     <div class="proof-strip">
       <article><strong>Full-stack</strong><span>React · Spring · DB</span></article>
@@ -40,48 +42,66 @@
     </div>
   </section>
 
-  <section id="services" class="section-shell section-block">
+  <section id="packages" class="section-shell section-block">
     <div class="section-heading">
-      <p class="eyebrow">SERVICES</p>
-      <h2>외주에서 바로 연결할 수 있는 개발 범위</h2>
-      <p>기술 스택을 먼저 정하기보다 현재 업무와 완료 조건을 확인한 뒤 필요한 범위를 설계합니다.</p>
+      <p class="eyebrow">SERVICE PACKAGES</p>
+      <h2>먼저 예산 범위를 잡고 상담할 수 있습니다.</h2>
+      <p>아래 금액은 시작가입니다. 최종 견적은 사용자 권한, 데이터 구조, 상태 전이, 외부 연동, 기존 코드 수정 여부를 확인한 뒤 고정합니다.</p>
     </div>
-    <div class="service-grid">
-      <article class="service-card">
-        <span class="service-no">01</span>
-        <h3>업무용 웹 시스템</h3>
-        <p>고객·거래처, 신청, 업무 건을 검색하고 등록·수정하며 역할과 상태를 관리하는 시스템을 구성합니다.</p>
-        <ul><li>관리자 Dashboard</li><li>CRUD · 검색 · 필터</li><li>RBAC · 상태 전이 · Audit</li></ul>
+    <div class="package-grid">
+      <article class="package-card">
+        <div class="package-label"><span>STANDARD</span><em>작은 기능</em></div>
+        <h3>기능 수정 · API · 소형 자동화</h3>
+        <p class="package-price">49만원<small>부터</small></p>
+        <p class="package-desc">기존 서비스 기능 보완이나 독립된 작은 자동화처럼 범위가 명확한 작업에 적합합니다.</p>
+        <ul>
+          <li>버그 수정 또는 기능 1개 단위</li>
+          <li>간단한 REST API</li>
+          <li>Excel/CSV 단일 처리 자동화</li>
+          <li>기존 코드 영향 범위 확인</li>
+        </ul>
+        <a class="button secondary" href="https://github.com/Kzone87/portfolio/blob/main/PROJECT-BRIEF.md" target="_blank" rel="noreferrer">범위 정리하기 ↗</a>
       </article>
-      <article class="service-card">
-        <span class="service-no">02</span>
-        <h3>Excel · CSV 자동화</h3>
-        <p>반복해서 정리하는 파일 업무를 브라우저 도구나 내부 시스템으로 전환합니다.</p>
-        <ul><li>Import · Validation</li><li>정규화 · Rule Builder</li><li>Column Mapping · Export</li></ul>
+
+      <article class="package-card recommended">
+        <div class="package-label"><span>DELUXE</span><em>추천</em></div>
+        <h3>관리자 기능 · 업무자동화</h3>
+        <p class="package-price">149만원<small>부터</small></p>
+        <p class="package-desc">검색·등록·수정·상태 처리나 반복 Excel 업무를 실제 운영 도구로 바꾸는 프로젝트에 적합합니다.</p>
+        <ul>
+          <li>관리자 CRUD · 검색 · 필터</li>
+          <li>Excel/CSV import · validation · export</li>
+          <li>업무 상태 처리</li>
+          <li>간단한 DB/API 연동</li>
+        </ul>
+        <a class="button primary" href="https://github.com/Kzone87/portfolio/blob/main/PROJECT-BRIEF.md" target="_blank" rel="noreferrer">견적 요청 준비 ↗</a>
       </article>
-      <article class="service-card">
-        <span class="service-no">03</span>
-        <h3>REST API · 시스템 연동</h3>
-        <p>프런트엔드와 외부 시스템이 안정적으로 사용할 데이터 경계, 상태, 실패 처리 기준을 구현합니다.</p>
-        <ul><li>Spring Boot · MyBatis</li><li>HTTP 오류 계약</li><li>Sync job · retry model</li></ul>
-      </article>
-      <article class="service-card">
-        <span class="service-no">04</span>
-        <h3>기존 서비스 개선</h3>
-        <p>전체 재개발보다 현재 문제의 영향 범위를 확인하고 가장 작은 안전한 변경 단위부터 개선합니다.</p>
-        <ul><li>Bug fix · 기능 추가</li><li>Credential 정리</li><li>Legacy modernization</li></ul>
+
+      <article class="package-card">
+        <div class="package-label"><span>PREMIUM</span><em>풀스택</em></div>
+        <h3>고객·업무관리 웹 시스템</h3>
+        <p class="package-price">299만원<small>부터</small></p>
+        <p class="package-desc">고객, 업무, 권한, 상태, DB와 API가 연결되는 사내 운영 시스템 또는 핵심 업무 모듈에 적합합니다.</p>
+        <ul>
+          <li>React/TypeScript 관리자 UI</li>
+          <li>Spring Boot REST API · DB</li>
+          <li>RBAC · 상태 머신 · Audit</li>
+          <li>테스트 · CI · 실행 문서</li>
+        </ul>
+        <a class="button secondary" href="https://github.com/Kzone87/portfolio/blob/main/SERVICES.md" target="_blank" rel="noreferrer">상세 범위 보기 ↗</a>
       </article>
     </div>
+    <p class="scope-note">외부 유료 API, 문자·메일·결제 사용료, 서버·도메인 비용, 대규모 데이터 이관, 디자인 원본 제작 등은 프로젝트에 따라 별도 협의합니다. 범위를 작게 나눠 1차 버전부터 시작하는 방식도 가능합니다.</p>
   </section>
 
   <section class="fit-section">
     <div class="section-shell fit-grid">
-      <div><p class="eyebrow">PROJECT FIT</p><h2>특히 잘 맞는 의뢰</h2></div>
+      <div><p class="eyebrow">PROJECT FIT</p><h2>이런 의뢰에 특히 잘 맞습니다.</h2></div>
       <div class="fit-list">
-        <p><strong>01</strong><span>“엑셀로 관리하는 고객·업무를 웹에서 처리하고 싶습니다.”</span></p>
-        <p><strong>02</strong><span>“권한과 접수 → 진행 → 완료 같은 업무 상태가 필요합니다.”</span></p>
-        <p><strong>03</strong><span>“업체마다 다른 Excel 컬럼을 표준 형식으로 바꾸고 싶습니다.”</span></p>
-        <p><strong>04</strong><span>“기존 서비스나 외부 API를 안전하게 연결하고 운영하고 싶습니다.”</span></p>
+        <p><strong>01</strong><span>“엑셀로 관리하는 거래처·업무를 웹에서 처리하고 싶습니다.”</span></p>
+        <p><strong>02</strong><span>“관리자 화면에서 접수 → 진행 → 완료 상태를 관리해야 합니다.”</span></p>
+        <p><strong>03</strong><span>“업체마다 다른 Excel 컬럼을 표준 형식으로 자동 변환하고 싶습니다.”</span></p>
+        <p><strong>04</strong><span>“기존 서비스와 외부 API를 연결하고 실패 이력까지 관리하고 싶습니다.”</span></p>
       </div>
     </div>
   </section>
@@ -89,8 +109,8 @@
   <section id="work" class="section-shell section-block">
     <div class="section-heading">
       <p class="eyebrow">PUBLIC CASE STUDIES</p>
-      <h2>외주 역량을 공개 코드로 검증합니다.</h2>
-      <p>공개 가능한 저장소와 원본 Git 기록만 사용합니다. 공개할 수 없는 사업 코드나 데이터는 포트폴리오 증거로 사용하지 않습니다.</p>
+      <h2>상품 설명 뒤에는 실제 공개 코드가 있습니다.</h2>
+      <p>아래 사례는 모두 공개 가능한 저장소와 원본 Git 기록만 사용합니다. 공개할 수 없는 사업 코드나 데이터는 포트폴리오 증거로 사용하지 않습니다.</p>
     </div>
 
     <div class="project-stack">
@@ -100,7 +120,8 @@
           <div>
             <p class="project-kicker">BUSINESS OPERATIONS SYSTEM</p>
             <h3>Business Ops Dashboard · V6</h3>
-            <p class="project-summary">React/TypeScript 관리자 UI와 Spring Boot/MyBatis API를 연결한 고객·업무 운영 시스템입니다. Customer와 Work Order를 FK로 연결하고 역할 권한, 상태 머신, 변경 이력, 우선순위·마감일 planning까지 서버 데이터 흐름으로 관리합니다.</p>
+            <p class="project-summary">React/TypeScript 관리자 UI와 Spring Boot/MyBatis API를 연결한 고객·업무 운영 시스템입니다. 고객과 업무를 관계형 데이터로 연결하고 권한, 상태 머신, 변경 이력, 우선순위·마감일까지 관리합니다.</p>
+            <span class="evidence-price">연결 상품: 관리자·업무시스템 / 299만원부터</span>
             <div class="challenge-result">
               <p><span>Workflow</span>Customer → Work Order → State transition → Audit History</p>
               <p><span>Planning</span>URGENT/HIGH/NORMAL/LOW · Due date · Overdue/Today KPI</p>
@@ -108,8 +129,8 @@
             <ul class="tech-list"><li>React</li><li>TypeScript</li><li>Spring Boot</li><li>Spring Security</li><li>MyBatis</li><li>OpenAPI</li></ul>
           </div>
           <aside class="evidence-panel">
-            <p class="evidence-title">외주 관점에서 보여주는 역량</p>
-            <ul><li>고객 CRM + 관계형 업무 데이터</li><li>ADMIN/STAFF RBAC</li><li>조건부 상태 UPDATE · 409 충돌 방어</li><li>트랜잭션 Audit History</li><li>Priority / Due date 업무 접수와 Planning Panel</li><li>MockMvc + frontend/backend CI</li></ul>
+            <p class="evidence-title">의뢰 시 활용 가능한 범위</p>
+            <ul><li>고객/거래처 관리자 페이지</li><li>ADMIN/STAFF 역할 권한</li><li>업무 접수·상태 관리</li><li>변경 이력과 책임 추적</li><li>Priority / Due date planning</li><li>MockMvc + frontend/backend CI</li></ul>
           </aside>
         </div>
         <div class="project-links">
@@ -124,7 +145,8 @@
           <div>
             <p class="project-kicker">DATA WORKFLOW AUTOMATION</p>
             <h3>Customer Data Workbench · V2.4</h3>
-            <p class="project-summary">Excel/CSV 데이터를 서버로 업로드하지 않고 브라우저에서 분석·정리·규칙 검증·컬럼 표준화한 뒤 다시 파일로 내보내는 local-first 업무자동화 도구입니다. 업체마다 다른 원본 컬럼을 표준 스키마로 바꾸는 별도 Mapping Workspace까지 제공합니다.</p>
+            <p class="project-summary">Excel/CSV 데이터를 서버 업로드 없이 브라우저에서 분석·정리·검증·컬럼 표준화한 뒤 다시 파일로 내보냅니다. 매달 반복되는 파일 작업이나 ERP/CRM 업로드 전 검수 업무에 바로 연결할 수 있는 사례입니다.</p>
+            <span class="evidence-price">연결 상품: Excel/CSV 자동화 / 149만원부터</span>
             <div class="challenge-result">
               <p><span>Validation</span>Quality profile + required/email/number/enum Rule Builder</p>
               <p><span>Standardize</span>Source column → Standard column → Preview → Safe export</p>
@@ -132,8 +154,8 @@
             <ul class="tech-list"><li>TypeScript</li><li>Vite</li><li>SheetJS</li><li>Vitest</li><li>localStorage</li><li>GitHub Pages</li></ul>
           </div>
           <aside class="evidence-panel">
-            <p class="evidence-title">외주 관점에서 보여주는 역량</p>
-            <ul><li>XLSX/XLS/CSV 브라우저 처리</li><li>정규화 · Undo/Redo · Recipe</li><li>사용자 정의 validation rules</li><li>중복 source/target·기존 컬럼 충돌 방어</li><li>Column Mapping multi-page build</li><li>API Key 없는 저비용 배포</li></ul>
+            <p class="evidence-title">의뢰 시 활용 가능한 범위</p>
+            <ul><li>XLSX/XLS/CSV import</li><li>정규화 · 중복 제거</li><li>사용자 정의 validation rules</li><li>Column Mapping</li><li>검수 리포트와 안전한 export</li><li>API Key 없는 저비용 배포</li></ul>
           </aside>
         </div>
         <div class="project-links">
@@ -145,20 +167,21 @@
       </article>
 
       <article class="project-card compact">
-        <div class="project-topline"><span class="project-index">03</span><span class="badge">INTEGRATION · CONTROL PLANE · LAB</span></div>
+        <div class="project-topline"><span class="project-index">03</span><span class="badge">INTEGRATION · REST API · IDEMPOTENCY</span></div>
         <div class="project-layout">
           <div>
             <p class="project-kicker">SYSTEM INTEGRATION OPERATIONS</p>
-            <h3>Integration Control Center · V1 Lab</h3>
-            <p class="project-summary">외부 시스템 연동을 Connection → Sync Job → Run 단위로 운영하는 상황을 가정한 정적 공개 Lab입니다. 실제 API Key나 외부 호출은 사용하지 않고 작업 상태, 실패 정책, 실행 이력과 운영 UX를 구현했습니다.</p>
+            <h3>Integration Control Center · V2</h3>
+            <p class="project-summary">외부 시스템 연동을 Connection → Sync Job → Run 단위로 운영하는 공개 사례입니다. Live Lab은 credential-free simulation으로 유지하고, 저장소에는 Node REST API와 HTTP integration tests를 제공합니다.</p>
+            <span class="evidence-price">연결 상품: API·시스템 연동 / 149만원부터</span>
             <div class="challenge-result">
               <p><span>Control</span>Source / Target · Schedule · Failure policy · Pause/Resume</p>
-              <p><span>Audit</span>SUCCESS/FAILED run · 처리 건수 · 실행 시각 · localStorage</p>
+              <p><span>Reliability</span>400/404/409 · FAILED run · Idempotency-Key</p>
             </div>
           </div>
           <aside class="evidence-panel">
-            <p class="evidence-title">설계 포인트</p>
-            <ul><li>Connection / Job / Run 상태 분리</li><li>Retry ×3 / Stop / Skip-row 계약</li><li>저장 데이터 allow-list 재검증</li><li>실제 credential 없는 안전한 공개 데모</li><li>향후 queue/cron/secret manager 확장 경계</li></ul>
+            <p class="evidence-title">의뢰 시 활용 가능한 범위</p>
+            <ul><li>외부 API 데이터 동기화</li><li>Connection / Job / Run 모델</li><li>중복 실행 방지</li><li>오류/실패 이력 관리</li><li>HTTP-level integration test</li></ul>
           </aside>
         </div>
         <div class="project-links">
@@ -173,11 +196,11 @@
           <div>
             <p class="project-kicker">COLLABORATION & MAINTENANCE EVIDENCE</p>
             <h3>MilkyWay · 은하수책방</h3>
-            <p class="project-summary">Java/JSP/Servlet/MySQL 팀 프로젝트의 개인 기여를 원본 PR 기록으로 구분하고, 현재 기준의 보안 정리와 단계적 현대화 판단을 문서화한 Case Study입니다.</p>
+            <p class="project-summary">Java/JSP/Servlet/MySQL 팀 프로젝트의 실제 Git/PR 기여와 이후 보안·레거시 개선 판단을 정리한 보조 Case Study입니다.</p>
           </div>
           <aside class="evidence-panel">
-            <p class="evidence-title">보조 증거</p>
-            <ul><li>실제 Git/PR 협업</li><li>인증 · 주문 · 상태 처리</li><li>외부 API 연동</li><li>Legacy security hardening</li><li>현대화 우선순위 설계</li></ul>
+            <p class="evidence-title">의뢰 시 보여주는 보조 역량</p>
+            <ul><li>기존 소스 분석</li><li>팀 Git / PR 협업</li><li>인증·주문·상태 처리</li><li>외부 API 연동</li><li>단계적 modernization</li></ul>
           </aside>
         </div>
         <div class="project-links"><a href="https://github.com/Kzone87/milkyway-bookstore-case-study" target="_blank" rel="noreferrer">Case Study ↗</a></div>
@@ -187,34 +210,37 @@
 
   <section id="process" class="process-section">
     <div class="section-shell section-block">
-      <div class="section-heading light"><p class="eyebrow">PROCESS</p><h2>기능 수보다 완료 조건을 먼저 맞춥니다.</h2><p>외주 실패의 원인이 되기 쉬운 요구사항 변경을 줄이기 위해 입력·출력·권한·상태·제외 범위를 먼저 정리합니다.</p></div>
+      <div class="section-heading light"><p class="eyebrow">DELIVERY PROCESS</p><h2>견적 전에 범위를 먼저 고정합니다.</h2><p>페이지 수보다 실제 업무 흐름과 완료 조건을 기준으로 견적을 냅니다. 범위를 나눌 수 있으면 1차 버전부터 작게 시작합니다.</p></div>
       <ol class="process-grid">
-        <li><span>01</span><h3>업무 확인</h3><p>현재 사람·데이터·도구가 어떻게 연결되는지 확인합니다.</p></li>
+        <li><span>01</span><h3>업무 확인</h3><p>현재 어떤 도구와 데이터를 쓰는지 확인합니다.</p></li>
         <li><span>02</span><h3>범위 확정</h3><p>필수 기능, 제외 기능, 완료 조건을 문서화합니다.</p></li>
-        <li><span>03</span><h3>핵심 흐름 구현</h3><p>Happy Path뿐 아니라 validation과 오류 상태까지 구현합니다.</p></li>
-        <li><span>04</span><h3>검증</h3><p>테스트, CI 또는 재현 가능한 검수 절차로 기능을 확인합니다.</p></li>
-        <li><span>05</span><h3>납품</h3><p>소스와 실행·배포 방법, 환경설정과 운영 주의사항을 전달합니다.</p></li>
+        <li><span>03</span><h3>구현</h3><p>핵심 흐름과 validation, 오류 상태까지 구현합니다.</p></li>
+        <li><span>04</span><h3>검증</h3><p>테스트, CI 또는 재현 가능한 검수 절차로 확인합니다.</p></li>
+        <li><span>05</span><h3>납품</h3><p>소스, 실행·배포 방법, 필요한 설정을 전달합니다.</p></li>
       </ol>
     </div>
   </section>
 
-  <section id="delivery" class="section-shell section-block">
-    <div class="section-heading"><p class="eyebrow">DELIVERY STANDARD</p><h2>코드만 넘기지 않습니다.</h2></div>
-    <div class="delivery-grid">
-      <article><strong>01</strong><h3>변경 이력</h3><p>Git으로 변경 범위와 이유를 추적할 수 있게 합니다.</p></article>
-      <article><strong>02</strong><h3>Validation</h3><p>잘못된 입력과 예외 상황을 정상 기능의 일부로 다룹니다.</p></article>
-      <article><strong>03</strong><h3>검증 수단</h3><p>자동화 테스트·CI 또는 재현 가능한 검수 절차를 둡니다.</p></article>
-      <article><strong>04</strong><h3>Secret 분리</h3><p>API Key와 credential을 소스 코드에 직접 넣지 않습니다.</p></article>
-      <article><strong>05</strong><h3>실행 문서</h3><p>로컬 실행, 빌드, 필요한 설정과 외부 서비스를 정리합니다.</p></article>
-      <article><strong>06</strong><h3>범위 기준 검수</h3><p>합의된 사용자 흐름과 완료 조건을 기준으로 납품합니다.</p></article>
+  <section id="inquiry" class="section-shell section-block">
+    <div class="section-heading"><p class="eyebrow">FAST ESTIMATE</p><h2>아래 네 가지만 있어도 1차 범위를 잡을 수 있습니다.</h2><p>기술 스택을 정해서 문의할 필요는 없습니다. 현재 업무와 원하는 결과가 더 중요합니다.</p></div>
+    <div class="brief-strip">
+      <article><strong>01 · 현재 방식</strong><span>지금 Excel, 사이트, 메신저 등으로 어떻게 처리하는지</span></article>
+      <article><strong>02 · 불편한 점</strong><span>반복 입력, 오류, 검색, 승인처럼 가장 줄이고 싶은 문제</span></article>
+      <article><strong>03 · 꼭 필요한 결과</strong><span>관리 화면, Excel 출력, 승인, API 연동 등 완료 모습</span></article>
+      <article><strong>04 · 예산/일정</strong><span>대략적인 예산 범위와 반드시 맞춰야 하는 일정</span></article>
+    </div>
+    <div class="commercial-proof">
+      <article><strong>범위가 작으면 작게</strong><span>기능 단위로 분리 가능한 의뢰는 49만원부터 시작할 수 있습니다.</span></article>
+      <article><strong>운영 기능까지</strong><span>권한, 상태, DB, Audit처럼 실제 운영에 필요한 경계를 함께 설계합니다.</span></article>
+      <article><strong>검증 가능한 납품</strong><span>가능한 경우 자동화 테스트, CI, 실행 문서를 함께 제공합니다.</span></article>
     </div>
   </section>
 
   <section class="cta-section section-shell">
-    <div><p class="eyebrow">PROJECT BRIEF</p><h2>현재 업무 방식만 설명해도 개발 범위를 정리할 수 있습니다.</h2><p>사용자 종류, 입력 데이터, 처리 순서, 원하는 결과, 희망 일정이 핵심입니다.</p></div>
+    <div><p class="eyebrow">PROJECT INQUIRY</p><h2>현재 업무 방식을 적어주시면 개발 범위부터 정리할 수 있습니다.</h2><p>상세 요구사항이 없어도 됩니다. 먼저 1차 범위를 나누고 필요한 기능만 견적에 포함합니다.</p><p class="commercial-cta">시작가: 기능 개발 49만원 · 업무자동화 149만원 · 풀스택 업무시스템 299만원</p></div>
     <div class="cta-actions">
-      <a class="button primary" href="https://github.com/Kzone87/portfolio/blob/main/PROJECT-BRIEF.md" target="_blank" rel="noreferrer">의뢰 정리 양식 ↗</a>
-      <a class="button secondary" href="https://github.com/Kzone87/portfolio/blob/main/SERVICES.md" target="_blank" rel="noreferrer">서비스 상세 범위 ↗</a>
+      <a class="button primary" href="https://github.com/Kzone87/portfolio/blob/main/PROJECT-BRIEF.md" target="_blank" rel="noreferrer">견적 요청 양식 ↗</a>
+      <a class="button secondary" href="https://github.com/Kzone87/portfolio/blob/main/SERVICES.md" target="_blank" rel="noreferrer">서비스 상세 ↗</a>
     </div>
   </section>
 </main>
