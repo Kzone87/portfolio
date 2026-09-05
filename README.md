@@ -15,7 +15,7 @@
 
 - **Customer Map Planner** (`Kzone87/customer-map-planner`) — Excel 거래처 데이터를 Kakao Maps에 지오코딩하고, 거리 기반 클러스터링·라벨 배치·A4 출력을 수행하는 업무 도구. GitHub Actions 회귀 테스트와 Pages 데모 배포를 사용합니다.
   - Live Demo: https://kzone87.github.io/customer-map-planner/
-- **User Directory API** (`Kzone87/springMybatis`) — Spring Boot + MyBatis + Validation + H2 + Excel export + MockMvc + GitHub Actions CI로 재구성한 백엔드 프로젝트.
+- **User Directory API** (`Kzone87/user-directory-api`) — Spring Boot + MyBatis + Validation + H2 + Excel export + MockMvc + GitHub Actions CI로 재구성한 백엔드 프로젝트.
 
 ## Why this repository is intentionally small
 
