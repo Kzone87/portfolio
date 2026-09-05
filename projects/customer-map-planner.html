@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Customer Map Planner engineering case study">
+    <title>Customer Map Planner · Kzone87 Portfolio</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../project.css">
+</head>
+<body class="project-page">
+<header class="site-header">
+    <a class="brand" href="../index.html">Kzone87</a>
+    <nav><a href="../index.html#projects">Projects</a><a href="https://github.com/Kzone87/customer-map-planner" target="_blank" rel="noreferrer">Repository</a></nav>
+</header>
+<main>
+    <section class="project-hero section-shell">
+        <div class="project-breadcrumb"><a href="../index.html">Portfolio</a><span>/</span><span>Customer Map Planner</span></div>
+        <p class="eyebrow">WORKFLOW AUTOMATION · PUBLIC · LIVE</p>
+        <h1>Customer Map Planner</h1>
+        <p class="lead">Excel 거래처 목록을 지도 작업으로 바꾸는 과정에서 반복되는 주소 검색, 근접 거래처 파악, 라벨 정리와 인쇄 준비를 하나의 브라우저 워크플로로 묶었습니다.</p>
+        <div class="detail-actions"><a class="primary" href="https://kzone87.github.io/customer-map-planner/" target="_blank" rel="noreferrer">Live Demo ↗</a><a href="https://github.com/Kzone87/customer-map-planner" target="_blank" rel="noreferrer">Source ↗</a><a href="https://github.com/Kzone87/customer-map-planner/actions" target="_blank" rel="noreferrer">CI ↗</a></div>
+        <div class="fact-grid"><article><span>Input</span><strong>Excel / built-in sample</strong></article><article><span>Map</span><strong>Kakao Maps + Geocoding</strong></article><article><span>Algorithm</span><strong>Haversine + connected clustering</strong></article><article><span>Output</span><strong>Excel + A4 landscape print</strong></article></div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>문제 정의</h2>
+        <div class="problem-grid">
+            <article class="detail-card"><span class="index">01</span><h3>Excel과 지도 사이의 반복 작업</h3><p>거래처 주소를 하나씩 검색하고 필요한 곳만 다시 추려내는 과정이 반복됩니다.</p></article>
+            <article class="detail-card"><span class="index">02</span><h3>거리만 가까워도 한눈에 보기 어렵다</h3><p>같은 권역의 거래처라도 마커와 라벨이 겹치면 실제 현장 판단에 쓰기 어렵습니다.</p></article>
+            <article class="detail-card"><span class="index">03</span><h3>최종 산출물은 화면이 아니라 인쇄물</h3><p>현장에서 볼 수 있는 A4 가로 지도가 필요해 화면 렌더링과 print layout을 함께 설계했습니다.</p></article>
+        </div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>사용자 흐름</h2>
+        <div class="flow"><div class="flow-node"><strong>Excel Load</strong><span>필수 컬럼 검증 · 중복 제거</span></div><div class="flow-node"><strong>Select</strong><span>이름/주소 검색 · 다건 선택</span></div><div class="flow-node"><strong>Geocode</strong><span>batch 처리 · memory cache · 실패 복구</span></div><div class="flow-node"><strong>Cluster</strong><span>거리 threshold · 연결요소 계산</span></div><div class="flow-node"><strong>Print</strong><span>라벨 재배치 · A4 landscape</span></div></div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>완성도를 높이기 위해 추가한 것</h2>
+        <div class="decision-grid">
+            <article class="detail-card"><span class="index">UX</span><h3>실패주소 복구</h3><p>지오코딩 실패를 숫자로만 보여주지 않고 실패 목록에서 주소를 수정하고 개별/전체 재시도할 수 있게 했습니다.</p></article>
+            <article class="detail-card"><span class="index">PERF</span><h3>Batch + cache</h3><p>선택 주소를 작은 batch로 처리하고 동일 주소는 메모리 cache를 사용해 반복 API 호출을 줄입니다.</p></article>
+            <article class="detail-card"><span class="index">LAYOUT</span><h3>Responsive relayout</h3><p>화면 크기가 바뀌면 Kakao map을 relayout하고 전체 bounds 및 라벨 위치를 다시 계산합니다.</p></article>
+            <article class="detail-card"><span class="index">DATA</span><h3>Round-trip workflow</h3><p>입력 샘플 Excel을 제공하고, 선택한 거래처 목록도 다시 Excel로 내보낼 수 있습니다.</p></article>
+            <article class="detail-card"><span class="index">PRIVACY</span><h3>브라우저 경계</h3><p>Excel/customer data는 서버에 저장하지 않고 선택 주소만 geocoding API에 전달합니다. API key도 저장하지 않습니다.</p></article>
+            <article class="detail-card"><span class="index">PRINT</span><h3>화면과 인쇄 분리</h3><p>화면은 반응형 작업공간으로, 인쇄 시에는 297×210mm 지도로 강제해 업무 산출물 형태를 보장합니다.</p></article>
+        </div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>핵심 알고리즘</h2>
+        <p>두 좌표 사이 거리는 Haversine 공식을 사용하고, 각 지점을 첫 기준점과만 비교하지 않습니다. threshold 이내로 이어지는 점을 BFS 방식으로 탐색해 transitive proximity를 하나의 cluster로 묶습니다.</p>
+        <div class="code-contract">distanceMeters(A, B)
+        ↓
+A ↔ B <= threshold
+B ↔ C <= threshold
+        ↓
+cluster = [A, B, C]
+
+※ A ↔ C가 직접 threshold를 넘더라도 연결요소라면 같은 그룹</div>
+    </section>
+
+    <section class="detail-section section-shell">
+        <h2>검증</h2>
+        <div class="verify-grid"><article class="detail-card"><h3>Pure utility tests</h3><p>거리 계산, threshold 정규화, 거래처 identity/search, clustering을 Node test runner로 검증합니다.</p></article><article class="detail-card"><h3>Syntax gate</h3><p>`node --check`로 browser script의 문법 오류를 CI에서 차단합니다.</p></article><article class="detail-card"><h3>Deployment evidence</h3><p>GitHub Pages 배포까지 자동화되어 실제 브라우저에서 결과를 확인할 수 있습니다.</p><a href="https://github.com/Kzone87/customer-map-planner/actions">Actions history ↗</a></article></div>
+        <div class="boundary-note">이 프로젝트는 route optimization 서비스가 아닙니다. 목표는 거래처 분포를 빠르게 파악하고, 가까운 거래처를 보기 좋은 인쇄 지도로 만드는 업무 자동화입니다.</div>
+    </section>
+</main>
+<footer class="site-footer section-shell"><p>Customer Map Planner · Engineering detail</p><a href="../index.html">← Portfolio</a></footer>
+</body>
+</html>
