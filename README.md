@@ -6,7 +6,7 @@
 
 ## Positioning
 
-단순 홈페이지 제작보다 다음처럼 **운영 과정에서 반복해서 사용하는 기능**을 중심으로 개발합니다.
+단순 홈페이지 제작보다 운영 과정에서 반복해서 사용하는 기능을 중심으로 개발합니다.
 
 - React/TypeScript 관리자 화면
 - Spring Boot REST API와 DB
@@ -16,7 +16,7 @@
 - 우선순위·마감일 기반 업무 planning
 - Excel/CSV import, validation, normalization, column mapping, export
 - 브라우저에서만 동작하는 local-first 업무 자동화
-- API integration control-plane과 sync job 운영 UI
+- API integration control-plane, sync job, run history, idempotency
 - 기존 서비스의 버그 수정과 단계적 현대화
 
 ## Public case studies
@@ -57,7 +57,6 @@ Excel/CSV 데이터를 서버로 업로드하지 않고 브라우저에서 정�
 - `required / email / number / enum` Rule Builder
 - Rule localStorage 저장과 파일별 재검증
 - Column Mapping Workspace
-- source → standard target mapping
 - duplicate source / target / untouched-column collision 방어
 - safe column swap
 - CSV / XLSX export
@@ -70,21 +69,25 @@ Column Mapping: https://kzone87.github.io/customer-map-planner/mapping.html
 
 Repository: https://github.com/Kzone87/customer-map-planner
 
-### 3. Integration Control Center · V1 Lab — Integration operations control-plane
+### 3. Integration Control Center · V2 — Integration operations + REST API
 
-외부 시스템 간 동기화 작업을 운영하는 상황을 가정한 공개 정적 데모입니다. 실제 credential이나 외부 network call 없이 상태 모델과 운영 UX에 집중합니다.
+외부 시스템 간 동기화 작업을 `Connection → Sync Job → Run` 단위로 운영하는 공개 사례입니다. 웹 Lab은 credential-free static simulation으로 유지하고, 저장소에는 같은 도메인의 **Node REST API reference implementation과 HTTP integration tests**를 추가했습니다.
 
 - Connection Registry: `ACTIVE / PAUSED / ERROR`
 - Source / Target sync job 구성
 - Customer / Order / Inventory / Invoice entity
 - Manual / Hourly / Daily schedule
 - Retry ×3 / Stop / Skip-row failure policy
-- Job 일시정지·재개
-- SUCCESS / FAILED run simulation
-- 처리 건수와 실행 시각 Run History
-- localStorage persistence
-- 저장 데이터 allow-list / 구조 재검증
-- 실제 API Key 없음
+- Job `ACTIVE / PAUSED` 운영 상태
+- `GET /api/connections`, `GET/POST /api/jobs`
+- `PATCH /api/jobs/:id/status`
+- `POST /api/jobs/:id/runs`
+- `GET /api/runs`
+- validation + `400 / 404 / 409` error contract
+- connection health failure를 FAILED run으로 기록
+- `Idempotency-Key` 기반 duplicate run 방지
+- Node HTTP-level integration tests
+- 실제 credential / 비공개 API 없음
 
 Live Lab: https://kzone87.github.io/portfolio/integration-control-center/
 
@@ -118,8 +121,8 @@ Case Study: https://github.com/Kzone87/milkyway-bookstore-case-study
 | User validation rules | Customer Data Workbench |
 | Column mapping / schema standardization | Customer Data Workbench |
 | Undo / Recipe workflow | Customer Data Workbench |
-| Integration job control-plane UX | Integration Control Center Lab |
-| Failure policy / run history model | Integration Control Center Lab |
+| Integration job control-plane UX | Integration Control Center |
+| REST API / idempotency / run history | Integration Control Center |
 | Team collaboration | MilkyWay Case Study |
 | Legacy maintenance | MilkyWay Case Study |
 
