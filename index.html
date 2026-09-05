@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Kzone87 외주 개발 포트폴리오. 업무용 웹 시스템, 관리자 페이지, Excel 자동화, REST API와 기존 서비스 개선을 설계하고 구현합니다.">
+    <meta name="description" content="Kzone87 외주 개발 포트폴리오. 업무용 웹 시스템, 관리자 페이지, Excel 자동화, 풀스택 관리 시스템과 기존 서비스 개선을 설계하고 구현합니다.">
     <meta name="theme-color" content="#0b1020">
     <title>Kzone87 · Business Web Development</title>
     <link rel="stylesheet" href="./styles.css">
@@ -35,22 +35,10 @@
         </div>
 
         <div class="proof-strip" aria-label="핵심 역량">
-            <article>
-                <strong>Workflow</strong>
-                <span>업무 흐름 분석 · 자동화</span>
-            </article>
-            <article>
-                <strong>Backend</strong>
-                <span>REST API · DB · Validation</span>
-            </article>
-            <article>
-                <strong>Data</strong>
-                <span>Excel · 검색 · Export</span>
-            </article>
-            <article>
-                <strong>Quality</strong>
-                <span>테스트 · CI · 문서화</span>
-            </article>
+            <article><strong>Full-stack</strong><span>React · Spring · REST API</span></article>
+            <article><strong>Workflow</strong><span>업무 흐름 분석 · 자동화</span></article>
+            <article><strong>Data</strong><span>Excel · 검색 · Export</span></article>
+            <article><strong>Quality</strong><span>테스트 · CI · 문서화</span></article>
         </div>
     </section>
 
@@ -86,12 +74,12 @@
 
             <article class="service-card">
                 <span class="service-no">03</span>
-                <h3>REST API · 데이터 연동</h3>
-                <p>프런트엔드나 다른 서비스가 안정적으로 사용할 수 있는 API와 데이터 경계를 구성합니다.</p>
+                <h3>풀스택 관리자 시스템</h3>
+                <p>React 기반 관리 화면과 Spring Boot REST API를 연결해 실제 운영 데이터 흐름을 구현합니다.</p>
                 <ul>
-                    <li>CRUD · 검색 · 정렬 · 페이지네이션</li>
-                    <li>Validation · 오류 응답 계약 · API 문서</li>
-                    <li>외부 API와 내부 데이터 연결</li>
+                    <li>React / TypeScript 관리 UI</li>
+                    <li>Spring Boot / MyBatis / DB 연동</li>
+                    <li>Validation · 오류 계약 · API 문서</li>
                 </ul>
             </article>
 
@@ -117,7 +105,7 @@
             <div class="fit-list">
                 <p><strong>01</strong><span>“엑셀로 관리하던 업무를 웹으로 옮기고 싶습니다.”</span></p>
                 <p><strong>02</strong><span>“관리자가 데이터를 검색하고 처리하는 화면이 필요합니다.”</span></p>
-                <p><strong>03</strong><span>“외부 API 데이터를 내부 시스템과 연결하고 싶습니다.”</span></p>
+                <p><strong>03</strong><span>“프런트 화면과 서버 API를 함께 만들어야 합니다.”</span></p>
                 <p><strong>04</strong><span>“기존 웹 프로젝트가 있는데 오류 수정과 기능 개선이 필요합니다.”</span></p>
             </div>
         </div>
@@ -169,39 +157,40 @@
                 </div>
             </article>
 
-            <article class="project-card">
+            <article class="project-card featured">
                 <div class="project-topline">
                     <span class="project-index">02</span>
-                    <span class="badge">BACKEND · API · CI</span>
+                    <span class="badge">FULL-STACK · REACT · SPRING</span>
                 </div>
                 <div class="project-layout">
                     <div>
-                        <p class="project-kicker">BUSINESS DATA BACKEND</p>
-                        <h3>User Directory API</h3>
+                        <p class="project-kicker">BUSINESS OPS DASHBOARD</p>
+                        <h3>Business Ops Dashboard · V1</h3>
                         <p class="project-summary">
-                            사용자 데이터를 검색·등록·수정·삭제하고 페이지 단위 조회, 정렬, Excel export를 제공하는
-                            Spring Boot / MyBatis REST API입니다.
+                            React/TypeScript 관리 화면과 Spring Boot/MyBatis REST API를 연결한 업무시스템 사례입니다.
+                            검색, 등록, 수정, 삭제, 서버 검증, 오류 피드백, Excel export와 프런트/백엔드 CI를 포함합니다.
                         </p>
                         <div class="challenge-result">
-                            <p><span>Use case</span>관리자 화면이나 내부 업무시스템의 데이터 API</p>
-                            <p><span>Quality</span>Validation · 오류 계약 · OpenAPI · MockMvc · CI</p>
+                            <p><span>Use case</span>관리자 화면 + 운영 데이터 + REST API가 필요한 내부 시스템</p>
+                            <p><span>V1</span>React CRUD UI ↔ Spring API 연결 완료, Customer/Work-order/RBAC 확장 예정</p>
                         </div>
                         <ul class="tech-list" aria-label="기술 스택">
-                            <li>Java 17</li><li>Spring Boot</li><li>MyBatis</li><li>H2</li><li>OpenAPI</li><li>JUnit</li>
+                            <li>React</li><li>TypeScript</li><li>Vite</li><li>Java 17</li><li>Spring Boot</li><li>MyBatis</li><li>H2</li>
                         </ul>
                     </div>
                     <aside class="evidence-panel">
                         <p class="evidence-title">외주 관점에서 보여주는 역량</p>
                         <ul>
+                            <li>React 관리 UI와 REST API 실제 연동</li>
+                            <li>검색 · CRUD · validation · 오류 처리</li>
                             <li>Controller / Service / Mapper 책임 분리</li>
-                            <li>검색 · 정렬 · pagination 서버 검증</li>
-                            <li>400 / 404 / 409 오류 응답 계약</li>
-                            <li>Excel 생성과 API 문서화</li>
+                            <li>백엔드 테스트 + 프런트 build CI</li>
                         </ul>
                     </aside>
                 </div>
                 <div class="project-links">
                     <a href="https://github.com/Kzone87/user-directory-api" target="_blank" rel="noreferrer">Repository ↗</a>
+                    <a href="https://github.com/Kzone87/user-directory-api/pull/3" target="_blank" rel="noreferrer">V1 PR ↗</a>
                     <a href="https://github.com/Kzone87/user-directory-api/actions" target="_blank" rel="noreferrer">CI ↗</a>
                 </div>
             </article>
