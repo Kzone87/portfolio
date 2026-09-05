@@ -11,6 +11,7 @@ const serviceCss = await readFile(new URL('../services/service-page.css', import
 const adminService = await readFile(new URL('../services/admin-system.html', import.meta.url), 'utf8');
 const excelService = await readFile(new URL('../services/excel-automation.html', import.meta.url), 'utf8');
 const apiService = await readFile(new URL('../services/api-integration.html', import.meta.url), 'utf8');
+const maintenanceService = await readFile(new URL('../services/maintenance.html', import.meta.url), 'utf8');
 const estimatorHtml = await readFile(new URL('../scope-estimator/index.html', import.meta.url), 'utf8');
 const estimatorJs = await readFile(new URL('../scope-estimator/app.js', import.meta.url), 'utf8');
 const estimatorEngine = await readFile(new URL('../scope-estimator/engine.mjs', import.meta.url), 'utf8');
@@ -18,6 +19,7 @@ const kmong = await readFile(new URL('../sales/KMONG-LISTINGS.md', import.meta.u
 const soomgo = await readFile(new URL('../sales/SOOMGO-QUOTES.md', import.meta.url), 'utf8');
 const assets = await readFile(new URL('../sales/PORTFOLIO-ASSETS.md', import.meta.url), 'utf8');
 const scopeRules = await readFile(new URL('../sales/SCOPE-RULES.md', import.meta.url), 'utf8');
+const maintenanceSales = await readFile(new URL('../sales/MAINTENANCE.md', import.meta.url), 'utf8');
 const salesIndex = await readFile(new URL('../sales/README.md', import.meta.url), 'utf8');
 const integrationHtml = await readFile(new URL('../integration-control-center/index.html', import.meta.url), 'utf8');
 const integrationJs = await readFile(new URL('../integration-control-center/app.js', import.meta.url), 'utf8');
@@ -61,6 +63,27 @@ test('commercial packages expose consistent starting prices', () => {
   assert.match(html, /DELUXE/);
   assert.match(html, /PREMIUM/);
   assert.match(salesCss, /package-grid/);
+});
+
+test('maintenance retainer exposes consistent monthly plans and homepage CTA', () => {
+  assert.ok(html.includes('./services/maintenance.html'));
+  for (const value of ['15만원', '30만원', '50만원']) {
+    assert.match(maintenanceService, new RegExp(value));
+    assert.match(maintenanceSales, new RegExp(value));
+    assert.match(services, new RegExp(value));
+    assert.match(salesIndex, new RegExp(value));
+  }
+  assert.match(maintenanceService, /월 최대 1시간/);
+  assert.match(maintenanceService, /월 최대 3시간/);
+  assert.match(maintenanceService, /월 최대 5시간/);
+});
+
+test('maintenance explicitly separates response start from guaranteed resolution', () => {
+  assert.match(maintenanceService, /해결 완료 보장이 아니라 원인 확인을 시작하는 기준/);
+  assert.match(maintenanceSales, /해결 완료시간을 보장하는 SLA가 아닙니다/);
+  assert.match(maintenanceService, /24\/7/);
+  assert.match(maintenanceSales, /신규 기능/);
+  assert.match(maintenanceSales, /다음 달로 이월되지 않습니다/);
 });
 
 test('main commercial page links the one-minute estimator', () => {
@@ -120,7 +143,7 @@ test('api integration service page exposes price, V2 evidence and secret boundar
 });
 
 test('commercial pages do not embed common credential patterns', () => {
-  const pages = [adminService, excelService, apiService, estimatorHtml, estimatorJs, estimatorEngine].join('\n');
+  const pages = [adminService, excelService, apiService, maintenanceService, estimatorHtml, estimatorJs, estimatorEngine].join('\n');
   assert.doesNotMatch(pages, /sk-[A-Za-z0-9_-]{20,}/);
   assert.doesNotMatch(pages, /AIza[0-9A-Za-z_-]{20,}/);
 });
