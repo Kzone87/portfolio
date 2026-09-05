@@ -1,6 +1,6 @@
 # Kzone87 · Business Web Development Portfolio
 
-업무용 웹 시스템, Excel/CSV 자동화, REST API와 시스템 연동을 **실제 외주 상품으로 연결하기 위한 공개 포트폴리오**입니다.
+업무용 웹 시스템, Excel/CSV 자동화, AI Workflow, REST API와 시스템 연동을 **실제 외주 상품으로 연결하기 위한 공개 포트폴리오**입니다.
 
 **Live Portfolio:** https://kzone87.github.io/portfolio/
 
@@ -9,11 +9,13 @@
 | Package | 시작가 | 적합한 의뢰 |
 | --- | ---: | --- |
 | STANDARD | **49만원부터** | 버그 수정, 기능 1개, 작은 API, 단일 자동화 |
-| DELUXE | **149만원부터** | 관리자 CRUD, Excel/CSV 업무자동화, 간단한 API/DB 연동 |
-| PREMIUM | **299만원부터** | 고객·업무관리, 권한, 상태, DB, REST API가 연결된 업무시스템 |
+| DELUXE | **149만원부터** | 관리자 CRUD, Excel/CSV 업무자동화, AI prototype, 간단한 API/DB 연동 |
+| PREMIUM | **299만원부터** | 고객·업무관리, 권한, 상태, DB, REST API 또는 AI Workflow가 연결된 업무시스템 |
 
-금액은 시작가이며 최종 견적은 사용자 권한, 데이터 관계, 업무 상태, 외부 연동, 기존 코드 수정, 데이터 규모, 배포·운영 조건을 확인한 뒤 고정합니다.
+금액은 시작가이며 최종 견적은 사용자 권한, 데이터 관계, 업무 상태, AI/외부 연동, 기존 코드 수정, 데이터 규모, 배포·운영 조건을 확인한 뒤 고정합니다.
 
+서비스 허브: https://kzone87.github.io/portfolio/services/  
+1분 범위·예산 가이드: https://kzone87.github.io/portfolio/scope-estimator/  
 상세 범위: [SERVICES.md](./SERVICES.md)  
 빠른 견적 요청: [PROJECT-BRIEF.md](./PROJECT-BRIEF.md)
 
@@ -21,10 +23,12 @@
 
 실제 플랫폼 등록과 견적 대응에 사용할 판매 문서는 [`sales/`](./sales/)에 분리했습니다.
 
-- [크몽 3개 상품 등록 원고](./sales/KMONG-LISTINGS.md)
+- [크몽 상품 등록 원고](./sales/KMONG-LISTINGS.md)
 - [숨고 맞춤견적 응답 템플릿](./sales/SOOMGO-QUOTES.md)
 - [포트폴리오 이미지·60초 영상 구성](./sales/PORTFOLIO-ASSETS.md)
 - [외주 범위·가격 방어 규칙](./sales/SCOPE-RULES.md)
+- [유지보수/운영지원 상품](./sales/MAINTENANCE.md)
+- [견적서·범위확정 템플릿](./sales/QUOTE-TEMPLATE.md)
 
 ## Positioning
 
@@ -38,6 +42,7 @@
 - 우선순위·마감일 기반 업무 planning
 - Excel/CSV import, validation, normalization, column mapping, export
 - 브라우저에서만 동작하는 local-first 업무 자동화
+- AI structured output, provider fallback, evaluation, human review, prompt/run audit
 - API integration control-plane, sync job, run history, idempotency
 - 기존 서비스의 버그 수정과 단계적 현대화
 
@@ -95,7 +100,33 @@ Column Mapping: https://kzone87.github.io/customer-map-planner/mapping.html
 
 Repository: https://github.com/Kzone87/customer-map-planner
 
-### 3. Integration Control Center · V2 — Integration operations + REST API
+### 3. AI Workflow Review Desk · V1 — AI integration + human review
+
+AI가 업무를 구조화·분류·요약하고 사람이 최종 승인하는 Workflow를 공개 코드로 구현한 AI integration 사례입니다.
+
+**연결 가능한 외주 상품:** AI Workflow / 업무자동화 / DELUXE 149만원부터
+
+- deterministic mock provider로 API Key 없는 Live Lab
+- `triage-v1 / triage-v2` prompt version
+- structured output schema validation
+- category / risk / confidence
+- evaluation score / flags
+- primary → fallback provider
+- `GENERATED / NEEDS_REVIEW → APPROVED / REJECTED` human review
+- 사람이 output을 수정한 뒤 승인 가능
+- Run History / Review Audit
+- Node REST API reference implementation
+- `expectedVersion` 기반 stale review `409`
+- finalized task regeneration `409`
+- HTTP integration tests
+- browser network/storage 비사용
+- 실제 credential / 고객 데이터 없음
+
+Live Lab: https://kzone87.github.io/portfolio/ai-workflow-review-desk/
+
+Source: ./ai-workflow-review-desk/
+
+### 4. Integration Control Center · V2 — Integration operations + REST API
 
 외부 시스템 간 동기화 작업을 `Connection → Sync Job → Run` 단위로 운영하는 공개 사례입니다. 웹 Lab은 credential-free simulation으로 유지하고, 저장소에는 같은 도메인의 **Node REST API reference implementation과 HTTP integration tests**를 제공합니다.
 
@@ -121,7 +152,7 @@ Live Lab: https://kzone87.github.io/portfolio/integration-control-center/
 
 Source: ./integration-control-center/
 
-### 4. MilkyWay — Team & legacy maintenance evidence
+### 5. MilkyWay — Team & legacy maintenance evidence
 
 Java/JSP/Servlet/MySQL 팀 프로젝트에서 실제 Git 기록으로 확인되는 개인 기여와 이후 보안 정리 작업을 구분해 기록한 Case Study입니다.
 
@@ -151,6 +182,10 @@ Case Study: https://github.com/Kzone87/milkyway-bookstore-case-study
 | User validation rules | Customer Data Workbench |
 | Column mapping / schema standardization | Customer Data Workbench |
 | Undo / Recipe workflow | Customer Data Workbench |
+| AI structured output / evaluation | AI Workflow Review Desk |
+| Provider adapter / fallback | AI Workflow Review Desk |
+| Human-in-the-loop approval / audit | AI Workflow Review Desk |
+| Prompt version / stale review defense | AI Workflow Review Desk |
 | Integration job control-plane UX | Integration Control Center |
 | REST API / idempotency / run history | Integration Control Center |
 | Team collaboration | MilkyWay Case Study |
@@ -161,9 +196,10 @@ Case Study: https://github.com/Kzone87/milkyway-bookstore-case-study
 1. 현재 업무 흐름과 완료 조건을 먼저 확인합니다.
 2. 포함 범위와 제외 범위를 구분합니다.
 3. validation, 권한, 오류 처리, 상태 전이를 정상 기능의 일부로 봅니다.
-4. 프로젝트 성격에 따라 자동화 테스트, CI 또는 재현 가능한 검증 절차를 둡니다.
-5. API Key와 credential은 소스 코드에 직접 포함하지 않습니다.
-6. 납품 시 실행/배포 방법과 필요한 환경설정을 문서화합니다.
+4. AI 기능은 output schema, 사람의 승인 지점, provider 비용/secret 경계를 먼저 정합니다.
+5. 프로젝트 성격에 따라 자동화 테스트, CI 또는 재현 가능한 검증 절차를 둡니다.
+6. API Key와 credential은 소스 코드에 직접 포함하지 않습니다.
+7. 납품 시 실행/배포 방법과 필요한 환경설정을 문서화합니다.
 
 ## Fast estimate
 
