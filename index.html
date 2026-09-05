@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Kzone87 developer portfolio — practical workflow automation, backend API engineering, and verified team-project contributions.">
+    <meta name="description" content="Kzone87 developer portfolio — workflow automation, backend application engineering, and verified team-project contributions.">
     <title>Kzone87 · Developer Portfolio</title>
     <link rel="stylesheet" href="./styles.css">
 </head>
@@ -22,8 +22,8 @@
         <p class="eyebrow">FULL-STACK · PRODUCT ENGINEERING</p>
         <h1>현장의 문제를<br>작동하는 소프트웨어로 바꿉니다.</h1>
         <p class="hero-copy">
-            반복 업무를 줄이는 브라우저 도구, 실행 가능한 백엔드 API, 실제 팀 협업 이력까지.
-            화면 구현에 그치지 않고 데이터 흐름, 예외, 테스트와 운영 경계를 함께 설계합니다.
+            단순 기능 목록보다 사용 흐름을 끝까지 연결하는 것을 중요하게 봅니다.
+            브라우저 업무 자동화, 실행 가능한 백엔드 애플리케이션, 실제 팀 협업 이력을 각각 독립된 증거로 보여줍니다.
         </p>
         <div class="hero-actions">
             <a class="button primary" href="#projects">대표 프로젝트 보기</a>
@@ -31,22 +31,10 @@
         </div>
 
         <div class="signal-grid" aria-label="포트폴리오 요약">
-            <article>
-                <strong>3</strong>
-                <span>Selected public projects</span>
-            </article>
-            <article>
-                <strong>LIVE</strong>
-                <span>Browser workflow demo</span>
-            </article>
-            <article>
-                <strong>CI</strong>
-                <span>Automated regression checks</span>
-            </article>
-            <article>
-                <strong>20</strong>
-                <span>Merged team-project PRs</span>
-            </article>
+            <article><strong>3</strong><span>Selected public projects</span></article>
+            <article><strong>LIVE</strong><span>Browser workflow demo</span></article>
+            <article><strong>CI</strong><span>Regression + DB/container verification</span></article>
+            <article><strong>20</strong><span>Merged team-project PRs</span></article>
         </div>
     </section>
 
@@ -54,7 +42,7 @@
         <div class="section-heading">
             <p class="eyebrow">SELECTED WORK</p>
             <h2>대표 프로젝트</h2>
-            <p>프로젝트 수를 늘리기보다 서로 다른 역량을 검증할 수 있는 공개 작업 세 개에 집중했습니다.</p>
+            <p>세 프로젝트가 같은 역량을 반복하지 않도록 업무 자동화, backend application, team collaboration으로 역할을 나눴습니다. 각 프로젝트는 별도 상세 페이지에서 설계와 검증 근거까지 확인할 수 있습니다.</p>
         </div>
 
         <div class="project-stack">
@@ -67,23 +55,20 @@
                     <div>
                         <p class="project-kicker">WORKFLOW AUTOMATION</p>
                         <h3>Customer Map Planner</h3>
-                        <p class="project-summary">
-                            Excel 거래처 목록을 Kakao Maps 좌표로 변환하고, 근접 거래처를 연결 기반으로 클러스터링한 뒤 라벨 충돌을 줄여 A4 지도로 출력하는 브라우저 업무 도구입니다.
-                        </p>
-                        <ul class="tech-list" aria-label="기술 스택">
-                            <li>JavaScript</li><li>Kakao Maps</li><li>SheetJS</li><li>Canvas</li><li>Geocoding</li><li>GitHub Pages</li>
-                        </ul>
+                        <p class="project-summary">Excel 거래처 목록을 검색·선택하고 Kakao Maps로 지오코딩한 뒤, 근접 거래처를 연결 기반으로 클러스터링해 라벨 충돌을 줄인 A4 지도로 출력하는 현장 업무 도구입니다.</p>
+                        <ul class="tech-list" aria-label="기술 스택"><li>JavaScript</li><li>Kakao Maps</li><li>SheetJS</li><li>Canvas</li><li>Geocoding</li><li>GitHub Pages</li></ul>
                     </div>
                     <div class="evidence-panel">
                         <p class="evidence-title">What it proves</p>
                         <ul>
-                            <li>Excel → geocoding → clustering → print의 완결된 사용자 흐름</li>
-                            <li>Haversine 거리 계산과 transitive clustering 회귀 테스트</li>
-                            <li>브라우저 데이터 처리와 credential 비저장 설계</li>
+                            <li>Excel → 선택 → batch geocoding → clustering → print의 완결된 흐름</li>
+                            <li>실패 주소 수정/재시도, geocoding cache, 선택목록 Excel export</li>
+                            <li>Haversine / transitive clustering 회귀 테스트와 Pages 배포</li>
                         </ul>
                     </div>
                 </div>
                 <div class="project-links">
+                    <a href="./projects/customer-map-planner.html">Engineering Detail →</a>
                     <a href="https://kzone87.github.io/customer-map-planner/" target="_blank" rel="noreferrer">Live Demo ↗</a>
                     <a href="https://github.com/Kzone87/customer-map-planner" target="_blank" rel="noreferrer">Repository ↗</a>
                     <a href="https://github.com/Kzone87/customer-map-planner/actions" target="_blank" rel="noreferrer">CI History ↗</a>
@@ -93,29 +78,26 @@
             <article class="project-card">
                 <div class="project-topline">
                     <span class="project-index">02</span>
-                    <span class="badge public">PUBLIC · API · CI</span>
+                    <span class="badge public">PUBLIC · APP · CI</span>
                 </div>
                 <div class="project-layout">
                     <div>
-                        <p class="project-kicker">BACKEND ENGINEERING</p>
-                        <h3>User Directory API</h3>
-                        <p class="project-summary">
-                            초기 Spring/MyBatis 학습 코드를 계층형 REST API로 다시 설계해 검색, CRUD, validation, 예외 처리, Excel export와 자동화 테스트를 갖춘 백엔드 프로젝트입니다.
-                        </p>
-                        <ul class="tech-list" aria-label="기술 스택">
-                            <li>Java 17</li><li>Spring Boot</li><li>MyBatis</li><li>H2</li><li>OpenAPI</li><li>JUnit</li><li>MockMvc</li>
-                        </ul>
+                        <p class="project-kicker">BACKEND APPLICATION</p>
+                        <h3>User Directory</h3>
+                        <p class="project-summary">Spring Boot/MyBatis 학습 코드를 브라우저 관리 UI, REST/OpenAPI, validation/error contract, pagination, Excel export, H2/MySQL dual runtime과 container verification을 갖춘 작은 운영형 애플리케이션으로 재설계했습니다.</p>
+                        <ul class="tech-list" aria-label="기술 스택"><li>Java 17</li><li>Spring Boot</li><li>MyBatis</li><li>MySQL</li><li>Testcontainers</li><li>Docker</li><li>OpenAPI</li></ul>
                     </div>
                     <div class="evidence-panel">
                         <p class="evidence-title">What it proves</p>
                         <ul>
-                            <li>Controller → Service → Mapper 계층과 DTO 경계</li>
-                            <li>400 / 404 / 409 오류 계약과 Bean Validation</li>
-                            <li>MockMvc 통합 테스트와 GitHub Actions 품질 게이트</li>
+                            <li>Browser UI → REST → Service → MyBatis → DB 계층 연결</li>
+                            <li>400 / 404 / 409 오류 계약, safe sorting, XLSX export</li>
+                            <li>MockMvc + 실제 MySQL Testcontainers + Docker image CI</li>
                         </ul>
                     </div>
                 </div>
                 <div class="project-links">
+                    <a href="./projects/user-directory-api.html">Engineering Detail →</a>
                     <a href="https://github.com/Kzone87/user-directory-api" target="_blank" rel="noreferrer">Repository ↗</a>
                     <a href="https://github.com/Kzone87/user-directory-api/actions" target="_blank" rel="noreferrer">CI History ↗</a>
                 </div>
@@ -130,24 +112,21 @@
                     <div>
                         <p class="project-kicker">COLLABORATION · LEGACY MODERNIZATION</p>
                         <h3>MilkyWay · 은하수책방</h3>
-                        <p class="project-summary">
-                            Java/JSP/Servlet/MySQL 기반 온라인 서점 팀 프로젝트입니다. 기능 구현뿐 아니라 브랜치/PR 협업, 인증·주문 상태 처리, 외부 API 연동과 이후 보안 정리까지 실제 Git 이력으로 확인할 수 있습니다.
-                        </p>
-                        <ul class="tech-list" aria-label="기술 스택">
-                            <li>Java</li><li>JSP</li><li>Servlet</li><li>MySQL</li><li>JavaScript</li><li>Naver API</li>
-                        </ul>
+                        <p class="project-summary">Java/JSP/Servlet/MySQL 기반 온라인 서점 팀 프로젝트입니다. 검색·인증·상태 처리·관리자·Jakarta 전환 기여와 이후 보안 유지보수를 원본 PR 단위로 검증할 수 있습니다.</p>
+                        <ul class="tech-list" aria-label="기술 스택"><li>Java</li><li>JSP</li><li>Servlet</li><li>MySQL</li><li>JavaScript</li><li>Naver API</li></ul>
                     </div>
                     <div class="evidence-panel">
                         <p class="evidence-title">My contribution</p>
                         <ul>
                             <li>도서 검색·Naver 로그인·장바구니↔위시리스트 흐름</li>
                             <li>비밀번호 hash+salt, 주문취소·회원 상태·관리자 라우팅</li>
-                            <li>20 merged PRs, Tomcat 10/Jakarta 전환, 보안 hardening</li>
+                            <li>20 merged PRs, Tomcat 10/Jakarta 전환, 2026 security hardening</li>
                         </ul>
                     </div>
                 </div>
                 <div class="project-links">
-                    <a href="https://github.com/Kzone87/milkyway-bookstore-case-study" target="_blank" rel="noreferrer">Contribution Case Study ↗</a>
+                    <a href="./projects/milkyway.html">Contribution Detail →</a>
+                    <a href="https://github.com/Kzone87/milkyway-bookstore-case-study" target="_blank" rel="noreferrer">Case Study Repository ↗</a>
                     <a href="https://github.com/fullstackteampj/MillkyWay" target="_blank" rel="noreferrer">Original Repository ↗</a>
                     <a href="https://github.com/fullstackteampj/MillkyWay/pull/49" target="_blank" rel="noreferrer">Security PR #49 ↗</a>
                 </div>
@@ -159,31 +138,16 @@
         <div class="section-heading">
             <p class="eyebrow">ENGINEERING APPROACH</p>
             <h2>프로젝트에서 중요하게 보는 것</h2>
-            <p>기능의 존재보다 문제 정의, 경계, 검증 가능성을 우선합니다.</p>
+            <p>기능의 존재보다 실제 사용 흐름, 실패 복구, 데이터 경계와 제3자가 확인할 수 있는 검증 근거를 우선합니다.</p>
         </div>
         <div class="principle-grid">
-            <article>
-                <span>01</span>
-                <h3>문제부터 정의</h3>
-                <p>사용자가 어디에서 시간을 잃고 오류가 발생하는지 먼저 정리하고, 그 흐름을 줄이는 기능만 구현합니다.</p>
-            </article>
-            <article>
-                <span>02</span>
-                <h3>경계와 상태를 명확히</h3>
-                <p>입력 검증, 권한, 상태 전이, 실패 시점과 데이터 책임을 코드 구조에 드러냅니다.</p>
-            </article>
-            <article>
-                <span>03</span>
-                <h3>검증 가능한 결과</h3>
-                <p>Live Demo, 자동화 테스트, CI, PR 이력처럼 제3자가 확인할 수 있는 증거를 프로젝트와 함께 남깁니다.</p>
-            </article>
+            <article><span>01</span><h3>문제부터 정의</h3><p>사용자가 어디에서 시간을 잃고 오류가 발생하는지 먼저 정리하고, 그 흐름을 줄이는 기능을 설계합니다.</p></article>
+            <article><span>02</span><h3>실패 경로까지 구현</h3><p>정상 흐름만 만드는 것이 아니라 validation, retry, conflict, 상태 복구처럼 실제 사용에서 필요한 실패 처리까지 포함합니다.</p></article>
+            <article><span>03</span><h3>검증 가능한 결과</h3><p>Live Demo, 자동화 테스트, 실제 DB 검증, CI, PR 이력처럼 제3자가 확인할 수 있는 증거를 함께 남깁니다.</p></article>
         </div>
     </section>
 </main>
 
-<footer class="site-footer section-shell">
-    <p>Selected public engineering work by Kzone87.</p>
-    <a href="https://github.com/Kzone87" target="_blank" rel="noreferrer">github.com/Kzone87 ↗</a>
-</footer>
+<footer class="site-footer section-shell"><p>Selected public engineering work by Kzone87.</p><a href="https://github.com/Kzone87" target="_blank" rel="noreferrer">github.com/Kzone87 ↗</a></footer>
 </body>
 </html>
