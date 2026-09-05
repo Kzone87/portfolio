@@ -17,6 +17,11 @@
   - Live Demo: https://kzone87.github.io/customer-map-planner/
 - **User Directory API** (`Kzone87/user-directory-api`) — Spring Boot + MyBatis + Validation + H2 + Excel export + MockMvc + GitHub Actions CI로 재구성한 백엔드 프로젝트.
 
+### Team project experience
+
+- **MilkyWay · 은하수책방** — Java/JSP/Servlet/MySQL 기반 온라인 서점 팀 프로젝트. Kzone87은 SHA-256 + salt 기반 비밀번호 처리, 네이버 로그인 연동, 장바구니↔위시리스트 이동, 마이페이지 주문취소·회원 상태 처리, 관리자 로그인/라우팅, Tomcat 10 Jakarta Servlet 전환에 기여했습니다.
+  - 원본 팀 저장소는 현재 포트폴리오에서 직접 링크하지 않습니다. 공개 저장소의 자격증명·외부 API 설정을 정리한 뒤 소스 링크를 추가할 예정입니다.
+
 ## Why this repository is intentionally small
 
 포트폴리오 허브 안에 다른 프로젝트의 소스 사본을 복제하지 않습니다. 각 프로젝트는 독립 저장소에서 이력과 README를 관리하고, 이 저장소는 프로젝트 간 맥락과 개발 방향을 보여주는 역할만 합니다.
