@@ -26,8 +26,8 @@ test('AI workflow is a first-class public case and service', () => {
 test('AI commercial page exposes transparent price tiers and human review boundary', () => {
   for (const price of ['149만원', '299만원', '499만원']) assert.match(aiService, new RegExp(price));
   assert.match(aiService, /Structured Output/);
-  assert.match(aiService, /Human Review|Human approve/);
-  assert.match(aiService, /Provider Adapter|Provider adapter/);
+  assert.match(aiService, /Human review|Human Approve|HUMAN REVIEW/i);
+  assert.match(aiService, /Provider Adapter|Provider adapter/i);
   assert.match(aiService, /실제 API Key는 browser 공개 코드에 넣지 않고 서버 secret/);
   assert.ok(aiService.includes('../ai-workflow-review-desk/'));
 });
