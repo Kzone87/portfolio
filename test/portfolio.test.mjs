@@ -7,6 +7,7 @@ const readme = await readFile(new URL('../README.md', import.meta.url), 'utf8');
 const integrationHtml = await readFile(new URL('../integration-control-center/index.html', import.meta.url), 'utf8');
 const integrationJs = await readFile(new URL('../integration-control-center/app.js', import.meta.url), 'utf8');
 const integrationReadme = await readFile(new URL('../integration-control-center/README.md', import.meta.url), 'utf8');
+const integrationServer = await readFile(new URL('../integration-control-center/server/app.mjs', import.meta.url), 'utf8');
 
 const requiredPublicLinks = [
   'https://github.com/Kzone87/user-directory-api',
@@ -19,8 +20,8 @@ test('portfolio exposes the public evidence projects', () => {
     assert.ok(html.includes(link), `missing project link: ${link}`);
     assert.ok(readme.includes(link), `README missing project link: ${link}`);
   }
-  assert.match(html, /Integration Control Center · V1 Lab/);
-  assert.match(readme, /Integration Control Center · V1 Lab/);
+  assert.match(readme, /Integration Control Center · V2/);
+  assert.match(integrationHtml, /Integration Control Center · V2/);
 });
 
 test('portfolio positions the two flagship projects at their current versions', () => {
@@ -37,11 +38,13 @@ test('data workbench exposes the mapping workspace link', () => {
   assert.ok(readme.includes('https://kzone87.github.io/customer-map-planner/mapping.html'));
 });
 
-test('integration lab is explicit about being credential-free simulation', () => {
+test('integration case separates credential-free UI from the V2 server boundary', () => {
   assert.match(integrationHtml, /NO REAL CREDENTIALS/);
-  assert.match(integrationReadme, /실제 API Key나 외부 서비스에 연결하지 않습니다/);
+  assert.match(integrationReadme, /실제 API Key, 비공개 서비스, 고객 데이터는 사용하지 않습니다/);
   assert.match(integrationJs, /localStorage/);
   assert.match(integrationJs, /allowedPolicies/);
+  assert.match(integrationServer, /Idempotency-Key|idempotency-key/);
+  assert.match(integrationServer, /\/api\/jobs/);
   assert.doesNotMatch(integrationJs, /sk-[A-Za-z0-9_-]{20,}/);
   assert.doesNotMatch(integrationJs, /AIza[0-9A-Za-z_-]{20,}/);
 });
