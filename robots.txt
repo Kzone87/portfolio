@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kzone87.github.io/portfolio/sitemap.xml
