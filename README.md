@@ -1,12 +1,25 @@
 # Kzone87 · Business Web Development Portfolio
 
-업무용 웹 시스템, 관리자 기능, Excel/CSV 자동화, REST API와 시스템 연동 운영을 중심으로 구성한 **외주 개발 포트폴리오**입니다.
+업무용 웹 시스템, Excel/CSV 자동화, REST API와 시스템 연동을 **실제 외주 상품으로 연결하기 위한 공개 포트폴리오**입니다.
 
 **Live Portfolio:** https://kzone87.github.io/portfolio/
 
+## Commercial packages
+
+| Package | 시작가 | 적합한 의뢰 |
+| --- | ---: | --- |
+| STANDARD | **49만원부터** | 버그 수정, 기능 1개, 작은 API, 단일 자동화 |
+| DELUXE | **149만원부터** | 관리자 CRUD, Excel/CSV 업무자동화, 간단한 API/DB 연동 |
+| PREMIUM | **299만원부터** | 고객·업무관리, 권한, 상태, DB, REST API가 연결된 업무시스템 |
+
+금액은 시작가이며 최종 견적은 사용자 권한, 데이터 관계, 업무 상태, 외부 연동, 기존 코드 수정, 데이터 규모, 배포·운영 조건을 확인한 뒤 고정합니다.
+
+상세 범위: [SERVICES.md](./SERVICES.md)  
+빠른 견적 요청: [PROJECT-BRIEF.md](./PROJECT-BRIEF.md)
+
 ## Positioning
 
-단순 홈페이지 제작보다 운영 과정에서 반복해서 사용하는 기능을 중심으로 개발합니다.
+단순 홈페이지 제작보다 **회사의 반복 업무를 운영 가능한 시스템으로 바꾸는 개발**을 중심으로 합니다.
 
 - React/TypeScript 관리자 화면
 - Spring Boot REST API와 DB
@@ -24,6 +37,8 @@
 ### 1. Business Ops Dashboard · V6 — Full-stack CRM & operations system
 
 React/TypeScript 관리자 UI와 Spring Boot/MyBatis REST API를 연결한 풀스택 고객·업무 운영 시스템입니다.
+
+**연결 가능한 외주 상품:** 고객·업무관리 / 관리자 웹 시스템 / PREMIUM 299만원부터
 
 - Customer domain: `LEAD / ACTIVE / INACTIVE`
 - 고객 검색·등록·수정
@@ -45,6 +60,8 @@ Repository: https://github.com/Kzone87/user-directory-api
 ### 2. Customer Data Workbench · V2.4 — Local-first Excel/CSV automation
 
 Excel/CSV 데이터를 서버로 업로드하지 않고 브라우저에서 정리·검증·표준화·재출력하는 local-first 업무 자동화 도구입니다.
+
+**연결 가능한 외주 상품:** Excel/CSV 반복업무 자동화 / DELUXE 149만원부터
 
 - XLSX / XLS / CSV import
 - 서버 업로드 없이 브라우저 메모리에서 처리
@@ -71,7 +88,9 @@ Repository: https://github.com/Kzone87/customer-map-planner
 
 ### 3. Integration Control Center · V2 — Integration operations + REST API
 
-외부 시스템 간 동기화 작업을 `Connection → Sync Job → Run` 단위로 운영하는 공개 사례입니다. 웹 Lab은 credential-free static simulation으로 유지하고, 저장소에는 같은 도메인의 **Node REST API reference implementation과 HTTP integration tests**를 추가했습니다.
+외부 시스템 간 동기화 작업을 `Connection → Sync Job → Run` 단위로 운영하는 공개 사례입니다. 웹 Lab은 credential-free simulation으로 유지하고, 저장소에는 같은 도메인의 **Node REST API reference implementation과 HTTP integration tests**를 제공합니다.
+
+**연결 가능한 외주 상품:** API·시스템 연동 / DELUXE 149만원부터
 
 - Connection Registry: `ACTIVE / PAUSED / ERROR`
 - Source / Target sync job 구성
@@ -96,6 +115,8 @@ Source: ./integration-control-center/
 ### 4. MilkyWay — Team & legacy maintenance evidence
 
 Java/JSP/Servlet/MySQL 팀 프로젝트에서 실제 Git 기록으로 확인되는 개인 기여와 이후 보안 정리 작업을 구분해 기록한 Case Study입니다.
+
+**연결 가능한 외주 상품:** 기존 서비스 기능 수정 / 유지보수 / STANDARD 49만원부터
 
 - 팀 Git / PR 협업
 - 인증·주문·상태 처리
@@ -135,10 +156,14 @@ Case Study: https://github.com/Kzone87/milkyway-bookstore-case-study
 5. API Key와 credential은 소스 코드에 직접 포함하지 않습니다.
 6. 납품 시 실행/배포 방법과 필요한 환경설정을 문서화합니다.
 
-## Project inquiry documents
+## Fast estimate
 
-- [Services & scope](./SERVICES.md)
-- [Project brief template](./PROJECT-BRIEF.md)
+1차 상담에는 아래 네 가지면 충분합니다.
+
+1. 현재 업무 방식
+2. 가장 불편한 점
+3. 개발 후 반드시 가능해야 하는 결과
+4. 대략적인 예산과 일정
 
 ## Portfolio policy
 
