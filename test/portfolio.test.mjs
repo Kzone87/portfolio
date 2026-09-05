@@ -30,7 +30,7 @@ test('portfolio states public-only evidence policy', () => {
   assert.match(html, /공개 가능한 저장소와 원본 Git 기록만/);
 });
 
-test('portfolio keeps project brief and services navigation', () => {
-  assert.ok(html.includes('./PROJECT-BRIEF.md'));
-  assert.ok(html.includes('./SERVICES.md'));
+test('portfolio keeps stable project brief and services links', () => {
+  assert.ok(html.includes('https://github.com/Kzone87/portfolio/blob/main/PROJECT-BRIEF.md'));
+  assert.ok(html.includes('https://github.com/Kzone87/portfolio/blob/main/SERVICES.md'));
 });
