@@ -14,6 +14,11 @@ const PROJECTS = {
     base: 2,
     phase: '핵심 데이터 1~2개와 CRUD·검색·주요 상태 처리부터 1차 운영 버전으로 만듭니다.'
   },
+  ai: {
+    label: 'AI Workflow / 업무자동화',
+    base: 2,
+    phase: 'AI가 처리할 업무 1개를 정하고 Input → Structured Output → Human Review 핵심 흐름부터 검증합니다.'
+  },
   integration: {
     label: 'REST API / 시스템 연동',
     base: 2,
@@ -24,7 +29,7 @@ const PROJECTS = {
 const PACKAGE_LEVELS = [
   { max: 1, name: 'STANDARD', budget: '49~99만원', note: '범위가 명확한 작은 기능 또는 단일 자동화에 적합합니다.' },
   { max: 3, name: 'DELUXE', budget: '149~299만원', note: '하나의 업무 흐름을 실제 사용 가능한 도구로 구현하는 범위입니다.' },
-  { max: 5, name: 'PREMIUM', budget: '299~499만원', note: '여러 데이터 관계·권한·상태·연동이 함께 필요한 운영 시스템 범위입니다.' },
+  { max: 5, name: 'PREMIUM', budget: '299~499만원', note: '여러 데이터 관계·권한·상태·AI/연동이 함께 필요한 운영 시스템 범위입니다.' },
   { max: Infinity, name: 'CUSTOM', budget: '499만원 이상', note: '복수 모듈·고급 권한·대규모 연동을 단계별 프로젝트로 나누는 편이 적합합니다.' }
 ];
 
@@ -53,6 +58,9 @@ export function evaluateScope(rawInput) {
   let score = project.base;
   const reasons = [];
 
+  if (input.projectType === 'ai') {
+    reasons.push('AI output schema와 사람의 승인 지점 정의 필요');
+  }
   if (input.existing === 'existing') {
     score += 1;
     reasons.push('기존 소스 분석과 회귀 확인 필요');
@@ -67,14 +75,14 @@ export function evaluateScope(rawInput) {
   }
   if (input.integrations === 'one') {
     score += 1;
-    reasons.push('외부 서비스/API 연동 1개');
+    reasons.push(input.projectType === 'ai' ? 'AI provider/API 연동 1개' : '외부 서비스/API 연동 1개');
   } else if (input.integrations === 'multiple') {
     score += 2;
-    reasons.push('복수 외부 서비스/API 연동');
+    reasons.push(input.projectType === 'ai' ? '복수 AI/외부 provider 연동' : '복수 외부 서비스/API 연동');
   }
   if (input.operation === 'advanced') {
     score += 1;
-    reasons.push('Audit/실시간/대량처리 등 운영 고도화');
+    reasons.push(input.projectType === 'ai' ? 'Evaluation/Audit/Fallback 등 운영 고도화' : 'Audit/실시간/대량처리 등 운영 고도화');
   }
   if (input.schedule === 'urgent') {
     score += 1;
