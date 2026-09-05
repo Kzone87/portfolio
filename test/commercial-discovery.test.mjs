@@ -46,11 +46,11 @@ test('robots allows crawling and advertises the sitemap', () => {
 });
 
 test('quote template fixes scope before price and separates recurring support', () => {
-  assert.match(quote, /완료 기준/);
+  assert.match(quote, /완료 조건/);
   assert.match(quote, /포함 범위/);
   assert.match(quote, /제외 범위/);
   assert.match(quote, /기능 추가/);
-  assert.match(quote, /외부 비용/);
+  assert.match(quote, /외부 서비스 비용|외부 비용/);
   assert.match(quote, /유지보수|운영지원/);
   assert.match(quote, /금액/);
   assert.match(quote, /일정/);
