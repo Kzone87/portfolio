@@ -9,22 +9,28 @@ const services = await readFile(new URL('../SERVICES.md', import.meta.url), 'utf
 const serviceHub = await readFile(new URL('../services/index.html', import.meta.url), 'utf8');
 const aiService = await readFile(new URL('../services/ai-automation.html', import.meta.url), 'utf8');
 const aiLab = await readFile(new URL('../ai-workflow-review-desk/index.html', import.meta.url), 'utf8');
+const aiReadme = await readFile(new URL('../ai-workflow-review-desk/README.md', import.meta.url), 'utf8');
 const aiSales = await readFile(new URL('../sales/AI-WORKFLOW-SALES.md', import.meta.url), 'utf8');
 const salesIndex = await readFile(new URL('../sales/README.md', import.meta.url), 'utf8');
 const estimator = await readFile(new URL('../scope-estimator/index.html', import.meta.url), 'utf8');
 const sitemap = await readFile(new URL('../sitemap.xml', import.meta.url), 'utf8');
 
 test('AI workflow is a first-class public case and service', () => {
-  assert.match(html, /AI Workflow Review Desk · V1/);
+  assert.match(html, /AI Workflow Review Desk/);
   assert.ok(html.includes('./services/ai-automation.html'));
   assert.ok(html.includes('./ai-workflow-review-desk/'));
-  assert.match(readme, /AI Workflow Review Desk · V1/);
+  assert.match(readme, /AI Workflow Review Desk/);
+  assert.match(aiLab, /AI Workflow Review Desk · V2/);
+  assert.match(aiReadme, /AI Workflow Review Desk · V2/);
   assert.match(services, /AI Workflow · 업무자동화/);
   assert.ok(serviceHub.includes('./ai-automation.html'));
 });
 
-test('AI commercial page exposes transparent price tiers and human review boundary', () => {
+test('AI commercial page exposes transparent price tiers, evidence grounding and human review boundary', () => {
   for (const price of ['149만원', '299만원', '499만원']) assert.match(aiService, new RegExp(price));
+  assert.match(aiService, /AI Workflow Review Desk · V2/);
+  assert.match(aiService, /Local Knowledge|local knowledge/);
+  assert.match(aiService, /Evidence Snapshot/);
   assert.match(aiService, /Structured Output/);
   assert.match(aiService, /Human review|Human Approve|HUMAN REVIEW/i);
   assert.match(aiService, /Provider Adapter|Provider adapter/i);
@@ -32,11 +38,14 @@ test('AI commercial page exposes transparent price tiers and human review bounda
   assert.ok(aiService.includes('../ai-workflow-review-desk/'));
 });
 
-test('AI marketplace sales kit covers Kmong, Soomgo and media assets', () => {
+test('AI marketplace sales kit covers V2 evidence workflow, Kmong, Soomgo and media assets', () => {
+  assert.match(aiSales, /AI Workflow Review Desk V2/);
   assert.match(aiSales, /크몽 상품 등록 원고/);
   assert.match(aiSales, /숨고 견적 응답 템플릿/);
   assert.match(aiSales, /60초 영상 구성/);
   for (const price of ['149만원', '299만원', '499만원']) assert.match(aiSales, new RegExp(price));
+  assert.match(aiSales, /Local Knowledge Retrieval/);
+  assert.match(aiSales, /Evidence Audit/);
   assert.match(aiSales, /Human Review/);
   assert.match(aiSales, /Structured Output/);
   assert.match(salesIndex, /AI-WORKFLOW-SALES\.md/);
@@ -76,7 +85,7 @@ test('AI pages are discoverable through sitemap', () => {
 });
 
 test('public AI commercial assets contain no common credential patterns', () => {
-  const content = [html, readme, services, serviceHub, aiService, aiLab, aiSales, estimator, sitemap].join('\n');
+  const content = [html, readme, services, serviceHub, aiService, aiLab, aiReadme, aiSales, estimator, sitemap].join('\n');
   assert.doesNotMatch(content, /sk-[A-Za-z0-9_-]{20,}/);
   assert.doesNotMatch(content, /AIza[0-9A-Za-z_-]{20,}/);
   assert.match(aiLab, /NO API KEY/);
