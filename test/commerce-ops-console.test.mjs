@@ -136,7 +136,7 @@ test('HTTP order workflow ships with version checks and audit history', async ()
   });
 });
 
-test('HTTP refund workflow requires current order version and records admin decision', async () => {
+test('HTTP sensitive refund workflow requires ADMIN and current order version', async () => {
   await withServer(async (baseUrl) => {
     const requested = await request(baseUrl, '/api/orders/3/refunds', {
       method: 'POST',
@@ -147,16 +147,23 @@ test('HTTP refund workflow requires current order version and records admin deci
     assert.equal(requested.body.order.paymentStatus, 'REFUND_PENDING');
     assert.equal(requested.body.order.version, 3);
 
-    const rejectedStale = await request(baseUrl, `/api/refunds/${requested.body.refund.id}/decision`, {
+    const stale = await request(baseUrl, `/api/refunds/${requested.body.refund.id}/decision`, {
       method: 'POST',
-      body: JSON.stringify({ expectedVersion: 2, decision: 'APPROVE', decidedBy: 'ops-admin' })
+      body: JSON.stringify({ expectedVersion: 2, decision: 'APPROVE', decidedBy: 'ops-admin', role: 'ADMIN' })
     });
-    assert.equal(rejectedStale.response.status, 409);
-    assert.equal(rejectedStale.body.error.code, 'STALE_ORDER');
+    assert.equal(stale.response.status, 409);
+    assert.equal(stale.body.error.code, 'STALE_ORDER');
+
+    const forbidden = await request(baseUrl, `/api/refunds/${requested.body.refund.id}/decision`, {
+      method: 'POST',
+      body: JSON.stringify({ expectedVersion: 3, decision: 'APPROVE', decidedBy: 'support-user', role: 'STAFF' })
+    });
+    assert.equal(forbidden.response.status, 403);
+    assert.equal(forbidden.body.error.code, 'REFUND_APPROVAL_FORBIDDEN');
 
     const approved = await request(baseUrl, `/api/refunds/${requested.body.refund.id}/decision`, {
       method: 'POST',
-      body: JSON.stringify({ expectedVersion: 3, decision: 'APPROVE', decidedBy: 'ops-admin', decisionNote: 'verified' })
+      body: JSON.stringify({ expectedVersion: 3, decision: 'APPROVE', decidedBy: 'ops-admin', role: 'ADMIN', decisionNote: 'verified' })
     });
     assert.equal(approved.response.status, 200);
     assert.equal(approved.body.refund.status, 'APPROVED');
@@ -166,6 +173,17 @@ test('HTTP refund workflow requires current order version and records admin deci
     const audits = await request(baseUrl, '/api/audits?orderId=3');
     assert.ok(audits.body.items.some((item) => item.action === 'REQUEST_REFUND'));
     assert.ok(audits.body.items.some((item) => item.action === 'APPROVE_REFUND' && item.actor === 'ops-admin'));
+  });
+});
+
+test('HTTP seeded sensitive refund cannot be decided by STAFF', async () => {
+  await withServer(async (baseUrl) => {
+    const forbidden = await request(baseUrl, '/api/refunds/1/decision', {
+      method: 'POST',
+      body: JSON.stringify({ expectedVersion: 5, decision: 'REJECT', decidedBy: 'demo-staff', role: 'STAFF' })
+    });
+    assert.equal(forbidden.response.status, 403);
+    assert.equal(forbidden.body.error.code, 'REFUND_APPROVAL_FORBIDDEN');
   });
 });
 
