@@ -79,7 +79,8 @@ FAILED ──→ Retry ──→ Retry lineage
     <p class="eyebrow">PUBLIC EVIDENCE</p>
     <div class="evidence">
       <h3>Integration Control Center · V3</h3>
-      <p>공개 Live Lab은 실제 credential 없이 Connection → Sync Job → Run 운영 UX를 보여주며, 저장소의 Node REST API reference는 Webhook event ingestion, connectionId + eventId deduplication, Retry lineage, 최대 재시도, Dead Letter를 포함합니다. 기존 400/404/409 오류 계약과 Idempotency-Key 중복 실행 방지도 유지합니다.</p>
+      <p>이전 공개 증거인 <strong>Integration Control Center · V2</strong>의 Connection / Job / Run / Idempotency를 유지하면서, V3는 Webhook event ingestion, connectionId + eventId deduplication, Retry lineage, 최대 재시도, Dead Letter를 추가했습니다.</p>
+      <p>공개 Live Lab은 실제 credential 없이 운영 UX를 보여주며 저장소의 Node REST API reference와 HTTP integration tests가 서버 경계를 검증합니다.</p>
       <div class="evidence-links"><a class="button primary" href="../integration-control-center/" target="_blank" rel="noreferrer">Live Lab ↗</a><a class="button" href="https://github.com/Kzone87/portfolio/tree/main/integration-control-center" target="_blank" rel="noreferrer">Source ↗</a><a class="button" href="https://github.com/Kzone87/portfolio/actions" target="_blank" rel="noreferrer">CI ↗</a></div>
     </div>
   </section>
