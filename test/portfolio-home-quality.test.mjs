@@ -16,10 +16,21 @@ const demoTargets = [
   './mini-labs/'
 ];
 
-test('portfolio home exposes all eight runnable demos', () => {
+test('portfolio home exposes all eight runnable product surfaces', () => {
   for (const href of demoTargets) assert.match(html, new RegExp(`href="${href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
-  assert.match(html, /직접 실행 가능한 데모<\/span><strong>8<\/strong>/);
+  assert.match(html, /직접 실행 가능한 제품 화면<\/span><strong>8<\/strong>/);
   assert.match(html, /말보다 직접 써보세요/);
+});
+
+test('portfolio groups runnable work into credible delivery scopes', () => {
+  assert.match(html, /NEXA TECH SERVICE/);
+  assert.match(html, /기업 홈페이지 보기/);
+  assert.match(html, /현장운영 시스템 보기/);
+  assert.match(html, /MONO OPERATIONS/);
+  assert.match(html, /MONO MARKET · 주문 운영/);
+  assert.match(html, /MONO OFFICE · 문서 검수/);
+  assert.match(html, /MONO SUPPORT · 상담 지원/);
+  assert.match(html, /MONO DATA HUB · 데이터 연동/);
 });
 
 test('portfolio home has search metadata and keyboard navigation support', () => {
@@ -34,4 +45,5 @@ test('portfolio primary text remains comfortably readable', () => {
   assert.match(css, /\.hero-copy\{[^}]*font-size:1\.08rem/);
   assert.match(css, /\.system-card p\{[^}]*font-size:\.9rem/);
   assert.match(css, /\.guide-grid p\{[^}]*font-size:\.88rem/);
+  assert.match(css, /\.case-link-grid a\{[^}]*min-height:42px/);
 });
