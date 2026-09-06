@@ -16,17 +16,17 @@ const salesIndex = await readFile(new URL('../sales/README.md', import.meta.url)
 const estimator = await readFile(new URL('../scope-estimator/index.html', import.meta.url), 'utf8');
 const sitemap = await readFile(new URL('../sitemap.xml', import.meta.url), 'utf8');
 
-test('AI workflow remains a first-class public case while homepage uses customer language', () => {
+test('AI workflow remains a first-class public case while homepage uses a concrete product name', () => {
   assert.match(work, /AI Workflow Review Desk · V2/);
   assert.ok(work.includes('../services/ai-automation.html'));
-  assert.match(html, /AI와 외부 서비스를 기존 업무에 연결/);
+  assert.match(html, /기존 서비스에 AI 요약·분류·초안 기능 추가/);
   assert.ok(html.includes('./services/ai-automation.html'));
   assert.match(readme, /AI Workflow Review Desk/);
-  assert.match(aiLab, /AI Workflow Review Desk · V2/);
+  assert.match(aiLab, /AI Workflow Review Desk V2/);
   assert.match(aiReadme, /AI Workflow Review Desk · V2/);
   assert.match(services, /AI Workflow · Local RAG/);
   assert.ok(serviceHub.includes('./ai-automation.html'));
-  assert.doesNotMatch(serviceHub, /Local RAG|Evidence Retrieval|Structured Output/);
+  assert.doesNotMatch(serviceHub, /Evidence Retrieval|Structured Output/);
 });
 
 test('public AI service explains the work first and preserves technical evidence later', () => {
@@ -59,28 +59,11 @@ test('AI marketplace sales kit keeps pricing and technical sales evidence', () =
 
 test('scope estimator includes AI workflow and produces a sensible guide', () => {
   assert.match(estimator, /option value="ai"/);
-  const basic = evaluateScope({
-    projectType: 'ai',
-    existing: 'new',
-    roles: 'single',
-    data: 'simple',
-    integrations: 'none',
-    operation: 'basic',
-    schedule: 'normal'
-  });
+  const basic = evaluateScope({ projectType: 'ai', existing: 'new', roles: 'single', data: 'simple', integrations: 'none', operation: 'basic', schedule: 'normal' });
   assert.equal(basic.projectLabel, 'AI Workflow / Local RAG');
   assert.equal(basic.packageName, 'DELUXE');
   assert.match(basic.firstPhase, /Structured Output/);
-
-  const advanced = evaluateScope({
-    projectType: 'ai',
-    existing: 'existing',
-    roles: 'multi',
-    data: 'relational',
-    integrations: 'multiple',
-    operation: 'advanced',
-    schedule: 'normal'
-  });
+  const advanced = evaluateScope({ projectType: 'ai', existing: 'existing', roles: 'multi', data: 'relational', integrations: 'multiple', operation: 'advanced', schedule: 'normal' });
   assert.ok(['PREMIUM', 'CUSTOM'].includes(advanced.packageName));
   assert.ok(advanced.reasons.some((reason) => /AI|Provider|Evaluation|Audit|Fallback/i.test(reason)));
 });

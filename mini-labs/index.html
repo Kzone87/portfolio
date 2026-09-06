@@ -1,35 +1,14 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="CMS, extraction, browser automation, security, QA/deployment를 credential-free deterministic demo로 검증하는 Kzone87 Engineering Mini Labs.">
-  <title>Engineering Mini Labs | Kzone87</title>
-  <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
-<header class="topbar"><a href="../">KZONE87</a><strong>Engineering Mini Labs</strong><span>PUBLIC · NO CREDENTIALS</span></header>
-<main class="shell">
-<section class="hero"><p class="eyebrow">ENGINEERING MINI LABS · V1</p><h1>작은 외주 영역도<br><span>실행 가능한 증거</span>로 보여줍니다.</h1><p>CMS publishing, 데이터 추출, 브라우저 업무자동화, 보안 경계, 배포 판단을 모두 가상 데이터와 deterministic engine으로 재현합니다. 외부 사이트 조작·실제 credential·고객 데이터는 사용하지 않습니다.</p></section>
-<nav class="tabs" aria-label="Lab 선택"><button data-tab="cms" class="active">CMS</button><button data-tab="extract">Extraction</button><button data-tab="automation">Automation</button><button data-tab="security">Security</button><button data-tab="deploy">QA / Deploy</button></nav>
-
-<section id="cms" class="lab active"><div class="panel"><p class="eyebrow">CMS LAB</p><h2>Publish gate</h2><label>제목<input id="cms-title" value="September release note"></label><label>본문<textarea id="cms-body">This fictional release note is long enough to demonstrate content validation and a safe publish gate.</textarea></label><button id="cms-run">Validate & Publish</button></div><pre id="cms-output"></pre></section>
-
-<section id="extract" class="lab"><div class="panel"><p class="eyebrow">EXTRACTION LAB</p><h2>Structured extraction</h2><label>Key:value source<textarea id="kv-source">Invoice No: INV-2026-001
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="작은 CMS 기능, 공개 데이터 추출, 반복 웹작업, 입력 방어, 배포 점검을 실제 작업 단위로 보여주는 공개 데모."><title>작은 기능 데모센터 | Kzone87</title><link rel="stylesheet" href="./styles.css"></head><body>
+<header class="topbar"><div><a href="../">← Portfolio</a><strong>작은 기능 데모센터</strong><span class="mode">NO CREDENTIALS · Mini Labs V1</span></div><a href="../services/feature-addition.html">기능추가 상품</a></header>
+<main class="shell"><section class="hero"><p class="eyebrow">SMALL FEATURE DEMOS</p><h1>작은 기능도 실제 입력과 결과로 보여드립니다.</h1><p>전체 시스템이 아니라 독립적으로 의뢰하기 쉬운 게시물 검증, 데이터 추출, 반복작업, 입력 방어, 배포점검 기능을 가상 데이터로 직접 실행합니다.</p></section>
+<nav class="tabs" aria-label="데모 선택"><button data-tab="cms" class="active">게시물 등록</button><button data-tab="extract">데이터 추출</button><button data-tab="automation">반복 웹작업</button><button data-tab="security">입력 방어</button><button data-tab="deploy">배포 점검</button></nav>
+<section id="cms" class="lab active"><div class="panel"><p class="eyebrow">CONTENT PUBLISHING</p><h2>게시 전에 필수내용 검사</h2><p class="fine">제목·본문을 검사해 게시 가능한 상태인지 판단합니다.</p><label>제목<input id="cms-title" value="September release note"></label><label>본문<textarea id="cms-body">This fictional release note is long enough to demonstrate content validation and a safe publish gate.</textarea></label><button id="cms-run">게시 가능 여부 확인</button></div><pre id="cms-output" aria-label="검사 결과"></pre></section>
+<section id="extract" class="lab"><div class="panel"><p class="eyebrow">DATA EXTRACTION</p><h2>문서·표에서 필요한 값을 구조화</h2><p class="fine">간단한 인보이스 텍스트와 CSV 표를 읽어 구조화된 결과를 만듭니다.</p><label>인보이스 원문<textarea id="kv-source">Invoice No: INV-2026-001
 Customer Name: Example Studio
-Amount: 180000</textarea></label><label>Strict CSV<textarea id="csv-source">id,name,status
+Amount: 180000</textarea></label><label>CSV 원문<textarea id="csv-source">id,name,status
 1,Alice,ACTIVE
-2,Bob,PENDING</textarea></label><button id="extract-run">Extract</button></div><pre id="extract-output"></pre></section>
-
-<section id="automation" class="lab"><div class="panel"><p class="eyebrow">BROWSER AUTOMATION LAB</p><h2>Allow-listed workflow simulation</h2><p>실제 웹을 조작하지 않습니다. HTTPS와 허용 도메인만 통과하는 workflow contract를 시뮬레이션합니다.</p><label>실패시킬 Step<select id="fail-step"><option value="">없음</option><option value="fill">fill</option><option value="submit">submit</option><option value="assert">assert</option></select></label><button id="automation-run">Simulate workflow</button></div><pre id="automation-output"></pre></section>
-
-<section id="security" class="lab"><div class="panel"><p class="eyebrow">SECURITY LAB</p><h2>Input boundary checks</h2><label>Redirect target<input id="redirect-target" value="https://evil.example.net/phish"></label><label>Spreadsheet cell<input id="sheet-cell" value="=SUM(1,2)"></label><label>Secret sample<input id="secret-sample" value="demo-secret-123456"></label><button id="security-run">Apply defenses</button></div><pre id="security-output"></pre></section>
-
-<section id="deploy" class="lab"><div class="panel"><p class="eyebrow">QA / DEPLOYMENT LAB</p><h2>Release gate</h2><div class="checks"><label><input type="checkbox" id="gate-tests" checked> Tests</label><label><input type="checkbox" id="gate-build" checked> Build</label><label><input type="checkbox" id="gate-secret" checked> Secret scan</label><label><input type="checkbox" id="gate-health" checked> Health check</label><label><input type="checkbox" id="gate-rollback"> Rollback plan</label><label><input type="checkbox" id="gate-observe"> Observability</label><label><input type="checkbox" id="gate-backup"> Backup verified</label></div><button id="deploy-run">Evaluate release</button></div><pre id="deploy-output"></pre></section>
-
-<section class="architecture"><p class="eyebrow">BOUNDARY</p><h2>Mini Lab 공통 원칙</h2><div class="grid"><article><strong>Deterministic</strong><span>같은 입력은 같은 검증 결과</span></article><article><strong>Allow-list first</strong><span>허용된 동작·도메인·상태만 처리</span></article><article><strong>No credentials</strong><span>실제 API Key/고객 데이터 없음</span></article><article><strong>Tested</strong><span>Node regression + syntax CI</span></article></div></section>
-</main>
-<footer class="shell"><a href="../">← Portfolio</a><span>Engineering Mini Labs · fictional public demo only</span></footer>
-<script type="module" src="./app.js"></script>
-</body>
-</html>
+2,Bob,PENDING</textarea></label><button id="extract-run">값 추출</button></div><pre id="extract-output" aria-label="추출 결과"></pre></section>
+<section id="automation" class="lab"><div class="panel"><p class="eyebrow">ROUTINE WORKFLOW</p><h2>정해진 순서의 반복작업 실행</h2><p class="fine">실제 사이트를 조작하지 않고 허용된 가상 업무 순서를 실행해 성공·실패 흐름을 확인합니다.</p><label>실패 상황<select id="fail-step"><option value="">정상 처리</option><option value="fill">입력 단계 실패</option><option value="submit">제출 단계 실패</option><option value="assert">결과 확인 실패</option></select></label><button id="automation-run">반복작업 실행</button></div><pre id="automation-output" aria-label="실행 결과"></pre></section>
+<section id="security" class="lab"><div class="panel"><p class="eyebrow">INPUT SAFETY</p><h2>위험한 입력을 저장 전에 차단</h2><label>이동할 주소<input id="redirect-target" value="https://evil.example.net/phish"></label><label>Excel 셀 값<input id="sheet-cell" value="=SUM(1,2)"></label><label>민감정보 예시<input id="secret-sample" value="demo-secret-123456"></label><button id="security-run">입력 검사</button></div><pre id="security-output" aria-label="방어 결과"></pre></section>
+<section id="deploy" class="lab"><div class="panel"><p class="eyebrow">RELEASE CHECK</p><h2>배포 전에 필수 점검 통과 여부 확인</h2><div class="checks"><label><input type="checkbox" id="gate-tests" checked> 자동 테스트</label><label><input type="checkbox" id="gate-build" checked> Production build</label><label><input type="checkbox" id="gate-secret" checked> 민감정보 검사</label><label><input type="checkbox" id="gate-health" checked> Health check</label><label><input type="checkbox" id="gate-rollback"> 롤백 계획</label><label><input type="checkbox" id="gate-observe"> 모니터링</label><label><input type="checkbox" id="gate-backup"> 백업 확인</label></div><button id="deploy-run">배포 가능 여부 확인</button></div><pre id="deploy-output" aria-label="배포 판정"></pre></section>
+<section class="architecture"><p class="eyebrow">DEMO INFO</p><h2>ENGINEERING MINI LABS · V1</h2></section></main><footer class="shell"><a href="../">← Portfolio</a><span>가상 데이터만 사용하는 공개 데모</span></footer><script type="module" src="./app.js"></script></body></html>
