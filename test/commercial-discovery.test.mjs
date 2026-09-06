@@ -13,27 +13,32 @@ const publicPages = [
   'https://kzone87.github.io/portfolio/services/admin-system.html',
   'https://kzone87.github.io/portfolio/services/excel-automation.html',
   'https://kzone87.github.io/portfolio/services/api-integration.html',
-  'https://kzone87.github.io/portfolio/services/maintenance.html',
-  'https://kzone87.github.io/portfolio/scope-estimator/'
+  'https://kzone87.github.io/portfolio/services/ai-automation.html',
+  'https://kzone87.github.io/portfolio/services/commerce-ops.html',
+  'https://kzone87.github.io/portfolio/services/field-service.html',
+  'https://kzone87.github.io/portfolio/services/document-workflow.html',
+  'https://kzone87.github.io/portfolio/work/'
 ];
 
-test('service hub exposes all commercial service paths', () => {
+test('service hub exposes evidence routes without its own quote funnel', () => {
   for (const path of [
     './admin-system.html',
     './excel-automation.html',
     './api-integration.html',
-    './maintenance.html',
-    '../scope-estimator/'
+    './ai-automation.html',
+    './commerce-ops.html',
+    './field-service.html',
+    './document-workflow.html',
+    '../mini-labs/'
   ]) {
     assert.ok(serviceHub.includes(path), `missing service hub path: ${path}`);
   }
-  assert.match(serviceHub, /49만원/);
-  assert.match(serviceHub, /149만원/);
-  assert.match(serviceHub, /299만원/);
-  assert.match(serviceHub, /월 15만원/);
+  assert.doesNotMatch(serviceHub, /PROJECT-BRIEF/);
+  assert.doesNotMatch(serviceHub, /견적 요청/);
+  assert.match(serviceHub, /문의와 계약은 개발 수주 플랫폼에서 진행/);
 });
 
-test('sitemap contains every commercial discovery URL', () => {
+test('sitemap contains the public discovery and evidence URLs', () => {
   for (const page of publicPages) {
     assert.ok(sitemap.includes(page), `missing sitemap URL: ${page}`);
   }
@@ -45,7 +50,7 @@ test('robots allows crawling and advertises the sitemap', () => {
   assert.match(robots, /Sitemap:\s*https:\/\/kzone87\.github\.io\/portfolio\/sitemap\.xml/);
 });
 
-test('quote template fixes scope before price and separates recurring support', () => {
+test('internal sales quote template still fixes scope before price', () => {
   assert.match(quote, /완료 조건/);
   assert.match(quote, /포함 범위/);
   assert.match(quote, /제외 범위/);
