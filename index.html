@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="기업 공개사이트와 내부 운영시스템, 주문·문서·고객지원 자동화, Excel 데이터 도구까지 실제 업무 흐름으로 구현한 Kzone87 웹제품 포트폴리오입니다.">
+  <meta name="description" content="업무 시스템, 데이터 자동화, 기업 웹사이트와 내부 운영도구를 실제 업무 흐름으로 구현하는 Kzone87 풀스택 웹개발 포트폴리오입니다.">
   <meta name="theme-color" content="#f7f8f6">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Kzone87 · 실제 업무 흐름을 구현하는 웹제품 포트폴리오">
-  <meta property="og:description" content="외부 고객용 웹사이트부터 내부 운영도구와 데이터 작업까지, 납품 단위의 제품 범위를 직접 실행해볼 수 있습니다.">
+  <meta property="og:title" content="Kzone87 · Full-stack Web Developer">
+  <meta property="og:description" content="누구인지, 무엇을 만들 수 있는지, 어떤 증거가 있는지, 어떻게 연락할지 60초 안에 확인할 수 있는 웹제품 포트폴리오입니다.">
   <meta property="og:url" content="https://kzone87.github.io/portfolio/">
   <link rel="canonical" href="https://kzone87.github.io/portfolio/">
-  <title>Kzone87 · 웹제품 포트폴리오</title>
+  <title>Kzone87 · Full-stack Web Developer</title>
   <link rel="stylesheet" href="./home.css">
+  <link rel="stylesheet" href="./home-v3.css">
   <style>.skip-link{position:absolute;left:16px;top:-56px;z-index:100;padding:10px 14px;border-radius:8px;background:#171b19;color:#fff;font-weight:800}.skip-link:focus{top:12px}a:focus-visible,button:focus-visible{outline:3px solid rgba(47,91,76,.35);outline-offset:3px}</style>
 </head>
 <body>
@@ -20,33 +21,57 @@
   <div class="shell header-inner">
     <a class="brand" href="#top" aria-label="KZONE87 포트폴리오 홈">KZONE87</a>
     <nav aria-label="주요 메뉴">
-      <a href="#featured">대표 납품범위</a>
-      <a href="#systems">운영 제품군</a>
-      <a href="#guide">검토 방법</a>
+      <a href="#capabilities">역량</a>
+      <a href="#featured">대표 작업</a>
+      <a href="#evidence">증거</a>
+      <a href="#contact">연락</a>
     </nav>
   </div>
 </header>
 
 <main id="top">
-  <section class="hero">
-    <div class="shell hero-grid">
+  <section class="hero v3-hero">
+    <div class="shell hero-grid v3-hero-grid">
       <div class="hero-main">
-        <p class="overline">WEB PRODUCT PORTFOLIO</p>
-        <h1>화면 하나가 아니라,<br>업무 흐름 전체를<br>구현합니다.</h1>
-        <p class="hero-copy">외부 고객이 보는 기업 홈페이지부터 직원이 쓰는 배차·주문·문서·상담 운영화면, Excel 데이터 작업까지 하나의 실제 업무처럼 설계하고 구현했습니다. 말보다 직접 써보세요.</p>
+        <p class="overline">FULL-STACK WEB DEVELOPER · BUSINESS AUTOMATION</p>
+        <h1>업무를 이해하고,<br>실제로 돌아가는<br>웹제품을 만듭니다.</h1>
+        <p class="hero-copy">기업 홈페이지, 내부 운영시스템, 승인·배차·주문 흐름, Excel 데이터 자동화, API·AI 업무보조까지 화면 하나가 아니라 <strong>업무가 끝까지 이어지는 제품</strong>으로 구현합니다.</p>
         <div class="hero-actions">
-          <a class="primary-action" href="#featured">대표 납품범위 보기</a>
-          <a class="secondary-action" href="#systems">운영 제품 바로가기</a>
+          <a class="primary-action" href="#featured">대표 작업 보기</a>
+          <a class="secondary-action" href="#contact">채용·협업 문의</a>
+        </div>
+        <div class="hero-proof" aria-label="핵심 증거">
+          <span><b>8</b> 직접 실행 가능한 제품 화면</span>
+          <span><b>CI</b> 자동 테스트로 회귀 검증</span>
+          <span><b>Live</b> 설명보다 실행 가능한 결과물</span>
         </div>
       </div>
-      <aside class="hero-summary" aria-label="포트폴리오 구성 요약">
-        <div class="summary-number"><span>직접 실행 가능한 제품 화면</span><strong>8</strong></div>
-        <div class="summary-list">
-          <div><span>01</span><p><b>외부 고객용 웹</b><small>기업 소개 · 서비스 · 사례 · 문의</small></p></div>
-          <div><span>02</span><p><b>내부 운영 시스템</b><small>배차 · 주문 · 문서 · 상담 · 연동</small></p></div>
-          <div><span>03</span><p><b>데이터 업무 도구</b><small>파일 정리 · 비교 · 일괄 처리</small></p></div>
-        </div>
+      <aside class="identity-card" aria-label="개발자 프로필 요약">
+        <span class="identity-label">DEVELOPER PROFILE</span>
+        <h2>Kzone87</h2>
+        <p class="identity-role">Full-stack Web Developer</p>
+        <dl>
+          <div><dt>Focus</dt><dd>업무 시스템 · 데이터 자동화 · 운영도구</dd></div>
+          <div><dt>Stack</dt><dd>TypeScript · JavaScript · Node.js · Java/Spring · SQL</dd></div>
+          <div><dt>Method</dt><dd>요구사항 → 상태/권한 → 예외처리 → 테스트 → 배포</dd></div>
+        </dl>
+        <a href="https://github.com/Kzone87" target="_blank" rel="noreferrer">GitHub 프로필 보기 ↗</a>
       </aside>
+    </div>
+  </section>
+
+  <section id="capabilities" class="capability-section">
+    <div class="shell">
+      <div class="section-heading">
+        <div><span>WHAT I BUILD</span><h2>무엇을 만들 수 있는가</h2></div>
+        <p>기술 이름보다 실제로 맡길 수 있는 업무 범위가 먼저 보이도록 정리했습니다.</p>
+      </div>
+      <div class="capability-grid">
+        <article><span>01</span><h3>업무 운영 시스템</h3><p>주문, 승인, 문서 검수, 예약·배차처럼 여러 상태와 권한이 이어지는 관리자·사내 업무도구.</p><b>상태 전이 · 권한 · Audit · 예외처리</b></article>
+        <article><span>02</span><h3>데이터 자동화</h3><p>Excel·CSV 정리, 항목 표준화, 두 파일 비교, 여러 파일 일괄 처리와 검수 리포트.</p><b>Excel · CSV · Validation · Batch</b></article>
+        <article><span>03</span><h3>API·AI 업무보조</h3><p>외부 시스템 연결, Webhook·Retry 흐름, 근거자료를 사용하는 AI 제안과 사람의 최종 검토.</p><b>REST · Webhook · Retry · Human Review</b></article>
+        <article><span>04</span><h3>기업 웹 + 내부 운영</h3><p>외부 고객이 보는 기업사이트와 직원이 쓰는 내부 운영화면을 하나의 서비스 범위로 연결.</p><b>Responsive · Inquiry · Operations</b></article>
+      </div>
     </div>
   </section>
 
@@ -54,18 +79,18 @@
     <div class="shell">
       <div class="section-heading">
         <div><span>DELIVERY-STYLE WORK</span><h2>납품 단위로 보기</h2></div>
-        <p>기능을 흩어놓지 않고, 한 고객의 외부 접점과 내부 운영까지 어디까지 구현했는지 기준으로 묶었습니다.</p>
+        <p>포트폴리오용 가상 브랜드와 데이터로 구성했지만, 화면은 실제 고객 업무를 맡았을 때의 범위와 예외상황을 기준으로 구현했습니다.</p>
       </div>
 
       <article class="flagship flagship-corporate client-case">
         <div class="flagship-copy">
           <div class="project-kicker"><span>01</span><b>B2B 기술서비스 운영</b><em>대표 범위</em></div>
           <h3>NEXA TECH SERVICE</h3>
-          <p class="project-lead">서비스를 찾는 기업 고객에게 보여주는 공개 홈페이지와, 접수된 현장 작업을 기사에게 배정하고 완료까지 추적하는 내부 운영화면을 하나의 업무로 구성했습니다.</p>
+          <p class="project-lead">서비스를 찾는 기업 고객에게 보여주는 공개 홈페이지와, 접수된 현장 작업을 기사에게 배정하고 완료까지 추적하는 내부 운영화면을 하나의 업무 범위로 구성했습니다.</p>
           <dl class="project-facts">
-            <div><dt>외부</dt><dd>회사소개 · 서비스 · 고객사례 · 문의</dd></div>
-            <div><dt>내부</dt><dd>기사별 시간축 · 미배정 큐 · 일정 충돌 · 현장 상태</dd></div>
-            <div><dt>운영</dt><dd>권한 차이 · 긴급 예외 · 변경 이력 · 모바일 대응</dd></div>
+            <div><dt>문제</dt><dd>고객 접점과 현장 작업 관리가 분리되면 요청 이후 진행상황을 추적하기 어렵습니다.</dd></div>
+            <div><dt>구현</dt><dd>회사소개·서비스·문의 + 기사별 시간축·미배정 큐·일정 충돌·현장 상태.</dd></div>
+            <div><dt>증거</dt><dd>모바일 대응, 권한 차이, 긴급 예외, 변경 이력을 공개 화면에서 직접 확인할 수 있습니다.</dd></div>
           </dl>
           <div class="case-links"><a class="project-enter" href="./nexa-tech-service/">기업 홈페이지 보기 <b>→</b></a><a class="project-enter secondary-case-link" href="./field-service-ops/">현장운영 시스템 보기 <b>→</b></a></div>
         </div>
@@ -109,7 +134,7 @@
             <div class="project-kicker"><span>03</span><b>독립 데이터 제품</b></div>
             <h3>Excel 정리 작업실</h3>
             <p class="project-lead">파일을 브라우저에서 바로 열어 정리하고, 항목 이름 맞추기·두 파일 비교·여러 파일 일괄 처리까지 수행합니다.</p>
-            <div class="project-tags"><span>Excel·CSV</span><span>비교</span><span>일괄 처리</span></div>
+            <div class="project-tags"><span>Excel·CSV</span><span>Validation</span><span>Compare</span><span>Batch</span></div>
             <span class="project-enter">Excel 작업실 실행 <b>↗</b></span>
           </div>
         </a>
@@ -139,18 +164,59 @@
     </div>
   </section>
 
-  <section id="guide" class="guide-section">
+  <section id="evidence" class="evidence-section">
     <div class="shell">
-      <div class="section-heading compact"><div><span>HOW TO REVIEW</span><h2>검토 방법</h2></div><p>설명보다 각 제품에서 업무 흐름과 예외상황을 직접 처리해보는 것이 가장 빠릅니다.</p></div>
-      <div class="guide-grid">
-        <div><span class="guide-no">1</span><h3>제품 화면을 엽니다.</h3><p>회원가입이나 실제 계정 없이 바로 주요 업무를 확인할 수 있습니다.</p></div>
-        <div><span class="guide-no">2</span><h3>정상 업무를 처리합니다.</h3><p>검색, 배정, 승인, 상태 변경, 파일 처리 같은 핵심 행동이 실제로 동작합니다.</p></div>
-        <div><span class="guide-no">3</span><h3>예외상황까지 확인합니다.</h3><p>포트폴리오용 데이터이므로 오류·충돌·권한 차이와 복구 흐름도 자유롭게 확인할 수 있습니다.</p></div>
+      <div class="section-heading">
+        <div><span>VERIFIABLE EVIDENCE</span><h2>무엇으로 증명하는가</h2></div>
+        <p>스크린샷이나 기술 목록만 제시하지 않고, 직접 실행 가능한 화면·공개 소스·자동 테스트를 함께 제공합니다.</p>
       </div>
+      <div class="evidence-grid">
+        <article><span>LIVE</span><h3>직접 실행</h3><p>회원가입 없이 정상 흐름과 오류·권한·충돌 상태까지 실제 버튼으로 확인할 수 있습니다.</p><a href="#featured">대표 제품 실행 →</a></article>
+        <article><span>SOURCE</span><h3>공개 소스</h3><p>구현 구조와 테스트 코드를 공개 저장소에서 확인할 수 있습니다.</p><a href="https://github.com/Kzone87/portfolio" target="_blank" rel="noreferrer">Portfolio Repository ↗</a></article>
+        <article><span>TEST / CI</span><h3>회귀 검증</h3><p>주문·배차·문서·AI·연동 도메인 테스트와 UI 품질 계약을 CI에서 계속 검증합니다.</p><a href="https://github.com/Kzone87/portfolio/actions" target="_blank" rel="noreferrer">GitHub Actions 보기 ↗</a></article>
+        <article><span>DATA TOOL</span><h3>TypeScript 제품</h3><p>Excel Workbench는 Vitest, strict TypeScript, Vite multi-page build와 Pages 배포까지 별도 저장소에서 검증합니다.</p><a href="https://github.com/Kzone87/customer-map-planner" target="_blank" rel="noreferrer">Excel Repository ↗</a></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="guide" class="guide-section v3-guide">
+    <div class="shell">
+      <div class="section-heading compact"><div><span>60-SECOND REVIEW</span><h2>60초 검토 순서</h2></div><p>채용담당자나 발주자가 가장 궁금해하는 순서로 구성했습니다.</p></div>
+      <div class="guide-grid four-step">
+        <div><span class="guide-no">1</span><h3>누구인가</h3><p>업무 시스템과 데이터 자동화를 중심으로 하는 Full-stack Web Developer.</p></div>
+        <div><span class="guide-no">2</span><h3>무엇을 만드는가</h3><p>운영시스템, 데이터 도구, API·AI 업무보조, 기업 웹과 내부 운영 연결.</p></div>
+        <div><span class="guide-no">3</span><h3>증거가 있는가</h3><p>8개 Live 화면, 공개 소스, 도메인 테스트, CI와 실제 Pages 배포.</p></div>
+        <div><span class="guide-no">4</span><h3>어떻게 연락하는가</h3><p>아래 채용·협업 또는 외주 문의 양식에서 필요한 범위만 남기면 됩니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact-section">
+    <div class="shell contact-shell">
+      <div class="contact-heading">
+        <span>CONTACT</span>
+        <h2>채용·협업·프로젝트 문의</h2>
+        <p>개인 연락처를 공개하지 않고도 실제로 대화를 시작할 수 있도록 GitHub 문의 양식을 제공합니다. 공개 이슈이므로 민감한 개인정보는 작성하지 마세요.</p>
+      </div>
+      <div class="contact-grid">
+        <article>
+          <span>HIRING / COLLABORATION</span>
+          <h3>채용·협업 문의</h3>
+          <p>개발 포지션, 기술 인터뷰, 프로젝트 협업을 제안하고 싶을 때 사용합니다.</p>
+          <a href="https://github.com/Kzone87/portfolio/issues/new?template=hiring.yml" target="_blank" rel="noreferrer">채용·협업 문의 남기기 ↗</a>
+        </article>
+        <article>
+          <span>PROJECT INQUIRY</span>
+          <h3>외주·프로젝트 상담</h3>
+          <p>관리자시스템, 데이터 자동화, 기업 홈페이지와 내부 운영도구 구축을 검토할 때 사용합니다.</p>
+          <a href="https://github.com/Kzone87/portfolio/issues/new?template=project-inquiry.yml" target="_blank" rel="noreferrer">프로젝트 문의 남기기 ↗</a>
+        </article>
+      </div>
+      <div class="contact-foot"><a href="https://github.com/Kzone87" target="_blank" rel="noreferrer">GitHub @Kzone87 ↗</a><span>포트폴리오의 브랜드·기업·데이터는 공개 시연을 위해 구성한 가상 사례입니다.</span></div>
     </div>
   </section>
 </main>
 
-<footer><div class="shell footer-inner"><span>KZONE87 · Web Product Portfolio</span><span>모든 브랜드와 데이터는 포트폴리오용으로 구성했으며, 화면의 주요 업무 흐름은 직접 실행할 수 있습니다.</span></div></footer>
+<footer><div class="shell footer-inner"><span>© 2026 KZONE87 · Full-stack Web Developer</span><span>Live products · Source · Tests · CI</span></div></footer>
 </body>
 </html>
