@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="기존 웹서비스와 외부 REST API를 연결하고 데이터 동기화, 실패 이력, 중복 실행 방지까지 포함한 시스템 연동 기능을 개발합니다." />
+  <meta name="description" content="기존 웹서비스와 외부 REST API를 연결하고 Webhook, 데이터 동기화, Retry, Dead Letter, 중복 실행 방지까지 포함한 시스템 연동 기능을 개발합니다." />
   <meta property="og:title" content="REST API · 외부 시스템 연동 개발" />
-  <meta property="og:description" content="단순 API 호출을 넘어 데이터 변환, 실패 기록, Idempotency까지 운영 가능한 연동 경계로 구현합니다." />
+  <meta property="og:description" content="단순 API 호출을 넘어 Webhook, 재시도, Dead Letter, Idempotency까지 운영 가능한 연동 경계로 구현합니다." />
   <meta property="og:type" content="website" />
   <title>REST API · 시스템 연동 개발 | Kzone87</title>
   <link rel="stylesheet" href="./service-page.css" />
@@ -18,15 +18,15 @@
 
 <main>
   <section class="hero shell">
-    <p class="eyebrow">REST API · DATA SYNC · INTEGRATION</p>
+    <p class="eyebrow">REST API · WEBHOOK · DATA SYNC · RETRY</p>
     <h1>기존 시스템과 외부 API를<br>운영 가능한 연동 기능으로.</h1>
-    <p class="hero-copy">A 시스템의 데이터를 B 시스템으로 옮기거나, 기존 프런트엔드에 서버 API를 추가하거나, 반복 동기화 작업을 운영할 수 있도록 개발합니다. 단순 호출 성공만 보지 않고 validation, 오류 계약, 실패 이력, 중복 실행 방지까지 연동 경계에 포함합니다.</p>
+    <p class="hero-copy">A 시스템의 데이터를 B 시스템으로 옮기거나, 기존 프런트엔드에 서버 API를 추가하거나, Webhook/주기 작업을 운영할 수 있도록 개발합니다. 단순 호출 성공만 보지 않고 validation, 오류 계약, 실패 이력, 중복 이벤트 방지, Retry와 Dead Letter까지 연동 경계에 포함합니다.</p>
     <span class="price-chip">API 기능 49만원부터 · 데이터 연동 Workflow 149만원부터</span>
     <div class="actions"><a class="button primary" href="../PROJECT-BRIEF.md">견적 요청 양식 ↗</a><a class="button" href="../integration-control-center/" target="_blank" rel="noreferrer">Live Lab ↗</a></div>
     <div class="proof">
       <article><strong>Explicit Contract</strong><span>Validation · 400/404/409 오류 경계</span></article>
-      <article><strong>Operations</strong><span>Connection · Job · Run History</span></article>
-      <article><strong>Reliability</strong><span>Failed Run · Idempotency · HTTP Test</span></article>
+      <article><strong>Operations</strong><span>Connection · Job · Event · Run</span></article>
+      <article><strong>Reliability</strong><span>Idempotency · Retry · Dead Letter</span></article>
     </div>
   </section>
 
@@ -37,30 +37,30 @@
       <article class="fit-card"><strong>기존 프런트엔드에 API가 필요</strong><p>화면은 있지만 데이터를 저장·조회하거나 서버 규칙을 처리할 Backend가 필요할 때.</p></article>
       <article class="fit-card"><strong>A 시스템 → B 시스템 동기화</strong><p>ERP, CRM, 쇼핑몰, 사내 시스템 등 서로 다른 데이터 구조를 변환해 연결해야 할 때.</p></article>
       <article class="fit-card"><strong>Webhook 또는 반복 실행</strong><p>이벤트 수신 또는 수동/주기 작업을 통해 데이터를 동기화해야 할 때.</p></article>
-      <article class="fit-card"><strong>실패와 중복이 문제</strong><p>호출 실패를 기록하고 같은 요청이 중복 처리되지 않도록 운영 기준이 필요할 때.</p></article>
+      <article class="fit-card"><strong>실패와 중복이 문제</strong><p>Webhook 중복을 막고 실패한 작업을 안전하게 재시도하며 반복 실패를 별도 격리해야 할 때.</p></article>
     </div>
     <div class="workflow">Connection
   ↓
-Sync Job / API Request
+Webhook Event / Scheduled Job
   ↓
-Validate / Transform
+Validate / Deduplicate / Transform
   ↓
-Execute / Persist
+Run
   ↓
-SUCCESS ──→ Run History
-FAILED  ──→ Error History / Retry
-  ↓
-Idempotency / Duplicate Prevention</div>
+SUCCESS ─────────→ Run History
+FAILED ──→ Retry ──→ Retry lineage
+                     ↓ max retries
+                 DEAD_LETTER</div>
   </section>
 
   <section id="scope" class="section shell">
     <p class="eyebrow">DEVELOPMENT SCOPE</p>
     <h2 class="section-title">호출 코드가 아니라 연동 경계를 구현합니다.</h2>
-    <p class="section-copy">실제 프로젝트에서는 API 문서, 인증 방식, 데이터 방향, 실행주기, 실패 처리, 저장 여부를 먼저 확인한 뒤 범위를 고정합니다.</p>
+    <p class="section-copy">실제 프로젝트에서는 API 문서, 인증 방식, 데이터 방향, 실행주기, Webhook 검증 방식, 실패 처리, 저장 여부를 먼저 확인한 뒤 범위를 고정합니다.</p>
     <div class="scope-grid">
       <article class="scope-card"><h3>API Boundary</h3><p>프런트나 외부 시스템이 사용할 명확한 계약.</p><ul><li>REST CRUD</li><li>Request/Response validation</li><li>400 / 404 / 409</li><li>OpenAPI</li></ul></article>
-      <article class="scope-card"><h3>Data Integration</h3><p>시스템 간 데이터 변환과 전달.</p><ul><li>Source / Target</li><li>Normalization</li><li>DB persistence</li><li>Webhook boundary</li></ul></article>
-      <article class="scope-card"><h3>Operational Safety</h3><p>운영 중 반복·실패를 제어하는 기준.</p><ul><li>Run History</li><li>Idempotency</li><li>Retry policy</li><li>Integration test</li></ul></article>
+      <article class="scope-card"><h3>Data Integration</h3><p>시스템 간 데이터 변환과 전달.</p><ul><li>Source / Target</li><li>Normalization</li><li>Webhook ingestion</li><li>Event deduplication</li></ul></article>
+      <article class="scope-card"><h3>Operational Safety</h3><p>운영 중 반복·실패를 제어하는 기준.</p><ul><li>Run History</li><li>Idempotency</li><li>Retry lineage / limit</li><li>Dead Letter</li></ul></article>
     </div>
   </section>
 
@@ -69,8 +69,8 @@ Idempotency / Duplicate Prevention</div>
     <h2 class="section-title">연동 개수와 운영 요구에 따라 나눕니다.</h2>
     <div class="price-grid">
       <article class="price-card"><h3>API FEATURE</h3><p class="price">49만원<small>부터</small></p><p>명확한 API 기능 또는 기존 연동 1건.</p><ul><li>Endpoint 1개 범위</li><li>기본 validation</li><li>단순 데이터 변환</li></ul></article>
-      <article class="price-card recommended"><h3>INTEGRATION FLOW</h3><p class="price">149만원<small>부터</small></p><p>변환·저장·오류 처리까지 하나의 연동 흐름.</p><ul><li>Source / Target</li><li>DB 또는 API 연결</li><li>오류 계약</li><li>Integration test</li></ul></article>
-      <article class="price-card"><h3>CONTROL PLANE</h3><p class="price">299만원<small>부터</small></p><p>여러 실행 작업과 이력을 운영하는 기능.</p><ul><li>Connection / Job / Run</li><li>Failure history</li><li>Idempotency</li><li>Retry / schedule 범위 협의</li></ul></article>
+      <article class="price-card recommended"><h3>INTEGRATION FLOW</h3><p class="price">149만원<small>부터</small></p><p>변환·저장·오류 처리까지 하나의 연동 흐름.</p><ul><li>Source / Target</li><li>DB 또는 API 연결</li><li>Webhook / 오류 계약</li><li>Integration test</li></ul></article>
+      <article class="price-card"><h3>CONTROL PLANE</h3><p class="price">299만원<small>부터</small></p><p>여러 실행 작업과 실패 이력을 운영하는 기능.</p><ul><li>Connection / Job / Event / Run</li><li>Idempotency</li><li>Retry / Dead Letter</li><li>Scheduler/Queue 범위 협의</li></ul></article>
     </div>
     <p class="notice">제3자 API 이용료, OAuth 승인, 결제·금융·민감정보 연동, 초고빈도 호출, 대용량 Queue/Worker, 장기 모니터링은 별도 범위입니다. 실제 API Key와 secret은 프런트 공개 코드가 아니라 서버 환경 또는 secret 관리 경계에 둡니다.</p>
   </section>
@@ -78,8 +78,8 @@ Idempotency / Duplicate Prevention</div>
   <section class="section shell">
     <p class="eyebrow">PUBLIC EVIDENCE</p>
     <div class="evidence">
-      <h3>Integration Control Center · V2</h3>
-      <p>공개 Live Lab은 실제 credential 없이 Connection → Sync Job → Run 운영 UX를 보여주며, 저장소에는 같은 도메인의 Node REST API reference implementation이 있습니다. 400/404/409 오류 계약, unhealthy connection의 FAILED Run 기록, Idempotency-Key 중복 실행 방지와 실제 HTTP integration tests를 포함합니다.</p>
+      <h3>Integration Control Center · V3</h3>
+      <p>공개 Live Lab은 실제 credential 없이 Connection → Sync Job → Run 운영 UX를 보여주며, 저장소의 Node REST API reference는 Webhook event ingestion, connectionId + eventId deduplication, Retry lineage, 최대 재시도, Dead Letter를 포함합니다. 기존 400/404/409 오류 계약과 Idempotency-Key 중복 실행 방지도 유지합니다.</p>
       <div class="evidence-links"><a class="button primary" href="../integration-control-center/" target="_blank" rel="noreferrer">Live Lab ↗</a><a class="button" href="https://github.com/Kzone87/portfolio/tree/main/integration-control-center" target="_blank" rel="noreferrer">Source ↗</a><a class="button" href="https://github.com/Kzone87/portfolio/actions" target="_blank" rel="noreferrer">CI ↗</a></div>
     </div>
   </section>
@@ -89,14 +89,14 @@ Idempotency / Duplicate Prevention</div>
     <h2 class="section-title">연동 견적 전에 확인하는 내용</h2>
     <div class="faq-grid">
       <article class="faq-card"><h3>API 문서가 꼭 필요한가요?</h3><p>가능하면 필요합니다. 문서가 없다면 기존 호출 예시나 테스트 계정/개발 환경을 통해 별도 분석 범위를 먼저 잡습니다.</p></article>
+      <article class="faq-card"><h3>Webhook이 두 번 오면 어떻게 하나요?</h3><p>provider의 event ID나 업무 unique key를 이용해 중복 처리를 막습니다. 공개 V3는 connectionId + eventId 조합으로 deduplication을 재현합니다.</p></article>
+      <article class="faq-card"><h3>실패한 연동은 자동 재시도하나요?</h3><p>업무 특성에 따라 retry 횟수, backoff, 재시도 금지 오류를 구분합니다. 반복 실패는 운영자가 별도로 확인할 Dead Letter 흐름을 둘 수 있습니다.</p></article>
       <article class="faq-card"><h3>API Key를 포트폴리오처럼 공개하나요?</h3><p>아닙니다. 실제 프로젝트 secret은 서버 환경이나 적절한 secret 관리 경계에 두고 공개 소스에 넣지 않습니다.</p></article>
-      <article class="faq-card"><h3>OAuth나 외부 승인 절차도 가능한가요?</h3><p>가능하지만 제공업체의 승인 정책과 계정 준비 상태에 따라 일정이 달라질 수 있어 별도 확인합니다.</p></article>
-      <article class="faq-card"><h3>같은 요청이 두 번 들어오면 어떻게 하나요?</h3><p>중복 처리가 위험한 작업은 Idempotency Key, 상태 체크, unique constraint 등 도메인에 맞는 방어 방식을 설계합니다.</p></article>
     </div>
   </section>
 
   <section class="cta shell">
-    <div><p class="eyebrow">FAST ESTIMATE</p><h2>Source와 Target, 그리고 API 문서가 있으면 빠르게 범위를 잡을 수 있습니다.</h2><p>어떤 시스템에서 어떤 데이터를 어디로 보내는지 / 인증 방식 / 수동·주기 실행 여부 / 실패 시 요구사항을 알려주세요.</p></div>
+    <div><p class="eyebrow">FAST ESTIMATE</p><h2>Source와 Target, 그리고 API/Webhook 문서가 있으면 빠르게 범위를 잡을 수 있습니다.</h2><p>어떤 시스템에서 어떤 데이터를 어디로 보내는지 / 인증 방식 / 수동·주기·Webhook 여부 / 중복·실패 처리 요구사항을 알려주세요.</p></div>
     <div class="actions"><a class="button primary" href="../PROJECT-BRIEF.md">견적 양식 ↗</a><a class="button" href="../SERVICES.md">전체 서비스 ↗</a></div>
   </section>
 </main>
