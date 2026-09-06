@@ -56,11 +56,26 @@ export function createAiReviewServer(store = createStore()) {
       }
 
       if (req.method === 'GET' && pathname === '/api/health') {
-        sendJson(res, 200, { ok: true, service: 'ai-workflow-review-desk', providerMode: 'credential-free-mock' });
+        sendJson(res, 200, {
+          ok: true,
+          service: 'ai-workflow-review-desk',
+          version: 2,
+          providerMode: 'credential-free-mock',
+          retrievalMode: 'deterministic-local-knowledge'
+        });
         return;
       }
       if (req.method === 'GET' && pathname === '/api/prompts') {
         sendJson(res, 200, { items: store.listPrompts() });
+        return;
+      }
+      if (req.method === 'GET' && pathname === '/api/knowledge') {
+        sendJson(res, 200, { items: store.listKnowledge() });
+        return;
+      }
+      if (req.method === 'POST' && pathname === '/api/retrieval') {
+        const body = await readJson(req);
+        sendJson(res, 200, store.retrieve(body));
         return;
       }
       if (req.method === 'GET' && pathname === '/api/tasks') {
@@ -115,6 +130,6 @@ if (isMain) {
   const port = Number(process.env.PORT ?? 8790);
   const server = createAiReviewServer();
   server.listen(port, '127.0.0.1', () => {
-    console.log(`AI Workflow Review Desk API listening on http://127.0.0.1:${port}`);
+    console.log(`AI Workflow Review Desk V2 API listening on http://127.0.0.1:${port}`);
   });
 }
