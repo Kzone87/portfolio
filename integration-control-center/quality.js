@@ -20,3 +20,23 @@ const observer = new MutationObserver(ensureFailedConnectionsRemainPreviewable);
 if (source) observer.observe(source, { childList: true });
 if (target) observer.observe(target, { childList: true });
 ensureFailedConnectionsRemainPreviewable();
+
+const destructiveConfirmations = {
+  resetDemo: '저장된 전달 작업과 실행 이력을 초기 구성으로 되돌릴까요?',
+  clearHistory: '현재 실행 이력을 모두 비울까요?'
+};
+
+document.addEventListener('click', event => {
+  const button = event.target.closest?.('button');
+  const message = button ? destructiveConfirmations[button.id] : null;
+  if (!message || window.confirm(message)) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, { capture: true });
+
+const resetButton = document.getElementById('resetDemo');
+const formStatus = document.getElementById('formStatus');
+resetButton?.addEventListener('click', () => {
+  if (!formStatus) return;
+  queueMicrotask(() => { formStatus.textContent = '초기 구성을 복원했습니다.'; });
+});

@@ -27,9 +27,11 @@ function visibleText(html) {
     .replace(/\s+/g, ' ');
 }
 
-test('homepage is a direct interactive showroom, not a sales or case catalog', () => {
+test('homepage stays directly runnable while grouping work by delivery scope', () => {
   assert.match(home, /말보다 직접/);
-  assert.match(home, /직접 실행 가능한 데모/);
+  assert.match(home, /직접 실행 가능한 제품 화면/);
+  assert.match(home, /NEXA TECH SERVICE/);
+  assert.match(home, /MONO OPERATIONS/);
   assert.ok(home.includes('./nexa-tech-service/'), 'missing corporate website demo');
   for (const demo of demos) assert.ok(home.includes(`./${demo.route}`), `missing direct demo link: ${demo.route}`);
   assert.ok(home.includes('https://kzone87.github.io/customer-map-planner/'));
@@ -56,7 +58,7 @@ test('every internal showroom page exposes real controls and visible results', a
       assert.ok(app.includes(id), `${demo.route} control ${id} is not wired in app`);
     }
     for (const id of demo.results) assert.ok(html.includes(`id="${id}"`), `${demo.route} missing result area ${id}`);
-    assert.match(html, /<a href="\.\.\/">← (?:체험센터|포트폴리오)<\/a>/);
+    assert.match(html, /<a href="\.\.\/"[^>]*>← (?:체험센터|포트폴리오|프로젝트)<\/a>/);
     assert.doesNotMatch(html, /services\//);
   }
 });

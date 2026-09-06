@@ -8,8 +8,9 @@ test('commerce workspace presents readable operational order data', async () => 
   const html = await load('commerce-ops-console/index.html');
   const css = await load('commerce-ops-console/styles.css');
 
-  assert.match(html, /시연 기준일/);
-  assert.doesNotMatch(html, /오늘의 주문 업무|오늘 업무/);
+  assert.match(html, /MONO MARKET/);
+  assert.match(html, /운영 기준일/);
+  assert.doesNotMatch(html, /샘플 쇼핑몰|시연 주문 업무|체험 방법|시연 기준일|오늘의 주문 업무|오늘 업무/);
   assert.match(html, /id="search" type="search" aria-label="주문 검색"/);
   assert.match(html, /id="ops-filter" aria-label="처리상태"/);
   assert.match(html, /id="fulfillment-filter" aria-label="배송상태"/);
