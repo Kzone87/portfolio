@@ -22,7 +22,7 @@ test('AI workflow is a first-class public case and service', () => {
   assert.match(readme, /AI Workflow Review Desk/);
   assert.match(aiLab, /AI Workflow Review Desk · V2/);
   assert.match(aiReadme, /AI Workflow Review Desk · V2/);
-  assert.match(services, /AI Workflow · 업무자동화/);
+  assert.match(services, /AI Workflow · Local RAG/);
   assert.ok(serviceHub.includes('./ai-automation.html'));
 });
 
@@ -62,7 +62,7 @@ test('scope estimator includes AI workflow and produces a sensible guide', () =>
     operation: 'basic',
     schedule: 'normal'
   });
-  assert.equal(basic.projectLabel, 'AI Workflow / 업무자동화');
+  assert.equal(basic.projectLabel, 'AI Workflow / Local RAG');
   assert.equal(basic.packageName, 'DELUXE');
   assert.match(basic.firstPhase, /Structured Output/);
 
