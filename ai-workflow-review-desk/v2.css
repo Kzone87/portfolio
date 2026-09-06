@@ -1,3 +1,4 @@
+@layer legacy {
 .flag-line {
   display: flex;
   align-items: flex-start;
@@ -49,4 +50,5 @@
 @media (max-width: 640px) {
   .knowledge-list { grid-template-columns: 1fr; }
   .evidence-heading, .evidence-item header, .flag-line { flex-direction: column; }
+}
 }
