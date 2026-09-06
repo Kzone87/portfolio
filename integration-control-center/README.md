@@ -2,7 +2,7 @@
 
 외부 시스템 간 데이터 동기화 작업을 운영하는 상황을 가정한 **공개 Integration control-plane + REST API reference implementation**입니다.
 
-V2의 Connection / Job / Run / Idempotency 위에 V3는 **Webhook event ingestion, event deduplication, retry lineage, retry limit, dead-letter handling**을 추가합니다. 실제 API Key, 비공개 서비스, 고객 데이터는 사용하지 않습니다.
+이전 공개 milestone인 **Integration Control Center · V2**의 Connection / Job / Run / Idempotency를 유지하면서, V3는 **Webhook event ingestion, event deduplication, retry lineage, retry limit, dead-letter handling**을 추가합니다. 실제 API Key, 비공개 서비스, 고객 데이터는 사용하지 않습니다.
 
 ## V3 architecture
 
