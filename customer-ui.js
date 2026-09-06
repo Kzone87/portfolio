@@ -22,16 +22,13 @@ export const ACTION_LABELS = Object.freeze({
 });
 
 export const ROLE_LABELS = Object.freeze({ STAFF: '직원', ADMIN: '관리자', SUBMITTER: '문서 작성자', REVIEWER: '검수 담당자' });
-
-export const FIELD_LABELS = Object.freeze({
-  documentNo: '문서번호', party: '거래처', amount: '금액', applicantName: '신청자명', email: '이메일', counterparty: '계약 상대', effectiveDate: '적용일'
-});
-
+export const FIELD_LABELS = Object.freeze({ documentNo: '문서번호', party: '거래처', amount: '금액', applicantName: '신청자명', email: '이메일', counterparty: '계약 상대', effectiveDate: '적용일' });
 export const CATEGORY_LABELS = Object.freeze({ billing: '결제·환불', access: '계정·권한', incident: '서비스 장애', data: '데이터 처리', security: '보안 확인', general: '일반 문의' });
 
 export function uiLabel(value, fallback = '') {
   const key = String(value ?? '').trim();
-  return STATUS_LABELS[key] ?? ACTION_LABELS[key] ?? ROLE_LABELS[key] ?? CATEGORY_LABELS[key] ?? fallback || key;
+  const mapped = STATUS_LABELS[key] ?? ACTION_LABELS[key] ?? ROLE_LABELS[key] ?? CATEGORY_LABELS[key];
+  return mapped ?? (fallback || key);
 }
 
 export function friendlyActor(value) {
