@@ -1,3 +1,6 @@
+@layer legacy, system;
+@import url("../product-ui.css") layer(system);
+@layer legacy {
 :root {
   --bg: #07111f;
   --surface: #0d1a2b;
@@ -163,4 +166,5 @@ textarea { resize: vertical; }
   .stats, .evaluation-strip, .editor-grid { grid-template-columns: 1fr; }
   .editor-grid label:nth-child(1), .editor-grid label:nth-child(2) { grid-column: auto; }
   .panel-title, .task-heading { flex-direction: column; align-items: stretch; }
+}
 }
