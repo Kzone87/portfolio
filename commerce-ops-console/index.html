@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="주문·결제·출고·환불 예외를 운영하는 credential-free Commerce Ops Console 공개 Live Lab" />
+  <title>Commerce Ops Console · V1</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<header class="topbar">
+  <div><a href="../">← Portfolio</a><strong>COMMERCE OPS CONSOLE · V1</strong></div>
+  <label>Demo Role
+    <select id="role"><option value="STAFF">STAFF</option><option value="ADMIN">ADMIN</option></select>
+  </label>
+</header>
+
+<main>
+  <section class="hero">
+    <p class="eyebrow">ORDER OPS · FULFILLMENT · REFUND REVIEW · AUDIT</p>
+    <h1>주문을 조회하는 화면이 아니라<br><span>예외를 안전하게 처리하는 운영 콘솔</span>입니다.</h1>
+    <p>운영상태·결제상태·출고상태를 분리하고 Hold, 출고, 반품, 부분환불, 고액 환불 승인, stale action 방어, audit trail을 재현합니다. 모든 데이터는 공개용 가상 데이터이며 실제 결제/배송 API나 credential은 사용하지 않습니다.</p>
+    <div class="chips"><span>NO REAL PAYMENT</span><span>NO CREDENTIALS</span><span>STAFF / ADMIN</span><span>OPTIMISTIC VERSION</span><span>AUDIT</span></div>
+  </section>
+
+  <section class="metrics" aria-label="operations metrics">
+    <article><strong id="m-active">0</strong><span>Active Orders</span></article>
+    <article><strong id="m-hold">0</strong><span>On Hold</span></article>
+    <article><strong id="m-unfulfilled">0</strong><span>To Fulfill</span></article>
+    <article><strong id="m-refund">0</strong><span>Refund Review</span></article>
+    <article><strong id="m-high">0</strong><span>Admin Required</span></article>
+  </section>
+
+  <section class="workspace">
+    <aside class="panel order-list-panel">
+      <div class="panel-head"><div><p class="eyebrow">ORDER QUEUE</p><h2>운영 주문</h2></div></div>
+      <div class="filters">
+        <input id="search" placeholder="주문번호 / 고객 / 이메일" />
+        <select id="ops-filter"><option value="">Ops 전체</option><option>ACTIVE</option><option>ON_HOLD</option><option>CANCELLED</option><option>CLOSED</option></select>
+        <select id="fulfillment-filter"><option value="">Fulfillment 전체</option><option>UNFULFILLED</option><option>PICKING</option><option>SHIPPED</option><option>DELIVERED</option><option>RETURNED</option></select>
+      </div>
+      <div id="order-list" class="order-list"></div>
+    </aside>
+
+    <section class="panel detail-panel">
+      <div id="empty-detail" class="empty">주문을 선택하세요.</div>
+      <div id="detail" hidden>
+        <div class="detail-head">
+          <div><p class="eyebrow">ORDER CONTROL</p><h2 id="order-title"></h2><p id="order-customer" class="muted"></p></div>
+          <span id="order-version" class="version"></span>
+        </div>
+        <div class="state-grid">
+          <article><span>OPS</span><strong id="ops-status"></strong></article>
+          <article><span>PAYMENT</span><strong id="payment-status"></strong></article>
+          <article><span>FULFILLMENT</span><strong id="fulfillment-status"></strong></article>
+          <article><span>REFUNDABLE</span><strong id="refundable"></strong></article>
+        </div>
+        <div id="flags" class="flags"></div>
+
+        <section class="control-block">
+          <h3>Order Actions</h3>
+          <div id="actions" class="actions"></div>
+          <div class="inline-controls">
+            <label>Hold reason<select id="hold-reason"><option>ADDRESS_CHECK</option><option>STOCK_CHECK</option><option>PAYMENT_REVIEW</option><option>FRAUD_REVIEW</option><option>CUSTOMER_REQUEST</option><option>OTHER</option></select></label>
+            <label>Tracking<input id="tracking" value="TRACK-DEMO-001" /></label>
+          </div>
+        </section>
+
+        <section class="control-block">
+          <h3>Refund Request</h3>
+          <div class="refund-form">
+            <label>Amount<input id="refund-amount" type="number" min="1" step="1" /></label>
+            <label>Reason<select id="refund-reason"><option>CUSTOMER_REQUEST</option><option>DUPLICATE</option><option>DAMAGED</option><option>LOST</option><option>FRAUD_REVIEW</option><option>OTHER</option></select></label>
+            <label class="wide">Note<input id="refund-note" maxlength="500" placeholder="환불 사유 메모" /></label>
+            <button id="request-refund" type="button">Refund 요청</button>
+          </div>
+          <p class="fine">10만원 이상 또는 DAMAGED / LOST / FRAUD_REVIEW 사유는 ADMIN 승인 대상으로 표시됩니다.</p>
+        </section>
+        <p id="status-message" class="status-message" role="status"></p>
+      </div>
+    </section>
+  </section>
+
+  <section class="lower-grid">
+    <article class="panel">
+      <div class="panel-head"><div><p class="eyebrow">REFUND REVIEW</p><h2>환불 승인 큐</h2></div><span class="muted">민감 환불은 ADMIN만 결정</span></div>
+      <div id="refund-list" class="review-list"></div>
+    </article>
+    <article class="panel">
+      <div class="panel-head"><div><p class="eyebrow">AUDIT TRAIL</p><h2>운영 변경 이력</h2></div></div>
+      <div id="audit-list" class="audit-list"></div>
+    </article>
+  </section>
+
+  <section class="panel architecture">
+    <p class="eyebrow">REFERENCE ARCHITECTURE</p>
+    <h2>상태를 분리하고, 변경은 version + audit로 통제합니다.</h2>
+    <div class="flow"><span>Order</span><b>→</b><span>Ops State</span><b>+</b><span>Payment State</span><b>+</b><span>Fulfillment State</span><b>→</b><span>Policy / RBAC</span><b>→</b><span>Version Check</span><b>→</b><span>Audit</span></div>
+    <p class="fine">정적 Live Lab은 같은 domain store를 브라우저에서 실행합니다. 저장소에는 별도의 Node REST API reference와 HTTP-level tests가 포함됩니다.</p>
+  </section>
+</main>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
