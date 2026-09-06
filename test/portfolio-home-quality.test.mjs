@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const css = await readFile(new URL('../home.css', import.meta.url), 'utf8');
+const v3Css = await readFile(new URL('../home-v3.css', import.meta.url), 'utf8');
 
 const demoTargets = [
   './nexa-tech-service/',
@@ -18,8 +19,8 @@ const demoTargets = [
 
 test('portfolio home exposes all eight runnable product surfaces', () => {
   for (const href of demoTargets) assert.match(html, new RegExp(`href="${href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
-  assert.match(html, /직접 실행 가능한 제품 화면<\/span><strong>8<\/strong>/);
-  assert.match(html, /말보다 직접 써보세요/);
+  assert.match(html, /<b>8<\/b> 직접 실행 가능한 제품 화면/);
+  assert.match(html, /설명보다 실행 가능한 결과물/);
 });
 
 test('portfolio groups runnable work into credible delivery scopes', () => {
@@ -46,4 +47,6 @@ test('portfolio primary text remains comfortably readable', () => {
   assert.match(css, /\.system-card p\{[^}]*font-size:\.9rem/);
   assert.match(css, /\.guide-grid p\{[^}]*font-size:\.88rem/);
   assert.match(css, /\.case-link-grid a\{[^}]*min-height:42px/);
+  assert.match(v3Css, /\.identity-card dd\{[^}]*font-size:\.86rem/);
+  assert.match(v3Css, /\.contact-grid a\{[^}]*min-height:46px/);
 });
