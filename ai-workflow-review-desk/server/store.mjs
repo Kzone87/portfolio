@@ -8,6 +8,7 @@ import {
   validateTaskInput,
   validateStructuredOutput
 } from '../engine.mjs';
+import { listKnowledgeDocuments, retrieveKnowledge } from '../knowledge.mjs';
 
 export class DomainError extends Error {
   constructor(statusCode, code, message) {
@@ -26,6 +27,16 @@ function clone(value) {
   return structuredClone(value);
 }
 
+function normalizeRetrievalInput(input = {}) {
+  const query = String(input.query ?? '').trim();
+  if (query.length < 2 || query.length > 4000) {
+    throw new DomainError(400, 'INVALID_RETRIEVAL_QUERY', 'query must be 2-4000 characters');
+  }
+  const requested = Number(input.limit ?? 3);
+  const limit = Number.isInteger(requested) ? Math.max(1, Math.min(5, requested)) : 3;
+  return { query, limit };
+}
+
 export function createStore() {
   const state = {
     taskSeq: 3,
@@ -40,6 +51,7 @@ export function createStore() {
         version: 1,
         output: null,
         evaluation: null,
+        retrieval: null,
         createdAt: nowIso(),
         updatedAt: nowIso()
       },
@@ -51,6 +63,7 @@ export function createStore() {
         version: 1,
         output: null,
         evaluation: null,
+        retrieval: null,
         createdAt: nowIso(),
         updatedAt: nowIso()
       }
@@ -72,6 +85,15 @@ export function createStore() {
   return {
     listPrompts() {
       return Object.values(PROMPTS).map(clone);
+    },
+
+    listKnowledge() {
+      return listKnowledgeDocuments().map(clone);
+    },
+
+    retrieve(input) {
+      const { query, limit } = normalizeRetrievalInput(input);
+      return clone(retrieveKnowledge(query, { limit }));
     },
 
     listTasks() {
@@ -101,6 +123,7 @@ export function createStore() {
         version: 1,
         output: null,
         evaluation: null,
+        retrieval: null,
         createdAt: timestamp,
         updatedAt: timestamp
       };
@@ -124,6 +147,7 @@ export function createStore() {
         promptVersion: run.promptVersion,
         output: run.output,
         evaluation: run.evaluation,
+        retrieval: run.retrieval,
         attempts: run.attempts,
         createdAt: timestamp
       };
@@ -131,6 +155,7 @@ export function createStore() {
 
       task.version += 1;
       task.updatedAt = timestamp;
+      task.retrieval = run.retrieval;
       if (run.status === RUN_STATUS.SUCCESS) {
         task.output = run.output;
         task.evaluation = run.evaluation;
@@ -154,7 +179,7 @@ export function createStore() {
         throw new DomainError(409, 'STALE_REVIEW', `task version changed from ${expectedVersion} to ${task.version}`);
       }
       const decision = String(input.decision ?? '').toUpperCase();
-      let editedOutput = input.editedOutput ?? null;
+      const editedOutput = input.editedOutput ?? null;
       if (editedOutput && !validateStructuredOutput(editedOutput)) {
         throw new DomainError(400, 'INVALID_OUTPUT', 'editedOutput does not match the structured output schema');
       }
@@ -168,6 +193,7 @@ export function createStore() {
 
       const timestamp = nowIso();
       Object.assign(task, reviewed, { updatedAt: timestamp });
+      const evidenceIds = task.retrieval?.evidence?.map((item) => item.id) ?? [];
       const review = {
         id: state.reviewSeq++,
         taskId: task.id,
@@ -175,6 +201,8 @@ export function createStore() {
         reviewer: String(input.reviewer ?? 'demo-reviewer').slice(0, 80),
         taskVersion: task.version,
         edited: Boolean(editedOutput),
+        evidenceIds,
+        evidenceCoverage: task.retrieval?.coverage ?? 0,
         output: clone(task.output),
         createdAt: timestamp
       };
