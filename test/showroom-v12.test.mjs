@@ -28,15 +28,20 @@ function visibleText(html) {
 }
 
 test('homepage stays directly runnable while grouping work by delivery scope', () => {
-  assert.match(home, /말보다 직접/);
+  assert.match(home, /설명보다 실행 가능한 결과물/);
   assert.match(home, /직접 실행 가능한 제품 화면/);
+  assert.match(home, /Full-stack Web Developer/);
+  assert.match(home, /무엇으로 증명하는가/);
+  assert.match(home, /채용·협업·프로젝트 문의/);
   assert.match(home, /NEXA TECH SERVICE/);
   assert.match(home, /MONO OPERATIONS/);
   assert.ok(home.includes('./nexa-tech-service/'), 'missing corporate website demo');
   for (const demo of demos) assert.ok(home.includes(`./${demo.route}`), `missing direct demo link: ${demo.route}`);
   assert.ok(home.includes('https://kzone87.github.io/customer-map-planner/'));
-  for (const removed of ['./services/', './work/', './scope-estimator/', 'Business Ops', '견적 문의', 'GitHub', 'CI로 검증']) {
-    assert.ok(!home.includes(removed), `non-runnable or developer-facing homepage content returned: ${removed}`);
+  assert.ok(home.includes('https://github.com/Kzone87/portfolio'));
+  assert.ok(home.includes('issues/new?template=hiring.yml'));
+  for (const removed of ['./services/', './work/', './scope-estimator/', 'Business Ops', '견적 문의']) {
+    assert.ok(!home.includes(removed), `obsolete homepage content returned: ${removed}`);
   }
 });
 
