@@ -84,6 +84,20 @@ test('corporate website has complete navigation, responsive controls and a worki
   assert.match(app, /faq-button/);
 });
 
+test('NEXA keeps customer-facing text readable and interactive controls accessible', async () => {
+  const css = await load('nexa-tech-service/styles.css');
+  const app = await load('nexa-tech-service/app.js');
+  assert.match(css, /\.service-card p\{[^}]*font-size:15px/);
+  assert.match(css, /\.section-head p\{[^}]*font-size:15px/);
+  assert.match(css, /\.faq-answer\{[^}]*font-size:14px/);
+  assert.match(css, /\.contact-form label\{[^}]*font-size:13px/);
+  assert.match(css, /\.footer-col a,\.footer-col span\{[^}]*font-size:13px/);
+  assert.match(app, /aria-controls/);
+  assert.match(app, /메뉴 닫기/);
+  assert.match(app, /event\.key === 'Escape'/);
+  assert.match(app, /aria-invalid/);
+});
+
 test('customer-visible demo text excludes developer implementation jargon', async () => {
   const forbidden = [
     /\bRBAC\b/i, /Idempotency/i, /Dead Letter/i, /WorkflowPreset/i, /Local RAG/i,
