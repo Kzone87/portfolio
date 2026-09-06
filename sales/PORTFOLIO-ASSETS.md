@@ -1,176 +1,115 @@
-# 포트폴리오 이미지 / 영상 구성 가이드
+# 포트폴리오 이미지 / 60초 영상 구성 · Final
 
-개발 포트폴리오는 코드 설명보다 **고객이 화면을 보고 자기 업무에 적용되는 모습을 빠르게 이해하게 하는 것**이 우선입니다.
+기술 목록보다 **고객이 자기 업무에 적용되는 흐름을 빠르게 이해하는 화면**을 우선합니다.
 
-숨고 포트폴리오는 실제 작업 결과물·업무 방식·전후 이미지를 작업 단위로 묶어 보여주는 구조이며, 이미지 여러 장과 짧은 영상을 사용할 수 있습니다. 각 대표작을 하나의 완결된 사례처럼 구성합니다.
+## 공통 이미지 원칙
 
----
+각 Flagship은 5~8장으로 구성합니다.
 
-# 공통 이미지 순서
+1. 고객 문제 / Before
+2. 메인 Dashboard 또는 Queue
+3. 핵심 Workflow
+4. 실패·검증·권한 경계
+5. Audit / History
+6. Report / 결과
+7. Architecture / 공개 Source
+8. CI / Test
 
-한 프로젝트당 권장 순서:
+## Business Ops Dashboard V8
 
-```text
-1. 대표 화면
-2. 고객이 해결하는 문제
-3. 핵심 입력 화면
-4. 핵심 처리 화면
-5. 결과 화면
-6. 오류/검증 화면
-7. 운영/관리 화면
-8. 기술/검증 증거
-```
+- Customer + Work Order
+- Priority / Due Date
+- Approval request / ADMIN decision
+- Audit timeline
+- Operations Analytics
+- CSV/XLSX Reporting
 
-스크린샷마다 기술 이름만 적지 말고 **사용자 행동과 결과**를 캡션으로 씁니다.
+## Customer Data Workbench V3
 
-좋은 예:
+- Main quality profile
+- Rule Builder
+- Column Mapping
+- Dataset Compare
+- Batch/Migration workspace
+- Migration Report / combined XLSX
 
-> 직원이 고객을 선택하고 업무를 접수하면 우선순위와 마감일이 저장됩니다.
+## AI Workflow Review Desk V2
 
-약한 예:
+- Knowledge Catalog
+- ranked Evidence Review
+- Structured Output / Evaluation
+- provider fallback
+- Human edit + Approve/Reject
+- evidence-aware Review Audit
 
-> React Form UI
+## Integration Control Center V3
 
----
+- Connection / Job / Run
+- Webhook event
+- duplicate event defense
+- failed run → Retry
+- retryOf lineage
+- Dead Letter
 
-# 1. Business Ops Dashboard V6 이미지 세트
+## Commerce Ops Console V1
 
-## 대표 이미지
+- Ops KPI
+- order state split
+- Hold / Release
+- Picking / Shipment
+- Refund queue
+- STAFF blocked / ADMIN approve
+- Audit trail
 
-**고객 목록 + 업무 목록 + Planning Panel이 한 화면에 보이는 장면**
+## Booking & Field Service Ops V1
 
-썸네일 문구:
+- Dispatch Board
+- Agent schedule
+- normal slot conflict
+- URGENT ADMIN override
+- Dispatch → On-site → Complete
+- Audit
 
-```text
-고객관리 · 업무상태 · 권한
-사내 업무관리 시스템
-```
+## Document Intake & Approval V1
 
-## 추천 이미지 8장
+- Checklist
+- metadata extraction
+- Submit queue
+- Needs Changes
+- resubmit
+- Approve / Reject
+- Archive / Audit
 
-1. **Dashboard 전체 화면**
-   - 캡션: 고객과 업무 현황을 한 화면에서 확인합니다.
-2. **Customer Module**
-   - 캡션: 거래처를 검색·등록·수정하고 활성 상태를 관리합니다.
-3. **Work Order 등록**
-   - 캡션: 등록된 고객과 업무를 관계형 데이터로 연결합니다.
-4. **상태 전이**
-   - 캡션: 접수 → 진행 → 완료/취소 흐름을 서버 규칙으로 처리합니다.
-5. **Priority / Due Date**
-   - 캡션: 긴급도와 마감일을 기준으로 실제 업무 우선순위를 관리합니다.
-6. **Audit History**
-   - 캡션: 누가 어떤 상태를 변경했는지 업무별 이력으로 확인합니다.
-7. **ADMIN / STAFF 역할 차이**
-   - 캡션: 사용자 역할에 따라 API와 기능 접근 범위를 나눕니다.
-8. **GitHub Actions / 테스트 결과**
-   - 캡션: 프런트 빌드와 백엔드 통합 테스트를 자동 검증합니다.
+## Engineering Mini Labs V1
 
-## 60초 영상 흐름
+한 장의 5-panel montage 또는 짧은 GIF:
 
-```text
-0~8초   고객 검색
-8~18초  신규 고객 등록
-18~30초 업무 접수 + 우선순위/마감일
-30~42초 상태 변경
-42~50초 Audit 확인
-50~60초 CI / 기술 스택 요약
-```
+- CMS publish gate
+- strict Extraction
+- Automation failure injection
+- Security defenses
+- QA/Deployment NO_GO → GO
 
----
-
-# 2. Customer Data Workbench V2.4 이미지 세트
-
-## 대표 이미지
-
-**데이터 테이블 + Quality Issues + Rule Builder가 동시에 보이는 화면**
-
-썸네일 문구:
-
-```text
-Excel · CSV 업무자동화
-검증 → 정리 → 컬럼매핑 → Export
-```
-
-## 추천 이미지 8장
-
-1. **Excel/CSV Import 직후**
-   - 캡션: 파일을 올리면 행·컬럼과 데이터 품질을 바로 확인합니다.
-2. **Quality Review**
-   - 캡션: 빈 값, 이메일, 전화번호, 중복 문제를 자동 탐지합니다.
-3. **Rule Builder**
-   - 캡션: 회사 업무 규칙에 맞는 필수값·숫자·허용값 검사를 직접 구성합니다.
-4. **Normalization**
-   - 캡션: 공백·이메일·전화번호 형식을 일괄 정리합니다.
-5. **Undo / Recipe**
-   - 캡션: 잘못된 변환을 되돌리고 반복 작업 순서를 저장합니다.
-6. **Validation Report**
-   - 캡션: 문제 행을 검수 보고서로 내려받을 수 있습니다.
-7. **Column Mapping Workspace**
-   - 캡션: 업체마다 다른 원본 컬럼을 표준 데이터 구조로 변환합니다.
-8. **CSV/XLSX Export + CI**
-   - 캡션: 검수된 결과를 다시 파일로 내보내고 자동 테스트로 회귀를 방지합니다.
-
-## 60초 영상 흐름
+# 60초 영상 공통 구조
 
 ```text
-0~8초   샘플 Excel import
-8~18초  오류 자동 탐지
-18~30초 Rule 추가
-30~40초 데이터 정리
-40~50초 Column Mapping
-50~60초 Excel export
+0~7초   고객 문제
+7~15초  입력/접수
+15~30초 핵심 Workflow
+30~42초 실패/권한/검증 경계
+42~52초 Audit/결과/Report
+52~57초 공개 Source + CI
+57~60초 서비스 시작가 + 견적 CTA
 ```
 
----
+## 추천 첫 영상 순서
 
-# 3. Integration Control Center V2 이미지 세트
+1. Business Ops V8 — 관리자/CRM 대표
+2. Data Workbench V3 — Excel 자동화 대표
+3. AI Review Desk V2 — AI 대표
+4. Integration V3 — API 연동 대표
+5. Commerce V1
+6. Field Service V1
+7. Document V1
 
-## 대표 이미지
-
-**Connection Registry + Sync Jobs + Run History가 동시에 보이는 화면**
-
-썸네일 문구:
-
-```text
-REST API · 시스템 연동
-실패이력 · 중복실행 방지
-```
-
-## 추천 이미지 7장
-
-1. **Control Center 전체 화면**
-   - 캡션: 여러 시스템 연결과 동기화 작업 상태를 한 화면에서 관리합니다.
-2. **Connection Registry**
-   - 캡션: 연결 상태를 ACTIVE / PAUSED / ERROR로 분리합니다.
-3. **Create Sync Job**
-   - 캡션: Source, Target, Entity, 실행주기, 실패정책을 작업 단위로 구성합니다.
-4. **Run Success**
-   - 캡션: 실행 결과와 처리 건수를 Run History에 기록합니다.
-5. **Run Failure**
-   - 캡션: 연결 이상을 숨기지 않고 FAILED 이력으로 남깁니다.
-6. **REST API 구조**
-   - 캡션: 동일한 Connection / Job / Run 모델을 서버 API에서도 제공합니다.
-7. **Idempotency / HTTP tests**
-   - 캡션: 같은 실행 요청이 중복 생성되지 않도록 Idempotency-Key와 통합 테스트를 사용합니다.
-
----
-
-# 이미지 제작 원칙
-
-- 고객 개인정보나 실제 사업 데이터는 절대 노출하지 않습니다.
-- 데모 데이터는 가상 회사명/가상 계정만 사용합니다.
-- 한 이미지에는 메시지 하나만 전달합니다.
-- 코드 스크린샷보다 실제 UI를 먼저 배치합니다.
-- 기술 스택 이미지는 마지막 1~2장에 배치합니다.
-- 긴 README 화면 캡처는 포트폴리오 이미지로 쓰지 않습니다.
-- 오류 화면도 일부 포함해 정상 기능만 보여주는 데모처럼 보이지 않게 합니다.
-- 모바일에서 축소되어도 제목이 읽히는 크기로 캡션을 만듭니다.
-
-# 각 플랫폼 등록 전 체크
-
-- 대표 이미지에서 서비스 종류가 3초 안에 이해되는가?
-- 첫 3장만 봐도 입력 → 처리 → 결과가 연결되는가?
-- 내가 담당한 범위가 명확한가?
-- 실제 화면과 설명이 일치하는가?
-- 개인정보/연락처/민감정보가 포함되지 않았는가?
-- 가격 패키지와 포트폴리오 기능 범위가 서로 모순되지 않는가?
+캡션은 기술명보다 고객 가치 중심으로 작성합니다. 예: `승인 전에는 업무를 완료할 수 없습니다`, `겹치는 기사 일정은 서버에서 차단합니다`, `근거 없는 AI 답변은 검토 대상으로 보냅니다`.
