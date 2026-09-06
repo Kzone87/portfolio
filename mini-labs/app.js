@@ -1,0 +1,10 @@
+import{publishContent,parseKeyValueText,extractTableRows,simulateAutomation,safeRedirect,safeSpreadsheetCell,maskSecret,securityHeaders,deploymentDecision}from'./engine.mjs';
+const $=s=>document.querySelector(s);const show=(sel,v)=>{$(sel).textContent=JSON.stringify(v,null,2)};
+document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===btn));document.querySelectorAll('.lab').forEach(x=>x.classList.toggle('active',x.id===btn.dataset.tab));}));
+$('#cms-run').addEventListener('click',()=>{try{show('#cms-output',publishContent({title:$('#cms-title').value,body:$('#cms-body').value}));}catch(e){show('#cms-output',{status:'BLOCKED',error:e.message});}});
+$('#extract-run').addEventListener('click',()=>{try{show('#extract-output',{keyValue:parseKeyValueText($('#kv-source').value),table:extractTableRows($('#csv-source').value)});}catch(e){show('#extract-output',{status:'BLOCKED',error:e.message});}});
+const plan=[{id:'open',type:'NAVIGATE',target:'https://example.com/form'},{id:'fill',type:'INPUT',target:'#name',value:'Demo User'},{id:'submit',type:'CLICK',target:'#submit'},{id:'assert',type:'ASSERT_TEXT',target:'#status',value:'Saved'}];
+$('#automation-run').addEventListener('click',()=>show('#automation-output',simulateAutomation(plan,{failAt:$('#fail-step').value})));
+$('#security-run').addEventListener('click',()=>show('#security-output',{safeRedirect:safeRedirect($('#redirect-target').value),safeSpreadsheetCell:safeSpreadsheetCell($('#sheet-cell').value),maskedSecret:maskSecret($('#secret-sample').value),headers:securityHeaders()}));
+$('#deploy-run').addEventListener('click',()=>show('#deploy-output',deploymentDecision({tests:$('#gate-tests').checked,build:$('#gate-build').checked,secretScan:$('#gate-secret').checked,healthCheck:$('#gate-health').checked,rollbackPlan:$('#gate-rollback').checked,observability:$('#gate-observe').checked,backupVerified:$('#gate-backup').checked})));
+$('#cms-run').click();$('#extract-run').click();$('#automation-run').click();$('#security-run').click();$('#deploy-run').click();
