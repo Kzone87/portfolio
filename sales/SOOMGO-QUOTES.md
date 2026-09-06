@@ -28,12 +28,12 @@
 
 확인: 대표 입력 파일, 원하는 출력, 현재 수작업 순서, 월 파일 수.
 
-## API / 기존 시스템 연동
+## REST API / 기존 시스템 연동
 
 공개 사례: **Integration Control Center V3**  
 Webhook, Idempotency, Retry, Dead Letter와 실행 이력을 구현했습니다.
 
-- 작은 API: 49만원부터
+- 작은 REST API: 49만원부터
 - 연동 Workflow: 149만원부터
 - 운영형 Integration: 299만원부터
 
