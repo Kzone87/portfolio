@@ -16,6 +16,7 @@ const demos = [
   { route: 'integration-control-center/', html: 'integration-control-center/index.html', app: 'integration-control-center/app.js', controls: ['jobForm','resetDemo','clearHistory'], results: ['jobTable','historyList','formStatus'] },
   { route: 'mini-labs/', html: 'mini-labs/index.html', app: 'mini-labs/app.js', controls: ['cms-run','extract-run','automation-run'], results: ['cms-output','extract-output','automation-output'] }
 ];
+const corporatePages = ['nexa-tech-service/','nexa-tech-service/about.html','nexa-tech-service/services.html','nexa-tech-service/cases.html','nexa-tech-service/contact.html'];
 
 function visibleText(html) {
   return html
@@ -29,6 +30,7 @@ function visibleText(html) {
 test('homepage is a direct interactive showroom, not a sales or case catalog', () => {
   assert.match(home, /말보다 직접/);
   assert.match(home, /직접 실행 가능한 데모/);
+  assert.ok(home.includes('./nexa-tech-service/'), 'missing corporate website demo');
   for (const demo of demos) assert.ok(home.includes(`./${demo.route}`), `missing direct demo link: ${demo.route}`);
   assert.ok(home.includes('https://kzone87.github.io/customer-map-planner/'));
   for (const removed of ['./services/', './work/', './scope-estimator/', 'Business Ops', '견적 문의', 'GitHub', 'CI로 검증']) {
@@ -36,11 +38,12 @@ test('homepage is a direct interactive showroom, not a sales or case catalog', (
   }
 });
 
-test('sitemap publishes only runnable portfolio pages', () => {
+test('sitemap publishes all runnable portfolio and corporate pages', () => {
   const locs = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
-  assert.equal(locs.length, 7);
+  assert.equal(locs.length, 12);
   assert.equal(locs[0], 'https://kzone87.github.io/portfolio/');
   for (const demo of demos) assert.ok(locs.includes(`https://kzone87.github.io/portfolio/${demo.route}`), `missing runnable sitemap route: ${demo.route}`);
+  for (const page of corporatePages) assert.ok(locs.includes(`https://kzone87.github.io/portfolio/${page}`), `missing corporate sitemap route: ${page}`);
   for (const removed of ['/services/', '/work/', '/scope-estimator/']) assert.ok(!sitemap.includes(removed));
 });
 
@@ -56,6 +59,29 @@ test('every internal showroom page exposes real controls and visible results', a
     assert.match(html, /<a href="\.\.\/">← (?:체험센터|포트폴리오)<\/a>/);
     assert.doesNotMatch(html, /services\//);
   }
+});
+
+test('corporate website has complete navigation, responsive controls and a working inquiry surface', async () => {
+  const pages = {
+    home: await load('nexa-tech-service/index.html'),
+    about: await load('nexa-tech-service/about.html'),
+    services: await load('nexa-tech-service/services.html'),
+    cases: await load('nexa-tech-service/cases.html'),
+    contact: await load('nexa-tech-service/contact.html')
+  };
+  const app = await load('nexa-tech-service/app.js');
+  for (const html of Object.values(pages)) {
+    for (const href of ['./','./about.html','./services.html','./cases.html','./contact.html']) assert.ok(html.includes(`href="${href}"`), `corporate page missing nav ${href}`);
+    assert.match(html, /<meta name="viewport"/);
+    assert.match(html, /menu-button/);
+    assert.match(html, /포트폴리오 시연을 위해 구성한 가상 기업/);
+  }
+  assert.match(pages.home, /faq-button/);
+  assert.match(pages.contact, /id="contact-form"/);
+  assert.match(pages.contact, /id="form-message"/);
+  assert.match(app, /contact-form/);
+  assert.match(app, /menu-button/);
+  assert.match(app, /faq-button/);
 });
 
 test('customer-visible demo text excludes developer implementation jargon', async () => {
@@ -78,16 +104,17 @@ test('customer label dictionary covers the internal states that appear in demos'
   }
 });
 
-test('showroom no longer verifies removed quote pages and checks all live scripts', () => {
+test('showroom checks all live public scripts', () => {
   assert.equal(packageJson.version, '12.0.0');
   assert.ok(!packageJson.scripts.test.includes('scope-estimator'));
-  for (const script of ['customer-ui.js','commerce-ops-console/app.js','field-service-ops/app.js','document-intake-approval/app.js','ai-workflow-review-desk/app.js','integration-control-center/app.js','mini-labs/app.js']) {
+  for (const script of ['customer-ui.js','nexa-tech-service/app.js','commerce-ops-console/app.js','field-service-ops/app.js','document-intake-approval/app.js','ai-workflow-review-desk/app.js','integration-control-center/app.js','mini-labs/app.js']) {
     assert.ok(packageJson.scripts.test.includes(script), `missing syntax check: ${script}`);
   }
 });
 
 test('public showroom assets contain no common credential patterns', async () => {
-  const content = [home, sitemap, customerUi];
+  const content = [home, sitemap, customerUi, await load('nexa-tech-service/app.js')];
+  for (const page of ['index.html','about.html','services.html','cases.html','contact.html']) content.push(await load(`nexa-tech-service/${page}`));
   for (const demo of demos) content.push(await load(demo.html), await load(demo.app));
   const all = content.join('\n');
   assert.doesNotMatch(all, /sk-[A-Za-z0-9_-]{20,}/);
