@@ -10,33 +10,46 @@ const versions=[
   'Business Ops Dashboard · V8','Customer Data Workbench · V3','AI Workflow Review Desk · V2','Integration Control Center · V3','Commerce Ops Console · V1','Booking & Field Service Ops · V1','Document Intake & Approval · V1'
 ];
 const servicePaths=['admin-system.html','excel-automation.html','api-integration.html','ai-automation.html','commerce-ops.html','field-service.html','document-workflow.html'];
+const details=[admin,excel,api,ai,commerce,field,document];
 
-test('homepage is proof-first with one promise and three service pillars',()=>{
-  assert.match(html,/복잡한 회사 업무를/);
-  assert.match(html,/작동하는 시스템으로/);
-  for(const pillar of ['업무관리 시스템','데이터 자동화','AI · 시스템 연동']) assert.match(html,new RegExp(pillar));
-  assert.match(html,/대표 사례는 세 개만/);
+test('homepage explains services in customer language before technical categories',()=>{
+  assert.match(html,/지금 사람이 반복하는 일을/);
+  for(const phrase of ['고객·주문·예약을 한곳에서 관리','엑셀·CSV 반복작업을 자동 처리','AI와 외부 서비스를 기존 업무에 연결']) assert.match(html,new RegExp(phrase));
+  for(const example of ['직원 업무배정','중복 제거','외부 데이터 자동 수집']) assert.match(html,new RegExp(example));
   assert.ok(html.includes('./work/'));
-  for(const clutter of ['7 Flagships','ENGINEERING MINI LABS','Dead Letter','Idempotency','WorkflowPreset','PROJECT-BRIEF','견적 문의','49만원','149만원','299만원']) assert.ok(!html.includes(clutter),`homepage clutter returned: ${clutter}`);
+  for(const jargon of ['Dead Letter','Idempotency','WorkflowPreset','Local RAG','RBAC']) assert.ok(!html.includes(jargon),`homepage jargon returned: ${jargon}`);
+  for(const clutter of ['PROJECT-BRIEF','견적 문의','49만원','149만원','299만원']) assert.ok(!html.includes(clutter),`homepage sales clutter returned: ${clutter}`);
   assert.match(html,/문의·견적·계약은 개발 수주 플랫폼에서 진행합니다/);
 });
 
-test('homepage design keeps restrained B2B hierarchy instead of card overload',()=>{
+test('homepage design keeps restrained B2B hierarchy',()=>{
   for(const token of ['--accent:#4f46e5','border:1px solid var(--line)','case-flow','proof-strip']) assert.ok(homeCss.includes(token),`missing design token/pattern: ${token}`);
   assert.doesNotMatch(homeCss,/box-shadow:0 20px 55px/);
 });
 
 test('full work page and README preserve all seven current flagship versions',()=>{for(const v of versions){assert.match(work,new RegExp(v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));assert.match(readme,new RegExp(v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));}});
 
-test('service hub exposes all seven service paths and Mini Labs under three groups',()=>{for(const p of servicePaths)assert.ok(hub.includes(`./${p}`),`missing ${p}`);assert.ok(hub.includes('../mini-labs/'));for(const group of ['업무관리 시스템','데이터 자동화','AI · 특수 Workflow'])assert.match(hub,new RegExp(group));assert.match(hub,/Business Ops Dashboard V8/);assert.match(hub,/Customer Data Workbench V3/);assert.match(hub,/Integration Control Center V3/);assert.match(hub,/AI Workflow Review Desk V2/);});
-
-test('service pages point to their current public evidence',()=>{assert.match(admin,/Business Ops Dashboard · V8/);assert.match(admin,/Approval/);assert.match(admin,/Reporting/);assert.match(excel,/Customer Data Workbench · V3/);assert.match(excel,/Batch\/Migration/);assert.match(api,/Integration Control Center · V3/);assert.match(api,/Dead Letter/);assert.match(ai,/AI Workflow Review Desk · V2/);assert.match(ai,/Evidence|Local RAG/);assert.match(commerce,/Commerce Ops Console · V1/);assert.match(field,/Booking & Field Service Ops · V1/);assert.match(document,/Document Intake & Approval · V1/);});
-
-test('service UI de-emphasizes internal quote and price funnel',()=>{
-  assert.match(serviceCss,/PROJECT-BRIEF/);
-  assert.match(serviceCss,/\.price-chip,#price,\.cta\{display:none!important\}/);
-  assert.match(hub,/문의와 계약은 개발 수주 플랫폼에서 진행/);
+test('service hub names real customer tasks and still exposes every evidence path',()=>{
+  for(const p of servicePaths)assert.ok(hub.includes(`./${p}`),`missing ${p}`);
+  assert.ok(hub.includes('../mini-labs/'));
+  for(const phrase of ['직원이 매일 쓰는 관리 화면','엑셀과 데이터 반복작업 자동화','AI로 문서·텍스트 업무 보조','고객·직원·업무 관리 페이지','쇼핑몰 주문·배송·환불 관리','예약·기사 배정·현장업무 관리','문서 접수·검토·승인 관리','Excel·CSV 정리·비교·변환','다른 사이트·프로그램의 데이터 자동 연결','문서 분류·요약·초안·검토 자동화']) assert.match(hub,new RegExp(phrase));
+  for(const jargon of ['Idempotency','Dead Letter','Local RAG','RBAC','WorkflowPreset']) assert.ok(!hub.includes(jargon),`service hub jargon returned: ${jargon}`);
 });
+
+test('service detail heroes explain what the service does before implementation details',()=>{
+  assert.match(admin,/고객 등록부터 업무 배정과 승인까지/);
+  assert.match(excel,/매번 파일을 열어 정리하던 일을/);
+  assert.match(api,/한 프로그램의 정보를\s*<br>다른 프로그램으로 자동으로 옮깁니다/);
+  assert.match(ai,/AI가 먼저 읽고 정리하고/);
+  assert.match(commerce,/주문이 들어온 뒤의 운영을/);
+  assert.match(field,/고객 예약부터 기사 배정과/);
+  assert.match(document,/문서를 받은 뒤의 검토와 승인까지/);
+  for(const page of details){assert.doesNotMatch(page,/PROJECT-BRIEF/);assert.doesNotMatch(page,/\d+만원/);}
+});
+
+test('service pages preserve technical public evidence after the plain-language explanation',()=>{assert.match(admin,/Business Ops Dashboard · V8/);assert.match(admin,/Approval Workflow/);assert.match(excel,/Customer Data Workbench · V3/);assert.match(excel,/Batch\/Migration/);assert.match(api,/Integration Control Center · V3/);assert.match(api,/Dead Letter/);assert.match(ai,/AI Workflow Review Desk · V2/);assert.match(ai,/Local Knowledge Retrieval/);assert.match(commerce,/Commerce Ops Console · V1/);assert.match(field,/Booking & Field Service Ops · V1/);assert.match(document,/Document Intake & Approval · V1/);});
+
+test('service UI remains proof-focused instead of its own quote funnel',()=>{assert.match(serviceCss,/\.price-chip,#price,\.cta\{display:none!important\}/);assert.match(hub,/문의·견적·계약은 개발 수주 플랫폼에서 진행합니다/);});
 
 test('customer-facing assets do not advertise superseded flagship versions',()=>{const current=[html,work,readme,services,hub,admin,excel,api,ai,kmong,soomgo,assets].join('\n');for(const stale of ['Business Ops Dashboard · V6','Business Ops Dashboard V6','Customer Data Workbench · V2.4','Customer Data Workbench V2.4','Integration Control Center · V2','Integration Control Center V2','AI Workflow Review Desk · V1','AI Workflow Review Desk V1'])assert.ok(!current.includes(stale),`stale public label: ${stale}`);});
 

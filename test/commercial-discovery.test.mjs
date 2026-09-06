@@ -35,7 +35,7 @@ test('service hub exposes evidence routes without its own quote funnel', () => {
   }
   assert.doesNotMatch(serviceHub, /PROJECT-BRIEF/);
   assert.doesNotMatch(serviceHub, /견적 요청/);
-  assert.match(serviceHub, /문의와 계약은 개발 수주 플랫폼에서 진행/);
+  assert.match(serviceHub, /문의·견적·계약은 개발 수주 플랫폼에서 진행/);
 });
 
 test('sitemap contains the public discovery and evidence URLs', () => {
