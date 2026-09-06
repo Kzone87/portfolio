@@ -1,0 +1,56 @@
+name: 외주·프로젝트 문의
+description: 관리자시스템, 데이터 자동화, 기업 웹과 내부 운영도구 구축 상담
+title: "[프로젝트 문의] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        문의 내용을 바탕으로 필요한 범위를 빠르게 파악하기 위한 양식입니다. 이 저장소의 Issue는 공개되므로 고객정보·계정·비밀번호·내부 문서 등 민감한 정보는 작성하지 말아 주세요.
+  - type: dropdown
+    id: project_type
+    attributes:
+      label: 필요한 유형
+      options:
+        - 관리자·사내 업무 시스템
+        - Excel·CSV 데이터 자동화
+        - 기업 홈페이지 + 내부 운영도구
+        - API·Webhook·시스템 연동
+        - AI 업무보조·검토 흐름
+        - 기존 시스템 개선·유지보수
+        - 아직 정확히 모름
+    validations:
+      required: true
+  - type: textarea
+    id: current_work
+    attributes:
+      label: 현재 어떻게 처리하고 있나요?
+      description: 지금의 업무 흐름과 가장 불편한 점을 공개 가능한 범위에서 적어 주세요.
+      placeholder: 예) 지점별 Excel을 이메일로 받아 사람이 합치고 오류를 확인하고 있습니다.
+    validations:
+      required: true
+  - type: textarea
+    id: desired_result
+    attributes:
+      label: 원하는 완료 상태
+      placeholder: 예) 여러 파일을 한 번에 올리고 오류 파일과 정상 결과를 자동으로 나누고 싶습니다.
+    validations:
+      required: true
+  - type: input
+    id: schedule
+    attributes:
+      label: 희망 일정
+      placeholder: 예) 10월 중 / 협의 가능
+  - type: input
+    id: public_link
+    attributes:
+      label: 참고할 공개 링크
+      description: 회사 홈페이지나 공개 서비스 등. 내부 자료는 올리지 마세요.
+      placeholder: https://
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 공개 범위 확인
+      options:
+        - label: 이 Issue가 공개된다는 점을 확인했고 민감한 정보나 비공개 자료를 작성하지 않았습니다.
+          required: true
