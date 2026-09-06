@@ -93,7 +93,7 @@ const RAW_DOCUMENTS = [
     id: 'service-routing-guide',
     title: 'General Service Routing Guide',
     category: 'general',
-    tags: ['owner', 'route', 'request', 'support', '담당', '요청', '문의'],
+    tags: ['owner', 'route', 'support', '담당', '문의'],
     sections: [
       {
         id: 'minimum-context',
@@ -104,13 +104,21 @@ const RAW_DOCUMENTS = [
   }
 ];
 
+const STOPWORDS = new Set([
+  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'before', 'can', 'for', 'from', 'has', 'have', 'in', 'into', 'is', 'it', 'of', 'on', 'or', 'the', 'to', 'with',
+  'customer', 'customers', 'report', 'reports', 'reported', 'request', 'requester', 'requests', 'require', 'required', 'requires', 'review', 'task', 'issue', 'problem', 'unrelated',
+  '고객', '요청', '검토', '업무', '문제'
+]);
+
+const MIN_EVIDENCE_SCORE = 4;
+
 function normalize(value) {
   return String(value ?? '').normalize('NFKC').toLocaleLowerCase('en-US').trim();
 }
 
 function tokenize(value) {
   return [...new Set(normalize(value).match(/[\p{L}\p{N}]+/gu) ?? [])]
-    .filter((token) => token.length > 1);
+    .filter((token) => token.length > 1 && !STOPWORDS.has(token));
 }
 
 function clip(value, max = 240) {
@@ -169,7 +177,7 @@ export function retrieveKnowledge(query, options = {}) {
         if (matched) matchedTerms.push(token);
       }
       if (normalizedQuery.length >= 8 && normalize(section.text).includes(normalizedQuery)) score += 8;
-      if (score > 0) {
+      if (score >= MIN_EVIDENCE_SCORE) {
         candidates.push({
           id: `${document.id}#${section.id}`,
           documentId: document.id,
