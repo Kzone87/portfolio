@@ -9,6 +9,7 @@ import {
   runGeneration,
   validateStructuredOutput
 } from '../ai-workflow-review-desk/engine.mjs';
+import { retrieveKnowledge } from '../ai-workflow-review-desk/knowledge.mjs';
 import { createAiReviewServer } from '../ai-workflow-review-desk/server/app.mjs';
 
 function sampleTask(overrides = {}) {
@@ -20,6 +21,7 @@ function sampleTask(overrides = {}) {
     version: 1,
     output: null,
     evaluation: null,
+    retrieval: null,
     ...overrides
   };
 }
@@ -50,16 +52,37 @@ async function request(baseUrl, path, options = {}) {
   return { response, body };
 }
 
-test('AI engine produces validated structured output', () => {
+test('local knowledge retrieval ranks relevant evidence deterministically', () => {
+  const retrieval = retrieveKnowledge('duplicate invoice charge refund review', { limit: 3 });
+  assert.ok(retrieval.evidence.length >= 1);
+  assert.equal(retrieval.evidence[0].documentId, 'billing-refund-policy');
+  assert.ok(retrieval.coverage > 0);
+  assert.ok(retrieval.evidence[0].matchedTerms.includes('refund'));
+});
+
+test('AI engine produces validated structured output with evidence snapshot', () => {
   const result = runGeneration(sampleTask(), { promptVersion: 'triage-v2' });
   assert.equal(result.status, 'SUCCESS');
   assert.equal(result.providerId, 'mock-primary');
   assert.equal(validateStructuredOutput(result.output), true);
   assert.equal(result.output.category, 'billing');
   assert.equal(result.evaluation.requiresHumanReview, true);
+  assert.ok(result.retrieval.evidence.length >= 1);
+  assert.ok(result.evaluation.flags.includes('EVIDENCE_FOUND'));
 });
 
-test('primary provider failure falls back deterministically', () => {
+test('generation with no matching evidence is forced to needs-review', () => {
+  const result = runGeneration(sampleTask({
+    title: 'Unmapped request',
+    content: 'ZXQV lunar orchard topology asks about mauve zeppelin choreography.'
+  }), { promptVersion: 'triage-grounded-v2' });
+  assert.equal(result.status, 'SUCCESS');
+  assert.equal(result.retrieval.evidence.length, 0);
+  assert.ok(result.evaluation.flags.includes('NO_EVIDENCE'));
+  assert.equal(nextTaskStatus(result), TASK_STATUS.NEEDS_REVIEW);
+});
+
+test('primary provider failure falls back deterministically without losing evidence', () => {
   const result = runGeneration(sampleTask({
     content: '[FAIL_PRIMARY] Excel import fails because vendor columns changed.'
   }));
@@ -67,6 +90,7 @@ test('primary provider failure falls back deterministically', () => {
   assert.equal(result.providerId, 'mock-fallback');
   assert.deepEqual(result.attempts.map((item) => item.status), ['FAILED', 'SUCCESS']);
   assert.equal(result.output.category, 'data');
+  assert.equal(result.retrieval.evidence[0].documentId, 'data-import-runbook');
 });
 
 test('high-risk output is routed to needs-review instead of auto approval', () => {
@@ -74,8 +98,10 @@ test('high-risk output is routed to needs-review instead of auto approval', () =
     content: 'Security breach suspected. Customer data may have leaked from production.'
   }));
   assert.equal(result.output.risk, 'HIGH');
+  assert.equal(result.output.category, 'security');
   assert.equal(nextTaskStatus(result), TASK_STATUS.NEEDS_REVIEW);
   assert.ok(result.evaluation.flags.includes('HIGH_RISK'));
+  assert.equal(result.retrieval.evidence[0].documentId, 'security-escalation-policy');
 });
 
 test('human review can approve a schema-valid edited output', () => {
@@ -85,7 +111,8 @@ test('human review can approve a schema-valid edited output', () => {
     status: nextTaskStatus(result),
     version: 2,
     output: result.output,
-    evaluation: result.evaluation
+    evaluation: result.evaluation,
+    retrieval: result.retrieval
   };
   const edited = { ...result.output, nextAction: 'Verify the invoice and ask a human billing owner to confirm the refund.' };
   const reviewed = applyHumanReview(generated, 'APPROVE', edited);
@@ -94,19 +121,44 @@ test('human review can approve a schema-valid edited output', () => {
   assert.equal(reviewed.output.nextAction, edited.nextAction);
 });
 
-test('HTTP API exposes credential-free health and prompt registry', async () => {
+test('HTTP API exposes credential-free health, prompt registry and local knowledge', async () => {
   await withServer(async (baseUrl) => {
     const health = await request(baseUrl, '/api/health');
     assert.equal(health.response.status, 200);
     assert.equal(health.body.providerMode, 'credential-free-mock');
+    assert.equal(health.body.retrievalMode, 'deterministic-local-knowledge');
+    assert.equal(health.body.version, 2);
 
     const prompts = await request(baseUrl, '/api/prompts');
     assert.equal(prompts.response.status, 200);
-    assert.ok(prompts.body.items.some((item) => item.id === 'triage-v2'));
+    assert.ok(prompts.body.items.some((item) => item.id === 'triage-grounded-v2'));
+
+    const knowledge = await request(baseUrl, '/api/knowledge');
+    assert.equal(knowledge.response.status, 200);
+    assert.ok(knowledge.body.items.some((item) => item.id === 'billing-refund-policy'));
+
+    const retrieval = await request(baseUrl, '/api/retrieval', {
+      method: 'POST',
+      body: JSON.stringify({ query: 'Excel import mapping schema failure', limit: 2 })
+    });
+    assert.equal(retrieval.response.status, 200);
+    assert.equal(retrieval.body.evidence[0].documentId, 'data-import-runbook');
+    assert.ok(retrieval.body.evidence.length <= 2);
   });
 });
 
-test('HTTP workflow creates, generates with fallback, then requires current version for review', async () => {
+test('HTTP retrieval rejects invalid query contract', async () => {
+  await withServer(async (baseUrl) => {
+    const result = await request(baseUrl, '/api/retrieval', {
+      method: 'POST',
+      body: JSON.stringify({ query: 'x' })
+    });
+    assert.equal(result.response.status, 400);
+    assert.equal(result.body.error.code, 'INVALID_RETRIEVAL_QUERY');
+  });
+});
+
+test('HTTP workflow creates, generates with fallback, then audits evidence on current-version review', async () => {
   await withServer(async (baseUrl) => {
     const created = await request(baseUrl, '/api/tasks', {
       method: 'POST',
@@ -120,11 +172,13 @@ test('HTTP workflow creates, generates with fallback, then requires current vers
 
     const generated = await request(baseUrl, `/api/tasks/${taskId}/generate`, {
       method: 'POST',
-      body: JSON.stringify({ promptVersion: 'triage-v2' })
+      body: JSON.stringify({ promptVersion: 'triage-grounded-v2' })
     });
     assert.equal(generated.response.status, 200);
     assert.equal(generated.body.run.providerId, 'mock-fallback');
     assert.equal(generated.body.run.attempts.length, 2);
+    assert.ok(generated.body.run.retrieval.evidence.length >= 1);
+    assert.deepEqual(generated.body.task.retrieval.evidence, generated.body.run.retrieval.evidence);
 
     const stale = await request(baseUrl, `/api/tasks/${taskId}/review`, {
       method: 'POST',
@@ -140,6 +194,8 @@ test('HTTP workflow creates, generates with fallback, then requires current vers
     });
     assert.equal(approved.response.status, 200);
     assert.equal(approved.body.task.status, 'APPROVED');
+    assert.ok(approved.body.review.evidenceIds.some((id) => id.startsWith('data-import-runbook#')));
+    assert.ok(approved.body.review.evidenceCoverage > 0);
 
     const regenerate = await request(baseUrl, `/api/tasks/${taskId}/generate`, {
       method: 'POST',
@@ -169,7 +225,8 @@ test('public AI lab uses no external network/storage credentials', async () => {
   const html = await readFile(new URL('../ai-workflow-review-desk/index.html', import.meta.url), 'utf8');
   const app = await readFile(new URL('../ai-workflow-review-desk/app.js', import.meta.url), 'utf8');
   const engine = await readFile(new URL('../ai-workflow-review-desk/engine.mjs', import.meta.url), 'utf8');
-  const content = [html, app, engine].join('\n');
+  const knowledge = await readFile(new URL('../ai-workflow-review-desk/knowledge.mjs', import.meta.url), 'utf8');
+  const content = [html, app, engine, knowledge].join('\n');
   assert.match(html, /NO API KEY/);
   assert.doesNotMatch(app, /fetch\s*\(|localStorage|sessionStorage/);
   assert.doesNotMatch(content, /sk-[A-Za-z0-9_-]{20,}/);
