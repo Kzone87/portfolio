@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { evaluateScope } from '../scope-estimator/engine.mjs';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+const work = await readFile(new URL('../work/index.html', import.meta.url), 'utf8');
 const readme = await readFile(new URL('../README.md', import.meta.url), 'utf8');
 const services = await readFile(new URL('../SERVICES.md', import.meta.url), 'utf8');
 const serviceHub = await readFile(new URL('../services/index.html', import.meta.url), 'utf8');
@@ -15,10 +16,11 @@ const salesIndex = await readFile(new URL('../sales/README.md', import.meta.url)
 const estimator = await readFile(new URL('../scope-estimator/index.html', import.meta.url), 'utf8');
 const sitemap = await readFile(new URL('../sitemap.xml', import.meta.url), 'utf8');
 
-test('AI workflow is a first-class public case and service', () => {
-  assert.match(html, /AI Workflow Review Desk/);
+test('AI workflow is a first-class public case and service without cluttering the homepage', () => {
+  assert.match(work, /AI Workflow Review Desk · V2/);
+  assert.ok(work.includes('../services/ai-automation.html'));
+  assert.match(html, /AI · 시스템 연동/);
   assert.ok(html.includes('./services/ai-automation.html'));
-  assert.ok(html.includes('./ai-workflow-review-desk/'));
   assert.match(readme, /AI Workflow Review Desk/);
   assert.match(aiLab, /AI Workflow Review Desk · V2/);
   assert.match(aiReadme, /AI Workflow Review Desk · V2/);
@@ -85,7 +87,7 @@ test('AI pages are discoverable through sitemap', () => {
 });
 
 test('public AI commercial assets contain no common credential patterns', () => {
-  const content = [html, readme, services, serviceHub, aiService, aiLab, aiReadme, aiSales, estimator, sitemap].join('\n');
+  const content = [html, work, readme, services, serviceHub, aiService, aiLab, aiReadme, aiSales, estimator, sitemap].join('\n');
   assert.doesNotMatch(content, /sk-[A-Za-z0-9_-]{20,}/);
   assert.doesNotMatch(content, /AIza[0-9A-Za-z_-]{20,}/);
   assert.match(aiLab, /NO API KEY/);
