@@ -1,62 +1,9 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="외부 시스템 간 데이터 동기화 작업을 등록하고 실행·실패·재처리 이력을 운영하는 공개 데모" />
-  <title>연동 작업 운영센터 · Integration Control Center V3</title>
-  <link rel="stylesheet" href="./styles.css" />
-</head>
-<body>
-<header class="topbar">
-  <div><a href="../">← Portfolio</a><strong>DEMO COMPANY / 연동 작업 운영센터</strong><span class="mode">Integration Control Center V3</span></div>
-  <a href="../services/api-integration.html">이 상품 설명</a>
-</header>
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="가상 쇼핑몰·재고·고객 데이터를 다른 시스템으로 보내는 작업을 만들고 실행·실패·복구·재실행까지 직접 체험하는 데이터 연결 데모"><title>외부 데이터 연결 | Kzone87 Demo</title><link rel="stylesheet" href="./styles.css"></head><body>
+<header class="topbar"><div><a href="../">← 체험센터</a><strong>샘플 운영팀 · 외부 데이터 연결</strong></div><button id="resetDemo" class="secondary" type="button">가상 데이터 초기화</button></header>
 <main class="shell">
-  <section class="hero">
-    <p class="eyebrow">INTEGRATIONS / OPERATIONS</p>
-    <h1>외부 시스템 데이터 연동 현황</h1>
-    <p>주문·고객·재고처럼 다른 서비스에서 들어오는 데이터를 어디로 보내는지, 마지막 실행이 성공했는지, 실패한 작업을 다시 처리해야 하는지 한 화면에서 확인합니다.</p>
-    <div class="chips"><span>가상 데이터</span><span>실제 API Key 없음</span><span>실패 재처리</span><span>중복 실행 방지</span></div>
-  </section>
-
-  <section class="metrics" aria-label="통합 운영 현황">
-    <article><strong id="metricConnections">0</strong><span>등록된 연결</span><small>외부·내부 시스템</small></article>
-    <article><strong id="metricActive">0</strong><span>실행 가능 작업</span><small>현재 활성화됨</small></article>
-    <article><strong id="metricFailed">0</strong><span>확인 필요한 실패</span><small>최근 실행 오류</small></article>
-    <article><strong id="metricRuns">0</strong><span>실행 이력</span><small>현재 데모 세션</small></article>
-  </section>
-
-  <section class="grid two">
-    <article class="panel">
-      <div class="panel-heading"><div><p class="eyebrow">CONNECTED SYSTEMS</p><h2>연결된 시스템</h2></div><span class="demo-badge">DEMO CONNECTIONS</span></div>
-      <div id="connectionList" class="connection-list"></div>
-    </article>
-    <aside class="panel">
-      <div class="panel-heading"><div><p class="eyebrow">NEW SYNC JOB</p><h2>새 동기화 작업</h2></div></div>
-      <form id="jobForm" class="form-grid">
-        <label>작업명<input id="jobName" maxlength="80" placeholder="예: 쇼핑몰 주문 → ERP" required /></label>
-        <label>가져올 곳<select id="jobSource" required></select></label>
-        <label>보낼 곳<select id="jobTarget" required></select></label>
-        <label>데이터 종류<select id="jobEntity"><option value="customers">고객</option><option value="orders">주문</option><option value="inventory">재고</option><option value="invoices">인보이스</option></select></label>
-        <label>실행주기<select id="jobSchedule"><option value="manual">수동</option><option value="hourly">매시간</option><option value="daily">매일</option></select></label>
-        <label>실패 처리<select id="jobPolicy"><option value="retry-3">최대 3회 재시도</option><option value="stop">즉시 중단</option><option value="skip-row">오류 행 제외</option></select></label>
-        <button type="submit">동기화 작업 추가</button>
-      </form>
-      <p id="formStatus" class="form-status" role="status"></p>
-    </aside>
-  </section>
-
-  <section class="panel jobs-panel">
-    <div class="panel-heading"><div><p class="eyebrow">SYNC JOBS</p><h2>동기화 작업 목록</h2><p>실행, 일시정지, 재개와 최근 실행 상태를 확인합니다.</p></div><button id="resetDemo" class="secondary" type="button">가상 데이터 초기화</button></div>
-    <div class="table-wrap"><table><thead><tr><th>작업</th><th>연결</th><th>데이터</th><th>주기</th><th>실패 처리</th><th>상태</th><th>최근 실행</th><th>처리</th></tr></thead><tbody id="jobTable"></tbody></table></div>
-  </section>
-
-  <section class="grid two lower-grid">
-    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">RUN ACTIVITY</p><h2>최근 실행 이력</h2></div><button id="clearHistory" class="secondary" type="button">데모 이력 비우기</button></div><div id="historyList" class="history-list"></div></article>
-    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">OPERATOR NOTES</p><h2>운영자가 확인할 항목</h2></div></div><ul class="principles"><li><strong>실패 작업</strong><span>실패 원인을 확인하고 정책에 따라 다시 실행합니다.</span></li><li><strong>중복 이벤트</strong><span>같은 이벤트가 반복 도착해도 한 번만 처리하도록 식별합니다.</span></li><li><strong>반복 실패</strong><span>최대 재시도 이후에는 별도 확인 대상으로 분리합니다.</span></li><li><strong>접속정보</strong><span>실제 API Key는 브라우저 화면에 저장하지 않는 구조를 전제로 합니다.</span></li></ul></article>
-  </section>
-</main>
-<script src="./app.js" defer></script>
-</body>
-</html>
+<section class="hero"><h1>다른 프로그램의 데이터를 자동으로 옮기기</h1><p>고객·주문·재고 데이터를 어느 프로그램에서 가져와 어디로 보낼지 정하고 직접 실행해보세요. 연결에 문제가 생기면 상태를 정상화한 뒤 실패한 작업을 다시 실행할 수 있습니다.</p></section>
+<section class="metrics"><article><strong id="metricConnections">0</strong><span>연결된 프로그램</span></article><article><strong id="metricActive">0</strong><span>사용 중인 작업</span></article><article><strong id="metricFailed">0</strong><span>최근 실패</span></article><article><strong id="metricRuns">0</strong><span>실행 이력</span></article></section>
+<section class="grid two"><article class="panel"><div class="panel-heading"><div><h2>연결 상태</h2><p class="muted">문제가 있는 연결은 직접 정상화해보세요.</p></div></div><div id="connectionList" class="connection-list"></div></article><aside class="panel"><div class="panel-heading"><div><h2>새 데이터 전달 작업</h2><p class="muted">어디에서 어떤 데이터를 가져와 어디로 보낼지 선택합니다.</p></div></div><form id="jobForm" class="form-grid"><label>작업 이름<input id="jobName" maxlength="80" placeholder="예: 쇼핑몰 주문 → 사내 관리프로그램" required></label><label>가져올 프로그램<select id="jobSource" required></select></label><label>보낼 프로그램<select id="jobTarget" required></select></label><label>옮길 데이터<select id="jobEntity"><option value="customers">고객</option><option value="orders">주문</option><option value="inventory">재고</option><option value="invoices">청구서</option></select></label><label>실행 시점<select id="jobSchedule"><option value="manual">필요할 때 직접</option><option value="hourly">매시간</option><option value="daily">매일</option></select></label><label>오류가 생기면<select id="jobPolicy"><option value="retry-3">최대 3회 다시 시도</option><option value="stop">작업 중단</option><option value="skip-row">문제 행만 제외</option></select></label><button type="submit">작업 추가</button></form><p id="formStatus" class="form-status" role="status"></p></aside></section>
+<section class="panel jobs-panel"><div class="panel-heading"><div><h2>데이터 전달 작업</h2><p class="muted">직접 실행하거나 잠시 멈출 수 있습니다.</p></div></div><div class="table-wrap"><table><thead><tr><th>작업</th><th>이동 경로</th><th>데이터</th><th>실행 시점</th><th>오류 처리</th><th>현재 상태</th><th>최근 실행</th><th>처리</th></tr></thead><tbody id="jobTable"></tbody></table></div></section>
+<section class="lower-grid"><article class="panel"><div class="panel-heading"><div><h2>최근 실행 이력</h2><p class="muted">실패한 작업은 연결 상태를 고친 뒤 여기서 다시 실행할 수 있습니다.</p></div><button id="clearHistory" class="secondary" type="button">이력 비우기</button></div><div id="historyList" class="history-list"></div></article><article class="panel"><div class="panel-heading"><h2>체험 순서</h2></div><ol class="operator-guide"><li>재고 프로그램이 <strong>확인 필요</strong> 상태인 것을 확인합니다.</li><li>해당 연결의 <strong>정상화</strong> 버튼을 누릅니다.</li><li>재고 전달 작업을 실행해 성공 기록을 확인합니다.</li><li>원하면 새 전달 작업도 직접 추가합니다.</li></ol></article></section>
+</main><script type="module" src="./app.js"></script></body></html>
