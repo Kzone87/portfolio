@@ -1,215 +1,175 @@
 # Kzone87 · Business Web Development Portfolio
 
-업무용 웹 시스템, Excel/CSV 자동화, AI Workflow, REST API와 시스템 연동을 **실제 외주 상품으로 연결하기 위한 공개 포트폴리오**입니다.
+중소기업의 반복 업무를 **웹 시스템 · 데이터 자동화 · AI · API 연동**으로 전환하는 외주 개발 포트폴리오입니다. 기술 목록이 아니라 고객 문제별로 바로 보여줄 수 있는 공개 Live Demo, Source, Test/CI 증거를 갖추는 것을 목표로 합니다.
 
-**Live Portfolio:** https://kzone87.github.io/portfolio/
+**Live Portfolio:** https://kzone87.github.io/portfolio/  
+**Services:** https://kzone87.github.io/portfolio/services/  
+**1분 범위 가이드:** https://kzone87.github.io/portfolio/scope-estimator/  
+**Project Brief:** [PROJECT-BRIEF.md](./PROJECT-BRIEF.md)
 
-## Commercial packages
+## Starting price
 
-| Package | 시작가 | 적합한 의뢰 |
+| 구간 | 시작가 | 적합한 범위 |
 | --- | ---: | --- |
-| STANDARD | **49만원부터** | 버그 수정, 기능 1개, 작은 API, 단일 자동화 |
-| DELUXE | **149만원부터** | 관리자 CRUD, Excel/CSV 업무자동화, AI prototype, 간단한 API/DB 연동 |
-| PREMIUM | **299만원부터** | 고객·업무관리, 권한, 상태, DB, REST API 또는 AI Workflow가 연결된 업무시스템 |
+| STANDARD | **49만원부터** | 작은 기능, 단일 API, 단일 Excel 자동화, 버그/보안 보완 |
+| DELUXE | **149만원부터** | 관리자 모듈, 데이터 Workflow, AI prototype, 연동/예약/문서 흐름 1개 |
+| PREMIUM | **299만원부터** | 관계형 데이터·권한·상태·Audit가 연결된 운영시스템 |
+| CUSTOM | **499만원부터** | 복수 모듈·고급 승인·복수 연동·대규모 migration/운영 고도화 |
 
-금액은 시작가이며 최종 견적은 사용자 권한, 데이터 관계, 업무 상태, AI/외부 연동, 기존 코드 수정, 데이터 규모, 배포·운영 조건을 확인한 뒤 고정합니다.
+월 운영지원은 CARE 15만원, OPS 30만원, PRIORITY 50만원부터 제공합니다. 외부 API/AI provider, 서버/도메인, 대규모 데이터 이관 등은 별도입니다.
 
-서비스 허브: https://kzone87.github.io/portfolio/services/  
-1분 범위·예산 가이드: https://kzone87.github.io/portfolio/scope-estimator/  
-상세 범위: [SERVICES.md](./SERVICES.md)  
-빠른 견적 요청: [PROJECT-BRIEF.md](./PROJECT-BRIEF.md)
+# Seven flagship public cases
 
-## Marketplace sales kit
+## 1. Business Ops Dashboard · V8
 
-실제 플랫폼 등록과 견적 대응에 사용할 판매 문서는 [`sales/`](./sales/)에 분리했습니다.
+**수주 연결:** 관리자페이지 / CRM / ERP-lite / 승인 / 업무관리 / Dashboard / Reporting
 
-- [크몽 상품 등록 원고](./sales/KMONG-LISTINGS.md)
-- [숨고 맞춤견적 응답 템플릿](./sales/SOOMGO-QUOTES.md)
-- [포트폴리오 이미지·60초 영상 구성](./sales/PORTFOLIO-ASSETS.md)
-- [외주 범위·가격 방어 규칙](./sales/SCOPE-RULES.md)
-- [유지보수/운영지원 상품](./sales/MAINTENANCE.md)
-- [견적서·범위확정 템플릿](./sales/QUOTE-TEMPLATE.md)
-
-## Positioning
-
-단순 홈페이지 제작보다 **회사의 반복 업무를 운영 가능한 시스템으로 바꾸는 개발**을 중심으로 합니다.
-
-- React/TypeScript 관리자 화면
-- Spring Boot REST API와 DB
-- 고객/거래처 CRM과 관계형 업무 데이터
-- 접수 → 진행 → 완료/취소 업무 상태 머신
-- ADMIN/STAFF 역할 권한과 변경 이력
-- 우선순위·마감일 기반 업무 planning
-- Excel/CSV import, validation, normalization, column mapping, export
-- 브라우저에서만 동작하는 local-first 업무 자동화
-- AI structured output, provider fallback, evaluation, human review, prompt/run audit
-- API integration control-plane, sync job, run history, idempotency
-- 기존 서비스의 버그 수정과 단계적 현대화
-
-## Public case studies
-
-### 1. Business Ops Dashboard · V6 — Full-stack CRM & operations system
-
-React/TypeScript 관리자 UI와 Spring Boot/MyBatis REST API를 연결한 풀스택 고객·업무 운영 시스템입니다.
-
-**연결 가능한 외주 상품:** 고객·업무관리 / 관리자 웹 시스템 / PREMIUM 299만원부터
-
-- Customer domain: `LEAD / ACTIVE / INACTIVE`
-- 고객 검색·등록·수정
-- Customer → Work Order foreign key
-- 업무 접수 / 담당자 / 상태 필터
-- `RECEIVED → IN_PROGRESS → DONE / CANCELLED` 상태 머신
-- 조건부 status UPDATE를 이용한 stale/concurrent transition 방어
-- Spring Security `ADMIN / STAFF` RBAC
-- 트랜잭션 Work Order Audit History
-- `LOW / NORMAL / HIGH / URGENT` 우선순위
-- optional due date
-- 기한 초과 / 오늘 마감 / 긴급 / 진행 중 Planning Panel
-- Planning Panel에서 priority·due date를 포함한 실제 업무 접수
-- validation 및 400/401/403/404/409 오류 계약
-- OpenAPI, MockMvc integration tests, frontend/backend CI
+- React/TypeScript + Spring Boot/MyBatis
+- Customer domain + Customer → Work Order FK
+- ADMIN/STAFF RBAC
+- Work Order state machine + optimistic/stale transition defense
+- transactional Activity Audit
+- LOW/NORMAL/HIGH/URGENT + Due Date
+- Approval request → ADMIN approve/reject → DONE gate
+- Operations Analytics: overdue, workload, status/priority distribution, completion trend
+- 기간별 CSV/XLSX Reporting
+- frontend/backend CI
 
 Repository: https://github.com/Kzone87/user-directory-api
 
-### 2. Customer Data Workbench · V2.4 — Local-first Excel/CSV automation
+## 2. Customer Data Workbench · V3
 
-Excel/CSV 데이터를 서버로 업로드하지 않고 브라우저에서 정리·검증·표준화·재출력하는 local-first 업무 자동화 도구입니다.
+**수주 연결:** Excel/CSV 자동화 / 데이터 정리 / 검증 / 비교 / Batch / Migration
 
-**연결 가능한 외주 상품:** Excel/CSV 반복업무 자동화 / DELUXE 149만원부터
+- XLSX/XLS/CSV local-first import
+- normalize / dedupe / Undo / Recipe
+- required/email/number/enum Rule Builder
+- Column Mapping + collision defense
+- Dataset Compare: ADDED / REMOVED / CHANGED / UNCHANGED
+- WorkflowPreset: Mapping + Operations + Rules + Target Schema
+- multi-file Batch/Migration
+- SUCCESS / VALIDATION_FAILED / ERROR 파일별 격리
+- Migration Report + combined XLSX
+- Vitest + strict TypeScript + Vite production build
 
-- XLSX / XLS / CSV import
-- 서버 업로드 없이 브라우저 메모리에서 처리
-- 빈 값 / 이메일 / 전화번호 / 완전 중복 품질 점검
-- 공백·이메일·전화번호 normalization
-- 중복 제거
-- 검색 / pagination
-- Undo / Redo / 원본 복원
-- 반복 작업 Recipe 저장 및 재실행
-- `required / email / number / enum` Rule Builder
-- Rule localStorage 저장과 파일별 재검증
-- Column Mapping Workspace
-- duplicate source / target / untouched-column collision 방어
-- safe column swap
-- CSV / XLSX export
-- Vite multi-page production build
-- 외부 API Key와 Backend 불필요
-
-Live Demo: https://kzone87.github.io/customer-map-planner/
-
-Column Mapping: https://kzone87.github.io/customer-map-planner/mapping.html
-
+Live: https://kzone87.github.io/customer-map-planner/  
 Repository: https://github.com/Kzone87/customer-map-planner
 
-### 3. AI Workflow Review Desk · V1 — AI integration + human review
+## 3. AI Workflow Review Desk · V2
 
-AI가 업무를 구조화·분류·요약하고 사람이 최종 승인하는 Workflow를 공개 코드로 구현한 AI integration 사례입니다.
+**수주 연결:** AI 업무자동화 / Local RAG / 문의분류 / 답변초안 / Human Review
 
-**연결 가능한 외주 상품:** AI Workflow / 업무자동화 / DELUXE 149만원부터
-
-- deterministic mock provider로 API Key 없는 Live Lab
-- `triage-v1 / triage-v2` prompt version
-- structured output schema validation
-- category / risk / confidence
-- evaluation score / flags
+- fictional Local Knowledge corpus
+- deterministic retrieval + rank/score/matched terms/coverage
+- evidence snapshot preserved with generation run
+- Structured Output + risk/confidence evaluation
 - primary → fallback provider
-- `GENERATED / NEEDS_REVIEW → APPROVED / REJECTED` human review
-- 사람이 output을 수정한 뒤 승인 가능
-- Run History / Review Audit
-- Node REST API reference implementation
-- `expectedVersion` 기반 stale review `409`
-- finalized task regeneration `409`
-- HTTP integration tests
-- browser network/storage 비사용
-- 실제 credential / 고객 데이터 없음
+- NO_EVIDENCE / LOW_EVIDENCE_COVERAGE review routing
+- Human approve / reject / edit
+- stale review 409
+- evidence-aware Run / Review Audit
+- `/api/knowledge`, `/api/retrieval` reference endpoints
 
-Live Lab: https://kzone87.github.io/portfolio/ai-workflow-review-desk/
+Live: https://kzone87.github.io/portfolio/ai-workflow-review-desk/
 
-Source: ./ai-workflow-review-desk/
+## 4. Integration Control Center · V3
 
-### 4. Integration Control Center · V2 — Integration operations + REST API
+**수주 연결:** REST API / Webhook / Scheduler / 시스템 동기화 / Retry 운영
 
-외부 시스템 간 동기화 작업을 `Connection → Sync Job → Run` 단위로 운영하는 공개 사례입니다. 웹 Lab은 credential-free simulation으로 유지하고, 저장소에는 같은 도메인의 **Node REST API reference implementation과 HTTP integration tests**를 제공합니다.
+- Connection → Job → Run control plane
+- Manual / Hourly / Daily schedule model
+- `Idempotency-Key` duplicate run replay
+- Webhook `eventId` deduplication
+- validation + 400/404/409 contract
+- FAILED run retry + `retryOf` lineage
+- retry limit + persistent failure → DEAD_LETTER
+- credential-free Live Lab + Node REST reference + HTTP tests
 
-**연결 가능한 외주 상품:** API·시스템 연동 / DELUXE 149만원부터
+Live: https://kzone87.github.io/portfolio/integration-control-center/
 
-- Connection Registry: `ACTIVE / PAUSED / ERROR`
-- Source / Target sync job 구성
-- Customer / Order / Inventory / Invoice entity
-- Manual / Hourly / Daily schedule
-- Retry ×3 / Stop / Skip-row failure policy
-- Job `ACTIVE / PAUSED` 운영 상태
-- `GET /api/connections`, `GET/POST /api/jobs`
-- `PATCH /api/jobs/:id/status`
-- `POST /api/jobs/:id/runs`
-- `GET /api/runs`
-- validation + `400 / 404 / 409` error contract
-- connection health failure를 FAILED run으로 기록
-- `Idempotency-Key` 기반 duplicate run 방지
-- Node HTTP-level integration tests
-- 실제 credential / 비공개 API 없음
+## 5. Commerce Ops Console · V1
 
-Live Lab: https://kzone87.github.io/portfolio/integration-control-center/
+**수주 연결:** 쇼핑몰 관리자 / 주문 / 배송 / 반품 / 환불 / Ecommerce Ops
 
-Source: ./integration-control-center/
+- Operational / Payment / Fulfillment state 분리
+- Hold / Release
+- Picking / Ship / Deliver / Return / Cancel
+- partial/full refund request
+- 고액·위험 환불 ADMIN approval
+- optimistic `expectedVersion` stale-action defense
+- KPI + immutable-style Audit
+- Live Console + REST API + HTTP tests
 
-### 5. MilkyWay — Team & legacy maintenance evidence
+Live: https://kzone87.github.io/portfolio/commerce-ops-console/
 
-Java/JSP/Servlet/MySQL 팀 프로젝트에서 실제 Git 기록으로 확인되는 개인 기여와 이후 보안 정리 작업을 구분해 기록한 Case Study입니다.
+## 6. Booking & Field Service Ops · V1
 
-**연결 가능한 외주 상품:** 기존 서비스 기능 수정 / 유지보수 / STANDARD 49만원부터
+**수주 연결:** 예약 / 배차 / 출장 / 설치 / 점검 / 현장서비스
 
-- 팀 Git / PR 협업
-- 인증·주문·상태 처리
-- 외부 API 연동
-- legacy security hardening
-- 전면 재개발보다 위험을 줄이는 단계적 현대화 판단
+- REQUESTED → SCHEDULED → DISPATCHED → ON_SITE → COMPLETED
+- half-open time-slot overlap logic
+- 동일 Field Agent 일정 충돌 차단
+- Reschedule / Reassign / Cancel / No-show
+- conflict override는 `URGENT + ADMIN + explicit reason`만 허용
+- optimistic version + Audit
+- Live Dispatch Board + REST API + tests
 
-Case Study: https://github.com/Kzone87/milkyway-bookstore-case-study
+Live: https://kzone87.github.io/portfolio/field-service-ops/
 
-## Portfolio coverage
+## 7. Document Intake & Approval · V1
 
-| Area | Public evidence |
-| --- | --- |
-| React / TypeScript admin UI | Business Ops Dashboard |
-| Spring Boot / MyBatis API | Business Ops Dashboard |
-| Customer CRM / relational data | Business Ops Dashboard |
-| RBAC / authentication boundary | Business Ops Dashboard |
-| Business state machine / audit history | Business Ops Dashboard |
-| Priority / due-date planning | Business Ops Dashboard |
-| DB / validation / HTTP error contract | Business Ops Dashboard |
-| XLSX/XLS/CSV local processing | Customer Data Workbench |
-| Data quality / normalization | Customer Data Workbench |
-| User validation rules | Customer Data Workbench |
-| Column mapping / schema standardization | Customer Data Workbench |
-| Undo / Recipe workflow | Customer Data Workbench |
-| AI structured output / evaluation | AI Workflow Review Desk |
-| Provider adapter / fallback | AI Workflow Review Desk |
-| Human-in-the-loop approval / audit | AI Workflow Review Desk |
-| Prompt version / stale review defense | AI Workflow Review Desk |
-| Integration job control-plane UX | Integration Control Center |
-| REST API / idempotency / run history | Integration Control Center |
-| Team collaboration | MilkyWay Case Study |
-| Legacy maintenance | MilkyWay Case Study |
+**수주 연결:** 신청서 / 계약서 / 증빙 / 파일접수 / 검수 / 승인
 
-## Delivery principles
+- DRAFT → SUBMITTED → NEEDS_CHANGES / APPROVED / REJECTED → ARCHIVED
+- 문서 유형별 validation checklist
+- deterministic key:value metadata extraction demo
+- SUBMITTER / REVIEWER / ADMIN boundaries
+- NEEDS_CHANGES comment + edit/resubmit
+- stale review 409
+- ADMIN-only archive + Audit
+- Live Review Desk + REST API + tests
+
+Live: https://kzone87.github.io/portfolio/document-intake-approval/
+
+# Engineering Mini Labs · V1
+
+큰 Flagship으로 만들 필요가 없는 외주 영역도 실행 가능한 작은 증거로 보완합니다.
+
+- CMS validation / publish gate
+- key:value / strict CSV Extraction
+- allow-listed deterministic Browser Automation workflow
+- Origin / Redirect / Spreadsheet Formula / Secret masking / Security Headers
+- QA & Deployment GO/NO_GO release gate
+
+Live: https://kzone87.github.io/portfolio/mini-labs/
+
+# Legacy / maintenance evidence
+
+`milkyway-bookstore-case-study`는 기존 Java/JSP 팀 프로젝트의 공개 Git 기록과 보안 정리 작업을 분리해 기록한 유지보수 Case Study입니다.
+
+Repository: https://github.com/Kzone87/milkyway-bookstore-case-study
+
+# Commercial sales kit
+
+- [SERVICES.md](./SERVICES.md)
+- [크몽 상품 등록 원고](./sales/KMONG-LISTINGS.md)
+- [숨고 맞춤견적 템플릿](./sales/SOOMGO-QUOTES.md)
+- [AI Workflow 판매 원고](./sales/AI-WORKFLOW-SALES.md)
+- [Portfolio Screenshot / 60초 영상 구성](./sales/PORTFOLIO-ASSETS.md)
+- [Scope 방어 규칙](./sales/SCOPE-RULES.md)
+- [월 유지보수 상품](./sales/MAINTENANCE.md)
+- [견적서 템플릿](./sales/QUOTE-TEMPLATE.md)
+
+# Delivery principles
 
 1. 현재 업무 흐름과 완료 조건을 먼저 확인합니다.
-2. 포함 범위와 제외 범위를 구분합니다.
-3. validation, 권한, 오류 처리, 상태 전이를 정상 기능의 일부로 봅니다.
-4. AI 기능은 output schema, 사람의 승인 지점, provider 비용/secret 경계를 먼저 정합니다.
-5. 프로젝트 성격에 따라 자동화 테스트, CI 또는 재현 가능한 검증 절차를 둡니다.
-6. API Key와 credential은 소스 코드에 직접 포함하지 않습니다.
-7. 납품 시 실행/배포 방법과 필요한 환경설정을 문서화합니다.
+2. 포함/제외 범위를 고정합니다.
+3. 정상 흐름뿐 아니라 validation, 권한, 상태 전이, 실패·재시도·동시성 경계를 구현합니다.
+4. AI는 근거·output schema·Human Review·provider secret 경계를 분리합니다.
+5. 공개 가능한 프로젝트는 자동 테스트와 CI로 회귀를 고정합니다.
+6. API Key와 credential은 공개 browser/source에 직접 포함하지 않습니다.
+7. 납품 시 실행·배포·환경설정과 운영 경계를 문서화합니다.
 
-## Fast estimate
+# Public-only portfolio policy
 
-1차 상담에는 아래 네 가지면 충분합니다.
-
-1. 현재 업무 방식
-2. 가장 불편한 점
-3. 개발 후 반드시 가능해야 하는 결과
-4. 대략적인 예산과 일정
-
-## Portfolio policy
-
-이 포트폴리오는 **공개 가능한 저장소와 검증 가능한 기록만** 사용합니다. 공개할 수 없는 사업 프로젝트의 소스·구조·데이터는 검토하거나 포트폴리오 증거로 사용하지 않습니다.
+이 포트폴리오는 **공개 가능한 저장소와 검증 가능한 공개 기록만 사용합니다.** 비공개 사업 프로젝트의 소스·구조·데이터는 포트폴리오 증거로 검토하거나 재사용하지 않습니다.
