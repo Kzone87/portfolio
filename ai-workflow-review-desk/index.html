@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="API Key 없이 실행되는 AI workflow review 공개 Lab. 구조화 출력, 평가, fallback, human approval, prompt version, run audit를 시연합니다." />
-  <title>AI Workflow Review Desk · V1</title>
+  <meta name="description" content="API Key 없이 실행되는 evidence-grounded AI workflow review 공개 Lab. Local knowledge retrieval, 구조화 출력, 평가, fallback, human approval, prompt version, run/review audit를 시연합니다." />
+  <title>AI Workflow Review Desk · V2</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
 <header class="topbar">
   <div>
     <a href="../" class="back">← Portfolio</a>
-    <strong>AI WORKFLOW REVIEW DESK</strong>
+    <strong>AI WORKFLOW REVIEW DESK · V2</strong>
   </div>
-  <span class="mode">NO API KEY · MOCK PROVIDERS</span>
+  <span class="mode">NO API KEY · LOCAL KNOWLEDGE · MOCK PROVIDERS</span>
 </header>
 
 <main>
   <section class="hero">
-    <p class="eyebrow">AI INTEGRATION · HUMAN-IN-THE-LOOP · EVALUATION</p>
-    <h1>AI가 제안하고,<br><span>사람이 최종 승인합니다.</span></h1>
-    <p>외부 AI API 없이도 구조화 출력, prompt version, provider fallback, evaluation, human review, audit trail을 재현하는 공개 reference Lab입니다. 실제 고객 데이터나 credential은 사용하지 않습니다.</p>
+    <p class="eyebrow">LOCAL RAG · EVIDENCE · HUMAN-IN-THE-LOOP · EVALUATION</p>
+    <h1>AI가 근거를 찾고 제안하면,<br><span>사람이 근거와 함께 승인합니다.</span></h1>
+    <p>외부 AI API 없이 local knowledge retrieval, structured output, prompt version, provider fallback, evidence snapshot, evaluation, human review, audit trail을 재현하는 공개 reference Lab입니다. 실제 고객 데이터나 credential은 사용하지 않습니다.</p>
     <div class="hero-points">
-      <span>Structured JSON</span><span>Fallback</span><span>Risk flags</span><span>Human review</span><span>Audit</span>
+      <span>Local Knowledge</span><span>Evidence Retrieval</span><span>Structured JSON</span><span>Fallback</span><span>Risk Flags</span><span>Human Review</span><span>Audit</span>
     </div>
   </section>
 
@@ -51,9 +51,10 @@
 
     <section class="panel review-panel">
       <div class="panel-title">
-        <div><p class="eyebrow">REVIEW DESK</p><h2>AI 결과 검토</h2></div>
+        <div><p class="eyebrow">EVIDENCE REVIEW DESK</p><h2>AI 결과와 근거 검토</h2></div>
         <label class="prompt-select">Prompt
           <select id="prompt-version">
+            <option value="triage-grounded-v2">triage-grounded-v2</option>
             <option value="triage-v2">triage-v2</option>
             <option value="triage-v1">triage-v1</option>
           </select>
@@ -64,7 +65,7 @@
       <div id="review-content" class="review-content" hidden>
         <div class="task-heading">
           <div><span id="selected-status" class="status"></span><h3 id="selected-title"></h3></div>
-          <button id="generate-selected" class="button primary" type="button">AI 제안 생성</button>
+          <button id="generate-selected" class="button primary" type="button">근거 검색 + AI 제안</button>
         </div>
         <p id="selected-input" class="input-copy"></p>
 
@@ -75,19 +76,25 @@
             <div><span>Provider</span><strong id="provider-name">-</strong></div>
             <div><span>Prompt</span><strong id="prompt-name">-</strong></div>
             <div><span>Eval score</span><strong id="eval-score">-</strong></div>
-            <div><span>Flags</span><strong id="eval-flags">-</strong></div>
+            <div><span>Evidence coverage</span><strong id="evidence-coverage">-</strong></div>
           </div>
+          <div class="flag-line"><span>Evaluation flags</span><strong id="eval-flags">-</strong></div>
+
+          <section class="evidence-panel" aria-label="retrieved evidence">
+            <div class="evidence-heading"><div><p class="eyebrow">RETRIEVED EVIDENCE</p><h3>생성 시점에 사용한 로컬 근거</h3></div><span id="evidence-count">0 sources</span></div>
+            <div id="evidence-list" class="evidence-list"></div>
+          </section>
 
           <div class="editor-grid">
             <label>요약<textarea id="edit-summary" rows="4"></textarea></label>
             <label>Next action<textarea id="edit-action" rows="4"></textarea></label>
-            <label>Category<select id="edit-category"><option>billing</option><option>access</option><option>incident</option><option>data</option><option>general</option></select></label>
+            <label>Category<select id="edit-category"><option>billing</option><option>access</option><option>incident</option><option>data</option><option>security</option><option>general</option></select></label>
             <label>Risk<select id="edit-risk"><option>LOW</option><option>MEDIUM</option><option>HIGH</option></select></label>
             <label>Confidence<input id="edit-confidence" type="number" min="0" max="100" /></label>
           </div>
 
           <div class="review-actions">
-            <button id="approve" class="button approve" type="button">수정 내용으로 승인</button>
+            <button id="approve" class="button approve" type="button">근거 확인 후 승인</button>
             <button id="reject" class="button reject" type="button">반려</button>
           </div>
         </div>
@@ -95,24 +102,32 @@
     </section>
   </section>
 
+  <section class="knowledge panel">
+    <div class="panel-title">
+      <div><p class="eyebrow">LOCAL KNOWLEDGE BASE</p><h2>공개 데모용 정책·Runbook</h2><p class="fineprint">브라우저 번들 안의 가상 문서만 검색합니다. 외부 검색, 외부 API, 사용자 파일 업로드는 사용하지 않습니다.</p></div>
+      <span class="mode">DETERMINISTIC RETRIEVAL</span>
+    </div>
+    <div id="knowledge-list" class="knowledge-list"></div>
+  </section>
+
   <section class="history-grid">
     <article class="panel">
-      <div class="panel-title"><div><p class="eyebrow">RUN HISTORY</p><h2>Provider 실행 이력</h2></div></div>
+      <div class="panel-title"><div><p class="eyebrow">RUN HISTORY</p><h2>Provider + Evidence 실행 이력</h2></div></div>
       <div id="run-history" class="history-list"></div>
     </article>
     <article class="panel">
-      <div class="panel-title"><div><p class="eyebrow">REVIEW AUDIT</p><h2>Human decision</h2></div></div>
+      <div class="panel-title"><div><p class="eyebrow">REVIEW AUDIT</p><h2>Human decision + evidence snapshot</h2></div></div>
       <div id="review-history" class="history-list"></div>
     </article>
   </section>
 
   <section class="architecture panel">
-    <p class="eyebrow">REFERENCE ARCHITECTURE</p>
-    <h2>실제 외부 모델을 붙여도 경계가 유지되는 구조</h2>
+    <p class="eyebrow">REFERENCE ARCHITECTURE · V2</p>
+    <h2>실제 외부 모델을 붙여도 근거·검토 경계가 유지되는 구조</h2>
     <div class="flow">
-      <span>Task</span><b>→</b><span>Prompt version</span><b>→</b><span>Provider adapter</span><b>→</b><span>Schema validation</span><b>→</b><span>Evaluation</span><b>→</b><span>Human review</span><b>→</b><span>Audit</span>
+      <span>Task</span><b>→</b><span>Local Knowledge</span><b>→</b><span>Retrieval</span><b>→</b><span>Prompt version</span><b>→</b><span>Provider adapter</span><b>→</b><span>Schema validation</span><b>→</b><span>Evaluation</span><b>→</b><span>Human review</span><b>→</b><span>Evidence Audit</span>
     </div>
-    <p class="fineprint">이 공개 Lab의 provider는 deterministic mock입니다. 실제 프로젝트에서는 동일 adapter 경계에 승인된 AI provider를 연결하고 API Key는 서버 secret으로 관리하는 구조를 가정합니다.</p>
+    <p class="fineprint">공개 V2 provider는 deterministic mock이며 retrieval도 로컬 deterministic ranking입니다. 실제 프로젝트에서는 동일 경계에 승인된 vector/search provider와 AI provider를 연결하고 credential은 서버 secret으로 관리할 수 있습니다. 검색 근거와 human decision audit 계약은 그대로 유지합니다.</p>
   </section>
 </main>
 
