@@ -3,88 +3,60 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="외부 시스템 간 데이터 동기화, Webhook, Retry, Dead Letter 흐름을 운영하는 Integration Control Center V3 공개 포트폴리오" />
-  <title>Integration Control Center · V3</title>
+  <meta name="description" content="외부 시스템 간 데이터 동기화 작업을 등록하고 실행·실패·재처리 이력을 운영하는 공개 데모" />
+  <title>연동 작업 운영센터 · Integration Control Center V3</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <p class="eyebrow">PUBLIC PORTFOLIO LAB · V3</p>
-      <h1>Integration Control Center</h1>
-      <p>Connection → Sync Job → Run 운영 UI와 Webhook / Retry / Dead Letter를 포함한 Node REST API reference implementation을 함께 제공합니다.</p>
-      <p class="eyebrow">Previous milestone: Integration Control Center · V2</p>
-    </div>
-    <a href="../">← Portfolio</a>
-  </header>
+<header class="topbar">
+  <div><a href="../">← Portfolio</a><strong>DEMO COMPANY / 연동 작업 운영센터</strong><span class="mode">Integration Control Center V3</span></div>
+  <a href="../services/api-integration.html">이 상품 설명</a>
+</header>
+<main class="shell">
+  <section class="hero">
+    <p class="eyebrow">INTEGRATIONS / OPERATIONS</p>
+    <h1>외부 시스템 데이터 연동 현황</h1>
+    <p>주문·고객·재고처럼 다른 서비스에서 들어오는 데이터를 어디로 보내는지, 마지막 실행이 성공했는지, 실패한 작업을 다시 처리해야 하는지 한 화면에서 확인합니다.</p>
+    <div class="chips"><span>가상 데이터</span><span>실제 API Key 없음</span><span>실패 재처리</span><span>중복 실행 방지</span></div>
+  </section>
 
-  <main class="shell">
-    <section class="metrics" aria-label="통합 운영 현황">
-      <article><span>Connections</span><strong id="metricConnections">0</strong><small>등록된 연결</small></article>
-      <article><span>Active jobs</span><strong id="metricActive">0</strong><small>실행 가능 작업</small></article>
-      <article><span>Failed runs</span><strong id="metricFailed">0</strong><small>최근 실패</small></article>
-      <article><span>Run history</span><strong id="metricRuns">0</strong><small>브라우저 저장 기록</small></article>
-    </section>
+  <section class="metrics" aria-label="통합 운영 현황">
+    <article><strong id="metricConnections">0</strong><span>등록된 연결</span><small>외부·내부 시스템</small></article>
+    <article><strong id="metricActive">0</strong><span>실행 가능 작업</span><small>현재 활성화됨</small></article>
+    <article><strong id="metricFailed">0</strong><span>확인 필요한 실패</span><small>최근 실행 오류</small></article>
+    <article><strong id="metricRuns">0</strong><span>실행 이력</span><small>현재 데모 세션</small></article>
+  </section>
 
-    <section class="grid two">
-      <article class="panel">
-        <div class="panel-heading">
-          <div><p class="eyebrow">CONNECTION REGISTRY</p><h2>시스템 연결 현황</h2></div>
-          <span class="demo-badge">NO REAL CREDENTIALS</span>
-        </div>
-        <div id="connectionList" class="connection-list"></div>
-      </article>
+  <section class="grid two">
+    <article class="panel">
+      <div class="panel-heading"><div><p class="eyebrow">CONNECTED SYSTEMS</p><h2>연결된 시스템</h2></div><span class="demo-badge">DEMO CONNECTIONS</span></div>
+      <div id="connectionList" class="connection-list"></div>
+    </article>
+    <aside class="panel">
+      <div class="panel-heading"><div><p class="eyebrow">NEW SYNC JOB</p><h2>새 동기화 작업</h2></div></div>
+      <form id="jobForm" class="form-grid">
+        <label>작업명<input id="jobName" maxlength="80" placeholder="예: 쇼핑몰 주문 → ERP" required /></label>
+        <label>가져올 곳<select id="jobSource" required></select></label>
+        <label>보낼 곳<select id="jobTarget" required></select></label>
+        <label>데이터 종류<select id="jobEntity"><option value="customers">고객</option><option value="orders">주문</option><option value="inventory">재고</option><option value="invoices">인보이스</option></select></label>
+        <label>실행주기<select id="jobSchedule"><option value="manual">수동</option><option value="hourly">매시간</option><option value="daily">매일</option></select></label>
+        <label>실패 처리<select id="jobPolicy"><option value="retry-3">최대 3회 재시도</option><option value="stop">즉시 중단</option><option value="skip-row">오류 행 제외</option></select></label>
+        <button type="submit">동기화 작업 추가</button>
+      </form>
+      <p id="formStatus" class="form-status" role="status"></p>
+    </aside>
+  </section>
 
-      <aside class="panel">
-        <p class="eyebrow">CREATE SYNC JOB</p>
-        <h2>동기화 작업 구성</h2>
-        <form id="jobForm" class="form-grid">
-          <label>작업명<input id="jobName" maxlength="80" placeholder="예: 고객 마스터 동기화" required /></label>
-          <label>Source<select id="jobSource" required></select></label>
-          <label>Target<select id="jobTarget" required></select></label>
-          <label>Entity<select id="jobEntity"><option value="customers">Customers</option><option value="orders">Orders</option><option value="inventory">Inventory</option><option value="invoices">Invoices</option></select></label>
-          <label>Schedule<select id="jobSchedule"><option value="manual">Manual</option><option value="hourly">Hourly</option><option value="daily">Daily</option></select></label>
-          <label>Failure policy<select id="jobPolicy"><option value="retry-3">Retry ×3</option><option value="stop">Stop immediately</option><option value="skip-row">Skip invalid row</option></select></label>
-          <button type="submit">작업 추가</button>
-        </form>
-        <p id="formStatus" class="form-status" role="status"></p>
-      </aside>
-    </section>
+  <section class="panel jobs-panel">
+    <div class="panel-heading"><div><p class="eyebrow">SYNC JOBS</p><h2>동기화 작업 목록</h2><p>실행, 일시정지, 재개와 최근 실행 상태를 확인합니다.</p></div><button id="resetDemo" class="secondary" type="button">가상 데이터 초기화</button></div>
+    <div class="table-wrap"><table><thead><tr><th>작업</th><th>연결</th><th>데이터</th><th>주기</th><th>실패 처리</th><th>상태</th><th>최근 실행</th><th>처리</th></tr></thead><tbody id="jobTable"></tbody></table></div>
+  </section>
 
-    <section class="panel jobs-panel">
-      <div class="panel-heading">
-        <div><p class="eyebrow">SYNC OPERATIONS · STATIC DEMO MODE</p><h2>동기화 작업</h2><p>웹 데모는 credential-free localStorage 모드이며, 저장소에는 동일 도메인의 V3 REST API 서버와 Webhook/Retry HTTP 통합 테스트가 포함됩니다.</p></div>
-        <button id="resetDemo" class="secondary" type="button">데모 초기화</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Job</th><th>Flow</th><th>Entity</th><th>Schedule</th><th>Policy</th><th>Status</th><th>Last run</th><th>Action</th></tr></thead>
-          <tbody id="jobTable"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="grid two lower-grid">
-      <article class="panel">
-        <div class="panel-heading"><div><p class="eyebrow">RUN HISTORY</p><h2>실행 이력</h2></div><button id="clearHistory" class="secondary" type="button">이력 비우기</button></div>
-        <div id="historyList" class="history-list"></div>
-      </article>
-
-      <article class="panel">
-        <p class="eyebrow">V3 DESIGN PRINCIPLES</p>
-        <h2>동기화 실패까지 운영할 수 있는 경계를 보여줍니다.</h2>
-        <ul class="principles">
-          <li><strong>Credential separation</strong><span>실제 API Key를 프런트 코드나 데모 데이터에 넣지 않습니다.</span></li>
-          <li><strong>Explicit state</strong><span>Connection, Job, Event, Run, Dead Letter 상태를 구분합니다.</span></li>
-          <li><strong>Webhook deduplication</strong><span>connectionId + eventId로 동일 이벤트의 중복 처리를 막습니다.</span></li>
-          <li><strong>Retry lineage</strong><span>retryOf와 retryCount로 재처리 계보와 최대 재시도를 추적합니다.</span></li>
-          <li><strong>Dead letter</strong><span>지속 실패는 운영자가 별도로 확인할 수 있는 Dead Letter로 격리합니다.</span></li>
-          <li><strong>Idempotency</strong><span>수동 실행 요청도 Idempotency-Key로 중복 기록을 방지합니다.</span></li>
-        </ul>
-      </article>
-    </section>
-  </main>
-
-  <script src="./app.js" defer></script>
+  <section class="grid two lower-grid">
+    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">RUN ACTIVITY</p><h2>최근 실행 이력</h2></div><button id="clearHistory" class="secondary" type="button">데모 이력 비우기</button></div><div id="historyList" class="history-list"></div></article>
+    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">OPERATOR NOTES</p><h2>운영자가 확인할 항목</h2></div></div><ul class="principles"><li><strong>실패 작업</strong><span>실패 원인을 확인하고 정책에 따라 다시 실행합니다.</span></li><li><strong>중복 이벤트</strong><span>같은 이벤트가 반복 도착해도 한 번만 처리하도록 식별합니다.</span></li><li><strong>반복 실패</strong><span>최대 재시도 이후에는 별도 확인 대상으로 분리합니다.</span></li><li><strong>접속정보</strong><span>실제 API Key는 브라우저 화면에 저장하지 않는 구조를 전제로 합니다.</span></li></ul></article>
+  </section>
+</main>
+<script src="./app.js" defer></script>
 </body>
 </html>
