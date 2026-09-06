@@ -66,7 +66,9 @@ test('dispatch UI keeps a readable day board, accessible queue and detail drawer
  const html=await load('field-service-ops/index.html');
  const css=await load('field-service-ops/styles.css');
  const app=await load('field-service-ops/app.js');
- assert.match(html,/시연 기준일/);
+ assert.match(html,/NEXA TECH SERVICE/);
+ assert.match(html,/운영 기준일/);
+ assert.doesNotMatch(html,/샘플 출장서비스|시연 기준일|운영 안내|감마스튜디오/);
  assert.match(html,/08:00–18:00/);
  assert.match(html,/id="detail-panel"/);
  assert.match(html,/id="detail-backdrop"/);
