@@ -53,7 +53,7 @@ test('every internal showroom page exposes real controls and visible results', a
       assert.ok(app.includes(id), `${demo.route} control ${id} is not wired in app`);
     }
     for (const id of demo.results) assert.ok(html.includes(`id="${id}"`), `${demo.route} missing result area ${id}`);
-    assert.match(html, /← 체험센터/);
+    assert.match(html, /<a href="\.\.\/">← (?:체험센터|포트폴리오)<\/a>/);
     assert.doesNotMatch(html, /services\//);
   }
 });
