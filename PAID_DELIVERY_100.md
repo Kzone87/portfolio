@@ -20,8 +20,15 @@
 - [x] 잘못된 URL을 위한 404 화면 제공
 - [x] 키보드 접근성, 반응형, 검색 메타 유지
 - [x] 실제 고객/실적처럼 오인시키는 주장 대신 포트폴리오용 브랜드·데이터임을 명시
-- [ ] PR CI green
-- [ ] main CI green
-- [ ] GitHub Pages deploy success
+- [x] Portfolio PR #36 CI green 후 squash merge
+- [x] Excel Workbench PR #18 Vitest + strict TypeScript + 4-page Vite build green 후 squash merge
+- [x] 두 저장소 main CI green
+- [x] Portfolio GitHub Pages deploy success
+- [x] Excel Workbench branch Pages 종료 후 Vite dist 최종 deploy success
 
-최종 100점 판정은 위 배포 검증까지 모두 끝난 뒤 확정합니다.
+## 검증 기준 커밋
+
+- Portfolio 100점 제품 변경: `5213082c6483ab3d278066807bb00359d81a812b`
+- Excel Workbench 100점 제품 변경: `810e90080599eeb9e40cb9b788f7505e03018d8f`
+
+위 기준의 코드·회귀 테스트·배포 검증을 모두 통과해 Paid Delivery 100 검증을 완료했습니다.
