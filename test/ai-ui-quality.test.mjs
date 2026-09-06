@@ -6,7 +6,9 @@ const html = await readFile(new URL('../ai-workflow-review-desk/index.html', imp
 const quality = await readFile(new URL('../ai-workflow-review-desk/quality.css', import.meta.url), 'utf8');
 
 test('AI support workspace keeps human review and evidence visible', () => {
-  assert.match(html, /외부 AI 연결 없이 · 가상 데이터로 실행/);
+  assert.match(html, /MONO SUPPORT/);
+  assert.match(html, /외부 AI 연결 없이/);
+  assert.doesNotMatch(html, /가상 데이터로 실행|샘플 고객지원팀/);
   assert.match(html, /문의함/);
   assert.match(html, /상담 내용/);
   assert.match(html, /이번 문의 참고자료/);
