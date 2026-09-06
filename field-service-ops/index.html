@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="가상 고객 방문 요청을 실제 배차보드처럼 담당 기사와 시간대에 배정하고 출동부터 완료까지 처리하는 현장서비스 데모">
-  <title>예약·현장 배차 | Kzone87 Demo</title>
+  <meta name="description" content="NEXA TECH SERVICE의 방문 요청을 기사별 시간대에 배정하고 출동부터 완료까지 관리하는 현장서비스 운영시스템">
+  <title>NEXA TECH SERVICE · 현장 운영</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 <header class="topbar">
-  <div><a href="../">← 포트폴리오</a><strong>현장서비스 운영</strong><span class="workspace-name">샘플 출장서비스</span></div>
-  <label>화면 권한<select id="role"><option value="STAFF">배차 담당자</option><option value="ADMIN">관리자</option></select></label>
+  <div><a href="../" aria-label="프로젝트 목록으로 돌아가기">← 프로젝트</a><strong>NEXA TECH SERVICE</strong><span class="workspace-name">Field Operations</span></div>
+  <label>업무 권한<select id="role"><option value="STAFF">배차 담당자</option><option value="ADMIN">운영 관리자</option></select></label>
 </header>
 <main class="dispatch-main">
   <section class="page-head">
     <div><p class="breadcrumb">현장운영 / 배차</p><h1>배차 현황</h1><p>미배정 요청을 기사별 일정에 배치하고, 출동·현장도착·완료까지 상태를 이어서 관리합니다.</p></div>
-    <div class="date-card"><span>시연 기준일</span><strong>2026. 09. 07</strong></div>
+    <div class="date-card"><span>운영 기준일</span><strong>2026. 09. 07</strong></div>
   </section>
 
   <section class="metrics" aria-label="배차 현황 요약">
@@ -28,7 +28,7 @@
 
   <section class="dispatch-layout">
     <article class="panel board-panel">
-      <div class="head"><div><h2>기사별 일정</h2><p class="muted">08:00–18:00 배차 현황입니다. 가로로 이동해 전체 시간을 확인할 수 있습니다.</p></div><span class="board-legend">기준일</span></div>
+      <div class="head"><div><h2>기사별 일정</h2><p class="muted">08:00–18:00 배차 현황입니다. 가로로 이동해 전체 시간을 확인할 수 있습니다.</p></div><span class="board-legend">운영일</span></div>
       <div id="agent-board" class="agent-board" aria-label="기사별 일정 보드"></div>
     </article>
 
@@ -43,7 +43,7 @@
   </section>
 
   <section class="lower">
-    <article class="panel"><div class="head"><div><h2>운영 안내</h2><p class="muted">배차보드에서 기사 부하를 확인한 뒤 미배정 요청을 처리합니다.</p></div></div><ol class="ops-guide"><li><strong>감마스튜디오</strong> 미배정 요청을 선택합니다.</li><li>기사와 시간을 정해 <strong>일정 배정</strong>을 누릅니다.</li><li>배차보드에 작업이 들어온 것을 확인합니다.</li><li>출동 → 현장 도착 → 완료 순서로 처리합니다.</li></ol></article>
+    <article class="panel"><div class="head"><div><h2>배차 체크리스트</h2><p class="muted">기사 부하와 이동시간을 확인한 뒤 미배정 요청을 처리합니다.</p></div></div><ol class="ops-guide"><li>방문 요청에서 <strong>미배정 작업</strong>을 선택합니다.</li><li>담당 기사와 방문 시간을 정해 <strong>일정 적용</strong>을 누릅니다.</li><li>기사별 일정에서 작업 위치와 겹침 여부를 확인합니다.</li><li>출동 → 현장 도착 → 완료 순서로 상태를 갱신합니다.</li></ol></article>
     <article class="panel"><div class="head"><div><h2>최근 변경 이력</h2><p class="muted">배정과 현장 상태 변경 기록입니다.</p></div></div><div id="audit-list" class="audit-list"></div></article>
   </section>
 </main>
