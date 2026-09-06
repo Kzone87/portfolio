@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import { readFile } from 'node:fs/promises';
 import { overlaps, validateSlot, createJob, JOB_STATUS, computeMetrics } from '../field-service-ops/engine.mjs';
 import { createFieldServiceServer } from '../field-service-ops/server/app.mjs';
 
 async function withServer(run){const server=createFieldServiceServer();server.listen(0,'127.0.0.1');await once(server,'listening');const a=server.address();const base=`http://127.0.0.1:${a.port}`;try{await run(base);}finally{server.close();await once(server,'close');}}
 async function request(base,path,options={}){const r=await fetch(`${base}${path}`,{...options,headers:{'content-type':'application/json',...(options.headers??{})}});return{response:r,body:await r.json()};}
+const load=(path)=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
 
 test('slot validation and overlap use half-open interval semantics',()=>{
  const slot=validateSlot('2026-09-07T09:00:00+09:00','2026-09-07T10:00:00+09:00');
@@ -59,3 +61,21 @@ test('reassign detects conflict and terminal jobs reject further actions',async(
  const cancelled=await request(base,'/api/jobs/3/cancel',{method:'POST',body:JSON.stringify({expectedVersion:1,actor:'dispatcher'})});assert.equal(cancelled.body.status,'CANCELLED');
  const again=await request(base,'/api/jobs/3/schedule',{method:'POST',body:JSON.stringify({expectedVersion:2,agentId:1,startAt:'2026-09-08T00:00:00Z',endAt:'2026-09-08T01:00:00Z',actor:'dispatcher'})});assert.equal(again.response.status,409);assert.equal(again.body.error.code,'INVALID_JOB_ACTION');
 }));
+
+test('dispatch UI keeps a readable day board, accessible queue and detail drawer',async()=>{
+ const html=await load('field-service-ops/index.html');
+ const css=await load('field-service-ops/styles.css');
+ const app=await load('field-service-ops/app.js');
+ assert.match(html,/시연 기준일/);
+ assert.match(html,/08:00–18:00/);
+ assert.match(html,/id="detail-panel"/);
+ assert.match(html,/id="detail-backdrop"/);
+ assert.match(html,/aria-label="방문 요청 검색"/);
+ assert.match(app,/BOARD_HOURS = \[8, 9, 10, 11, 12, 13, 14, 15, 16, 17\]/);
+ assert.match(app,/scheduleWindowError/);
+ assert.match(app,/event\.key === 'Escape'/);
+ assert.match(app,/inputLocal\(currentJob\.startAt\)/);
+ assert.match(css,/\.job-card p\{[^}]*font-size:13px/);
+ assert.match(css,/\.slot-card strong\{[^}]*font-size:12px/);
+ assert.match(css,/\.job-detail-panel\{[^}]*position:fixed/);
+});
