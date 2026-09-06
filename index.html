@@ -3,101 +3,99 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="기존 웹사이트 기능추가, Excel 자동화, 관리자페이지, API 연동, 문서추출, AI 기능추가 등 실제 외주 개발 결과물을 공개 데모로 보여주는 포트폴리오입니다.">
-  <meta name="theme-color" content="#f6f7f9">
-  <title>Kzone87 · 실제로 판매하는 개발 상품과 공개 데모</title>
+  <meta name="description" content="주문관리, Excel 정리, 현장 배차, 문서 검수, AI 업무보조, 데이터 연결을 가상 데이터로 직접 실행해볼 수 있는 공개 포트폴리오입니다.">
+  <meta name="theme-color" content="#f7f7f8">
+  <title>Kzone87 · 직접 써보는 업무 프로그램 데모</title>
   <link rel="stylesheet" href="./home.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="shell header-inner">
-      <a class="brand" href="#top">KZONE87</a>
-      <nav class="site-nav" aria-label="주요 메뉴">
-        <a href="#products">판매 상품</a>
-        <a href="#proof">대표 데모</a>
-        <a href="./work/">전체 사례</a>
-      </nav>
+<header class="site-header">
+  <div class="shell header-inner">
+    <a class="brand" href="#top">KZONE87</a>
+    <nav aria-label="주요 메뉴"><a href="#demos">직접 체험</a><a href="#guide">체험 방법</a></nav>
+  </div>
+</header>
+<main id="top">
+  <section class="hero">
+    <div class="shell hero-inner">
+      <p class="overline">INTERACTIVE WORK DEMOS</p>
+      <h1>말보다 직접<br>써보세요.</h1>
+      <p class="hero-copy">주문관리, Excel 정리, 현장 배차, 문서 검수, AI 업무보조, 데이터 연결처럼 회사에서 실제로 쓰는 흐름을 가상 데이터로 직접 실행할 수 있습니다.</p>
+      <a class="primary-action" href="#demos">체험할 프로그램 보기 ↓</a>
     </div>
-  </header>
+  </section>
 
-  <main id="top">
-    <section class="hero">
-      <div class="shell hero-layout">
-        <div class="hero-copy-block">
-          <p class="kicker">FREELANCE SOFTWARE PORTFOLIO</p>
-          <h1>필요한 기능을 말해주시면<br><span>실제로 쓰는 화면으로 만듭니다.</span></h1>
-          <p class="hero-copy">기존 사이트 기능추가부터 Excel 자동화, 관리자페이지, API 연동, 문서처리, AI 기능까지. 아래 상품들은 모두 공개 코드 또는 직접 실행 가능한 데모로 구현 능력을 확인할 수 있습니다.</p>
-          <div class="actions">
-            <a class="button primary" href="#products">판매 상품 보기</a>
-            <a class="button" href="./work/">전체 개발사례</a>
-          </div>
-        </div>
-        <aside class="hero-proof" aria-label="검증 가능한 포트폴리오">
-          <div class="proof-row"><span>01</span><div><strong>직접 실행</strong><p>가상 데이터로 실제 조작 가능한 업무화면</p></div></div>
-          <div class="proof-row"><span>02</span><div><strong>공개 코드</strong><p>구현 구조와 예외처리를 GitHub에서 확인</p></div></div>
-          <div class="proof-row"><span>03</span><div><strong>자동 테스트</strong><p>주요 상태변경과 오류조건을 CI로 검증</p></div></div>
-        </aside>
+  <section id="demos" class="demo-section">
+    <div class="shell">
+      <div class="section-title"><span>직접 실행 가능한 데모</span><strong>7</strong></div>
+      <div class="demo-grid">
+        <a class="demo-card featured" href="https://kzone87.github.io/customer-map-planner/" target="_blank" rel="noreferrer">
+          <div class="card-top"><span class="number">01</span><span class="live">직접 실행</span></div>
+          <h2>Excel 정리 작업실</h2>
+          <p>파일을 불러와 중복·형식 문제를 찾고, 두 파일을 비교하거나 여러 파일을 한 번에 정리해 결과 파일을 내려받습니다.</p>
+          <ol><li>파일 불러오기</li><li>정리·검사</li><li>결과 다운로드</li></ol>
+          <span class="enter">Excel 작업실 열기 →</span>
+        </a>
+
+        <a class="demo-card" href="./commerce-ops-console/">
+          <div class="card-top"><span class="number">02</span><span class="live">직접 실행</span></div>
+          <h2>주문·배송 관리</h2>
+          <p>가상 주문을 선택해 상품 준비, 출고, 배송완료, 보류, 반품, 환불까지 직접 처리하고 변경 이력을 확인합니다.</p>
+          <ol><li>주문 선택</li><li>상태 처리</li><li>환불·이력 확인</li></ol>
+          <span class="enter">주문 관리 열기 →</span>
+        </a>
+
+        <a class="demo-card" href="./field-service-ops/">
+          <div class="card-top"><span class="number">03</span><span class="live">직접 실행</span></div>
+          <h2>예약·현장 배차</h2>
+          <p>고객 방문 요청에 담당 기사를 배정하고 일정 충돌을 확인한 뒤 출동, 현장 작업, 완료까지 처리합니다.</p>
+          <ol><li>요청 선택</li><li>기사·시간 배정</li><li>출동·완료</li></ol>
+          <span class="enter">현장 배차 열기 →</span>
+        </a>
+
+        <a class="demo-card" href="./document-intake-approval/">
+          <div class="card-top"><span class="number">04</span><span class="live">직접 실행</span></div>
+          <h2>문서 접수·검수</h2>
+          <p>인보이스·신청서·계약서의 필수 값을 확인하고 수정 요청, 재제출, 승인, 반려를 직접 처리합니다.</p>
+          <ol><li>문서 선택</li><li>필수값 확인</li><li>승인·수정 요청</li></ol>
+          <span class="enter">문서 검수 열기 →</span>
+        </a>
+
+        <a class="demo-card" href="./ai-workflow-review-desk/">
+          <div class="card-top"><span class="number">05</span><span class="live">직접 실행</span></div>
+          <h2>AI 문의·문서 보조</h2>
+          <p>문의 내용을 넣으면 관련 내부 자료를 찾아 요약과 다음 처리안을 만들고, 담당자가 수정해 승인하거나 반려합니다.</p>
+          <ol><li>문의 입력</li><li>AI 정리</li><li>담당자 확인</li></ol>
+          <span class="enter">AI 검토 열기 →</span>
+        </a>
+
+        <a class="demo-card" href="./integration-control-center/">
+          <div class="card-top"><span class="number">06</span><span class="live">직접 실행</span></div>
+          <h2>외부 데이터 연결</h2>
+          <p>두 시스템 사이의 데이터 전달 작업을 만들고 실행해 성공·실패를 확인한 뒤 실패 건을 다시 처리합니다.</p>
+          <ol><li>연결 선택</li><li>작업 실행</li><li>실패 확인·재실행</li></ol>
+          <span class="enter">데이터 연결 열기 →</span>
+        </a>
+
+        <a class="demo-card" href="./mini-labs/">
+          <div class="card-top"><span class="number">07</span><span class="live">직접 실행</span></div>
+          <h2>작은 업무 자동화</h2>
+          <p>게시 전 필수내용 검사, 문서 값 추출, 반복작업 실행, 위험 입력 차단처럼 작은 기능을 직접 시험합니다.</p>
+          <ol><li>값 입력</li><li>기능 실행</li><li>결과 확인</li></ol>
+          <span class="enter">작은 자동화 열기 →</span>
+        </a>
       </div>
-    </section>
-
-    <section id="products" class="section white">
-      <div class="shell">
-        <div class="section-head product-head">
-          <p class="kicker">WHAT I ACTUALLY SELL</p>
-          <h2>이런 개발을 맡길 수 있습니다.</h2>
-          <p>플랫폼에서 고객이 실제로 찾는 작업 이름으로 정리했습니다.</p>
-        </div>
-        <div class="product-list">
-          <a class="product-row" href="./services/feature-addition.html"><span class="product-index">01</span><div><h3>기존 웹사이트에 필요한 기능 추가</h3><p>예: 관리자 메뉴, 검색·필터, 엑셀 다운로드, 승인기능, 예약기능, API 1건</p></div><b>사례 보기 →</b></a>
-          <a class="product-row" href="./services/excel-automation.html"><span class="product-index">02</span><div><h3>엑셀·CSV 반복작업 자동화</h3><p>예: 중복제거, 형식통일, 두 파일 비교, 여러 파일 일괄처리, 결과 XLSX 생성</p></div><b>직접 실행 →</b></a>
-          <a class="product-row" href="./services/admin-system.html"><span class="product-index">03</span><div><h3>고객·직원·업무 관리자페이지 제작</h3><p>예: 고객등록, 직원권한, 업무배정, 진행상태, 관리자 승인, 보고서</p></div><b>사례 보기 →</b></a>
-          <a class="product-row" href="./services/api-integration.html"><span class="product-index">04</span><div><h3>외부 API 데이터를 내 사이트에 자동 연동</h3><p>예: 외부 주문·회원·환율 데이터를 가져와 저장하고 실패 건을 재처리</p></div><b>직접 실행 →</b></a>
-          <a class="product-row" href="./services/document-workflow.html"><span class="product-index">05</span><div><h3>PDF·이미지 문서 값을 추출해 Excel·DB로 정리</h3><p>예: 인보이스·신청서·견적서에서 업체명, 날짜, 금액, 품목을 추출하고 검수</p></div><b>직접 실행 →</b></a>
-          <a class="product-row" href="./services/ai-automation.html"><span class="product-index">06</span><div><h3>기존 서비스에 AI 요약·분류·초안 기능 추가</h3><p>예: 문의 자동분류, 문서요약, 답변초안, 사내자료 검색, 담당자 최종검토</p></div><b>직접 실행 →</b></a>
-        </div>
-        <div class="catalog-link"><a class="button" href="./services/">판매 가능한 10개 상품 전체 보기 →</a></div>
-      </div>
-    </section>
-
-    <section id="proof" class="section proof-section">
-      <div class="shell">
-        <div class="section-head compact">
-          <p class="kicker">REAL PRODUCT DEMOS</p>
-          <h2>설명보다 실제 화면을 보여드립니다.</h2>
-          <p>데모는 코드 조각을 나열하는 페이지가 아니라, 가상 회사가 실제로 운영하는 것처럼 조작할 수 있는 업무화면으로 구성합니다.</p>
-        </div>
-        <div class="proof-products">
-          <article class="proof-card">
-            <div class="proof-card-head"><span>관리자페이지</span><strong>Business Ops</strong></div>
-            <h3>고객 등록부터 업무배정·승인·보고서까지</h3>
-            <p>직원이 매일 쓰는 관리자 화면의 역할·상태·마감일·승인 흐름을 구현했습니다.</p>
-            <div class="case-flow"><span>고객등록</span><i>→</i><span>업무배정</span><i>→</i><span>승인</span><i>→</i><span>보고서</span></div>
-            <a href="./services/admin-system.html">구현 사례 보기 →</a>
-          </article>
-          <article class="proof-card">
-            <div class="proof-card-head"><span>Excel 자동화</span><strong>Data Workbench</strong></div>
-            <h3>파일을 넣으면 오류검사·비교·변환 후 결과파일 생성</h3>
-            <p>단일 파일 정리뿐 아니라 컬럼매핑, 전월비교, 다중파일 Batch Migration까지 실행합니다.</p>
-            <div class="case-flow"><span>업로드</span><i>→</i><span>검증</span><i>→</i><span>비교·변환</span><i>→</i><span>다운로드</span></div>
-            <a href="https://kzone87.github.io/customer-map-planner/" target="_blank" rel="noreferrer">직접 실행 →</a>
-          </article>
-          <article class="proof-card">
-            <div class="proof-card-head"><span>운영 시스템</span><strong>Commerce / Field / Document</strong></div>
-            <h3>주문·현장·문서처럼 실제 상태가 계속 바뀌는 업무</h3>
-            <p>보류, 승인, 재배정, 수정요청, 환불처럼 예외가 많은 운영 흐름까지 다룹니다.</p>
-            <div class="case-flow"><span>접수</span><i>→</i><span>처리</span><i>→</i><span>예외검토</span><i>→</i><span>이력</span></div>
-            <a href="./work/">운영 데모 전체 보기 →</a>
-          </article>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="shell footer-inner">
-      <span>Kzone87 · Freelance Software Portfolio</span>
-      <span>문의·견적·계약은 개발 수주 플랫폼에서 진행합니다.</span>
     </div>
-  </footer>
+  </section>
+
+  <section id="guide" class="guide-section">
+    <div class="shell guide-grid">
+      <div><span class="guide-no">1</span><h3>아무 데모나 엽니다.</h3><p>회원가입이나 실제 계정이 필요하지 않습니다.</p></div>
+      <div><span class="guide-no">2</span><h3>화면의 데이터를 직접 바꿉니다.</h3><p>검색, 배정, 승인, 상태 변경, 파일 처리처럼 실제 기능이 동작합니다.</p></div>
+      <div><span class="guide-no">3</span><h3>결과와 변경 이력을 확인합니다.</h3><p>모든 데모는 가상 데이터라 자유롭게 시험할 수 있습니다.</p></div>
+    </div>
+  </section>
+</main>
+<footer><div class="shell footer-inner"><span>모든 화면은 공개용 가상 데이터로 동작합니다.</span><span>문의·견적·계약은 개발 수주 플랫폼에서 진행합니다.</span></div></footer>
 </body>
 </html>

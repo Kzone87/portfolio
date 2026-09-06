@@ -1,293 +1,40 @@
-const STORAGE_JOBS = 'icc-v1-jobs';
-const STORAGE_RUNS = 'icc-v1-runs';
-
-const connections = [
-  { id: 'crm-demo', name: 'CRM Demo', kind: 'REST API', state: 'ACTIVE' },
-  { id: 'erp-demo', name: 'ERP Demo', kind: 'REST API', state: 'ACTIVE' },
-  { id: 'billing-demo', name: 'Billing Demo', kind: 'Webhook', state: 'PAUSED' },
-  { id: 'warehouse-demo', name: 'Warehouse Demo', kind: 'REST API', state: 'ERROR' },
-  { id: 'sheet-demo', name: 'Spreadsheet Demo', kind: 'File import', state: 'ACTIVE' },
-  { id: 'analytics-demo', name: 'Analytics Demo', kind: 'Batch export', state: 'ACTIVE' }
+import { STATUS_LABELS, uiLabel } from '../customer-ui.js';
+const STORAGE_JOBS='icc-v12-jobs',STORAGE_RUNS='icc-v12-runs';
+const initialConnections=[
+{id:'crm-demo',name:'고객관리 프로그램',kind:'온라인 연결',state:'ACTIVE'},
+{id:'erp-demo',name:'사내 업무관리 프로그램',kind:'온라인 연결',state:'ACTIVE'},
+{id:'billing-demo',name:'결제 서비스',kind:'자동 알림',state:'PAUSED'},
+{id:'warehouse-demo',name:'재고관리 프로그램',kind:'온라인 연결',state:'ERROR'},
+{id:'sheet-demo',name:'업로드 파일',kind:'파일',state:'ACTIVE'},
+{id:'analytics-demo',name:'분석 저장소',kind:'자동 저장',state:'ACTIVE'}
 ];
-
-const allowedEntities = new Set(['customers', 'orders', 'inventory', 'invoices']);
-const allowedSchedules = new Set(['manual', 'hourly', 'daily']);
-const allowedPolicies = new Set(['retry-3', 'stop', 'skip-row']);
-const connectionIds = new Set(connections.map((item) => item.id));
-
-const defaultJobs = [
-  { id: 'job-customer-master', name: 'Customer master sync', source: 'crm-demo', target: 'erp-demo', entity: 'customers', schedule: 'hourly', policy: 'retry-3', status: 'ACTIVE', lastRun: null },
-  { id: 'job-order-export', name: 'Order analytics export', source: 'erp-demo', target: 'analytics-demo', entity: 'orders', schedule: 'daily', policy: 'skip-row', status: 'ACTIVE', lastRun: null },
-  { id: 'job-stock-sync', name: 'Inventory sync', source: 'warehouse-demo', target: 'erp-demo', entity: 'inventory', schedule: 'manual', policy: 'stop', status: 'PAUSED', lastRun: null }
+let connections=initialConnections.map(x=>({...x}));
+const allowedEntities=new Set(['customers','orders','inventory','invoices']),allowedSchedules=new Set(['manual','hourly','daily']),allowedPolicies=new Set(['retry-3','stop','skip-row']);
+const defaultJobs=[
+{id:'job-customer-master',name:'고객정보 정기 전달',source:'crm-demo',target:'erp-demo',entity:'customers',schedule:'hourly',policy:'retry-3',status:'ACTIVE',lastRun:null},
+{id:'job-order-export',name:'주문 분석자료 보내기',source:'erp-demo',target:'analytics-demo',entity:'orders',schedule:'daily',policy:'skip-row',status:'ACTIVE',lastRun:null},
+{id:'job-stock-sync',name:'재고 수량 전달',source:'warehouse-demo',target:'erp-demo',entity:'inventory',schedule:'manual',policy:'stop',status:'ACTIVE',lastRun:null}
 ];
-
-const byId = (id) => document.getElementById(id);
-const elements = {
-  connections: byId('connectionList'),
-  jobs: byId('jobTable'),
-  history: byId('historyList'),
-  form: byId('jobForm'),
-  name: byId('jobName'),
-  source: byId('jobSource'),
-  target: byId('jobTarget'),
-  entity: byId('jobEntity'),
-  schedule: byId('jobSchedule'),
-  policy: byId('jobPolicy'),
-  formStatus: byId('formStatus'),
-  metricConnections: byId('metricConnections'),
-  metricActive: byId('metricActive'),
-  metricFailed: byId('metricFailed'),
-  metricRuns: byId('metricRuns')
-};
-
-function safeText(value, max = 120) {
-  return typeof value === 'string' ? value.trim().slice(0, max) : '';
-}
-
-function sanitizeJob(value) {
-  if (!value || typeof value !== 'object') return null;
-  const id = safeText(value.id, 100);
-  const name = safeText(value.name, 80);
-  const source = safeText(value.source, 60);
-  const target = safeText(value.target, 60);
-  const entity = safeText(value.entity, 40);
-  const schedule = safeText(value.schedule, 40);
-  const policy = safeText(value.policy, 40);
-  const status = value.status === 'PAUSED' ? 'PAUSED' : 'ACTIVE';
-  const lastRun = typeof value.lastRun === 'string' ? value.lastRun.slice(0, 40) : null;
-  if (!id || !name || source === target) return null;
-  if (!connectionIds.has(source) || !connectionIds.has(target)) return null;
-  if (!allowedEntities.has(entity) || !allowedSchedules.has(schedule) || !allowedPolicies.has(policy)) return null;
-  return { id, name, source, target, entity, schedule, policy, status, lastRun };
-}
-
-function sanitizeRun(value) {
-  if (!value || typeof value !== 'object') return null;
-  const id = safeText(value.id, 100);
-  const jobId = safeText(value.jobId, 100);
-  const jobName = safeText(value.jobName, 80);
-  const result = value.result === 'FAILED' ? 'FAILED' : value.result === 'SUCCESS' ? 'SUCCESS' : null;
-  const at = typeof value.at === 'string' ? value.at.slice(0, 40) : '';
-  const processed = Number.isInteger(value.processed) && value.processed >= 0 && value.processed <= 1000000 ? value.processed : 0;
-  const detail = safeText(value.detail, 180);
-  if (!id || !jobId || !jobName || !result || !at) return null;
-  return { id, jobId, jobName, result, at, processed, detail };
-}
-
-function loadArray(key, sanitizer, fallback = []) {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(key) || '[]');
-    if (!Array.isArray(parsed)) return fallback;
-    const sanitized = parsed.map(sanitizer).filter(Boolean);
-    return sanitized.length ? sanitized : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-let jobs = loadArray(STORAGE_JOBS, sanitizeJob, defaultJobs.map((job) => ({ ...job })));
-let runs = loadArray(STORAGE_RUNS, sanitizeRun, []);
-
-function persist() {
-  localStorage.setItem(STORAGE_JOBS, JSON.stringify(jobs));
-  localStorage.setItem(STORAGE_RUNS, JSON.stringify(runs.slice(0, 80)));
-}
-
-function connectionName(id) {
-  return connections.find((item) => item.id === id)?.name || id;
-}
-
-function connectionState(id) {
-  return connections.find((item) => item.id === id)?.state || 'ERROR';
-}
-
-function option(value, label) {
-  const node = document.createElement('option');
-  node.value = value;
-  node.textContent = label;
-  return node;
-}
-
-function renderConnections() {
-  const fragment = document.createDocumentFragment();
-  connections.forEach((connection) => {
-    const card = document.createElement('article');
-    card.className = 'connection';
-    const name = document.createElement('strong');
-    name.textContent = connection.name;
-    const kind = document.createElement('span');
-    kind.textContent = connection.kind;
-    const state = document.createElement('span');
-    state.className = `state state-${connection.state.toLowerCase()}`;
-    state.textContent = connection.state;
-    card.append(name, kind, state);
-    fragment.append(card);
-  });
-  elements.connections.replaceChildren(fragment);
-}
-
-function renderConnectionSelects() {
-  const usable = connections.filter((item) => item.state !== 'ERROR');
-  const sourceOptions = [option('', 'Source 선택'), ...usable.map((item) => option(item.id, item.name))];
-  const targetOptions = [option('', 'Target 선택'), ...usable.map((item) => option(item.id, item.name))];
-  elements.source.replaceChildren(...sourceOptions);
-  elements.target.replaceChildren(...targetOptions);
-}
-
-function statusNode(status) {
-  const node = document.createElement('span');
-  node.className = `job-status job-${status.toLowerCase()}`;
-  node.textContent = status;
-  return node;
-}
-
-function button(label, className, handler) {
-  const node = document.createElement('button');
-  node.type = 'button';
-  node.textContent = label;
-  if (className) node.className = className;
-  node.addEventListener('click', handler);
-  return node;
-}
-
-function renderJobs() {
-  const fragment = document.createDocumentFragment();
-  jobs.forEach((job) => {
-    const row = document.createElement('tr');
-    const nameCell = document.createElement('td');
-    const name = document.createElement('strong');
-    name.textContent = job.name;
-    nameCell.append(name);
-
-    const flow = document.createElement('td');
-    flow.textContent = `${connectionName(job.source)} → ${connectionName(job.target)}`;
-    const entity = document.createElement('td'); entity.textContent = job.entity;
-    const schedule = document.createElement('td'); schedule.textContent = job.schedule;
-    const policy = document.createElement('td'); policy.textContent = job.policy;
-    const status = document.createElement('td'); status.append(statusNode(job.status));
-    const lastRun = document.createElement('td'); lastRun.textContent = job.lastRun ? new Date(job.lastRun).toLocaleString('ko-KR') : '-';
-    const actions = document.createElement('td');
-    const group = document.createElement('div'); group.className = 'action-group';
-    group.append(
-      button('실행', 'run', () => runJob(job.id)),
-      button(job.status === 'ACTIVE' ? '일시정지' : '재개', '', () => toggleJob(job.id))
-    );
-    actions.append(group);
-    row.append(nameCell, flow, entity, schedule, policy, status, lastRun, actions);
-    fragment.append(row);
-  });
-  elements.jobs.replaceChildren(fragment);
-}
-
-function renderHistory() {
-  if (!runs.length) {
-    const empty = document.createElement('p');
-    empty.className = 'form-status';
-    empty.textContent = '아직 실행 이력이 없습니다.';
-    elements.history.replaceChildren(empty);
-    return;
-  }
-  const fragment = document.createDocumentFragment();
-  runs.slice(0, 20).forEach((run) => {
-    const row = document.createElement('article');
-    row.className = `history ${run.result === 'FAILED' ? 'failed' : ''}`;
-    const dot = document.createElement('span'); dot.className = 'dot';
-    const body = document.createElement('div');
-    const title = document.createElement('strong'); title.textContent = `${run.jobName} · ${run.result}`;
-    const detail = document.createElement('span'); detail.textContent = `${run.detail} · ${run.processed} rows`;
-    body.append(title, detail);
-    const time = document.createElement('time'); time.textContent = new Date(run.at).toLocaleString('ko-KR');
-    row.append(dot, body, time);
-    fragment.append(row);
-  });
-  elements.history.replaceChildren(fragment);
-}
-
-function renderMetrics() {
-  elements.metricConnections.textContent = String(connections.length);
-  elements.metricActive.textContent = String(jobs.filter((job) => job.status === 'ACTIVE').length);
-  elements.metricFailed.textContent = String(runs.filter((run) => run.result === 'FAILED').length);
-  elements.metricRuns.textContent = String(runs.length);
-}
-
-function render() {
-  renderConnections();
-  renderJobs();
-  renderHistory();
-  renderMetrics();
-}
-
-function createId(prefix) {
-  return `${prefix}-${typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
-}
-
-function toggleJob(id) {
-  jobs = jobs.map((job) => job.id === id ? { ...job, status: job.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE' } : job);
-  persist();
-  render();
-}
-
-function runJob(id) {
-  const job = jobs.find((item) => item.id === id);
-  if (!job) return;
-  if (job.status !== 'ACTIVE') {
-    elements.formStatus.textContent = '일시정지된 작업은 실행할 수 없습니다.';
-    return;
-  }
-
-  const now = new Date().toISOString();
-  const blocked = connectionState(job.source) === 'ERROR' || connectionState(job.target) === 'ERROR';
-  const pausedConnection = connectionState(job.source) === 'PAUSED' || connectionState(job.target) === 'PAUSED';
-  const result = blocked || pausedConnection ? 'FAILED' : 'SUCCESS';
-  const seed = [...job.name].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  const processed = result === 'SUCCESS' ? 80 + (seed % 421) : 0;
-  const detail = result === 'SUCCESS'
-    ? `Completed with ${job.policy}`
-    : pausedConnection ? 'Connection is paused' : 'Connection health check failed';
-
-  runs = [{ id: createId('run'), jobId: job.id, jobName: job.name, result, at: now, processed, detail }, ...runs].slice(0, 80);
-  jobs = jobs.map((item) => item.id === id ? { ...item, lastRun: now } : item);
-  persist();
-  render();
-  elements.formStatus.textContent = result === 'SUCCESS' ? '시뮬레이션 실행이 완료되었습니다.' : '실패 상태를 Run history에 기록했습니다.';
-}
-
-elements.form.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const name = safeText(elements.name.value, 80);
-  const source = elements.source.value;
-  const target = elements.target.value;
-  const entity = elements.entity.value;
-  const schedule = elements.schedule.value;
-  const policy = elements.policy.value;
-  if (!name || !connectionIds.has(source) || !connectionIds.has(target) || source === target) {
-    elements.formStatus.textContent = '작업명과 서로 다른 Source / Target을 선택해 주세요.';
-    return;
-  }
-  if (!allowedEntities.has(entity) || !allowedSchedules.has(schedule) || !allowedPolicies.has(policy)) {
-    elements.formStatus.textContent = '허용되지 않은 작업 설정입니다.';
-    return;
-  }
-  jobs = [{ id: createId('job'), name, source, target, entity, schedule, policy, status: 'ACTIVE', lastRun: null }, ...jobs].slice(0, 40);
-  elements.form.reset();
-  elements.formStatus.textContent = '동기화 작업을 추가했습니다.';
-  persist();
-  render();
-});
-
-byId('resetDemo').addEventListener('click', () => {
-  jobs = defaultJobs.map((job) => ({ ...job }));
-  runs = [];
-  persist();
-  render();
-  elements.formStatus.textContent = '데모 상태를 초기화했습니다.';
-});
-
-byId('clearHistory').addEventListener('click', () => {
-  runs = [];
-  persist();
-  render();
-});
-
-renderConnectionSelects();
-render();
+const $=id=>document.getElementById(id),el={connections:$('connectionList'),jobs:$('jobTable'),history:$('historyList'),form:$('jobForm'),name:$('jobName'),source:$('jobSource'),target:$('jobTarget'),entity:$('jobEntity'),schedule:$('jobSchedule'),policy:$('jobPolicy'),formStatus:$('formStatus'),metricConnections:$('metricConnections'),metricActive:$('metricActive'),metricFailed:$('metricFailed'),metricRuns:$('metricRuns')};
+const entityLabel={customers:'고객',orders:'주문',inventory:'재고',invoices:'청구서'},scheduleLabel={manual:'직접 실행',hourly:'매시간',daily:'매일'},policyLabel={'retry-3':'최대 3회 재시도',stop:'오류 시 중단','skip-row':'문제 행 제외'};
+function safeText(v,max=120){return typeof v==='string'?v.trim().slice(0,max):'';}function connectionIds(){return new Set(connections.map(x=>x.id));}
+function sanitizeJob(v){if(!v||typeof v!=='object')return null;const id=safeText(v.id,100),name=safeText(v.name,80),source=safeText(v.source,60),target=safeText(v.target,60),entity=safeText(v.entity,40),schedule=safeText(v.schedule,40),policy=safeText(v.policy,40),status=v.status==='PAUSED'?'PAUSED':'ACTIVE',lastRun=typeof v.lastRun==='string'?v.lastRun.slice(0,40):null;if(!id||!name||source===target||!connectionIds().has(source)||!connectionIds().has(target)||!allowedEntities.has(entity)||!allowedSchedules.has(schedule)||!allowedPolicies.has(policy))return null;return{id,name,source,target,entity,schedule,policy,status,lastRun};}
+function sanitizeRun(v){if(!v||typeof v!=='object')return null;const id=safeText(v.id,100),jobId=safeText(v.jobId,100),jobName=safeText(v.jobName,80),result=v.result==='FAILED'?'FAILED':v.result==='SUCCESS'?'SUCCESS':null,at=typeof v.at==='string'?v.at.slice(0,40):'',processed=Number.isInteger(v.processed)&&v.processed>=0&&v.processed<=1000000?v.processed:0,detail=safeText(v.detail,180);if(!id||!jobId||!jobName||!result||!at)return null;return{id,jobId,jobName,result,at,processed,detail};}
+function loadArray(key,sanitizer,fallback=[]){try{const parsed=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(parsed))return fallback;const clean=parsed.map(sanitizer).filter(Boolean);return clean.length?clean:fallback;}catch{return fallback;}}
+let jobs=loadArray(STORAGE_JOBS,sanitizeJob,defaultJobs.map(x=>({...x}))),runs=loadArray(STORAGE_RUNS,sanitizeRun,[]);function persist(){localStorage.setItem(STORAGE_JOBS,JSON.stringify(jobs));localStorage.setItem(STORAGE_RUNS,JSON.stringify(runs.slice(0,80)));}
+const connection=id=>connections.find(x=>x.id===id),connectionName=id=>connection(id)?.name||id,connectionState=id=>connection(id)?.state||'ERROR';
+const make=(tag,cls='',text='')=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n;};function button(label,cls,fn){const b=make('button',cls,label);b.type='button';b.addEventListener('click',fn);return b;}function option(value,label){const o=document.createElement('option');o.value=value;o.textContent=label;return o;}
+function renderConnections(){const fragment=document.createDocumentFragment();for(const c of connections){const card=make('article','connection');const info=make('div','connection-copy');info.append(make('strong','',c.name),make('span','',c.kind));const state=make('span',`state state-${c.state.toLowerCase()}`,uiLabel(c.state));card.append(info,state);if(c.state!=='ACTIVE')card.append(button(c.state==='PAUSED'?'연결 재개':'연결 정상화','secondary',()=>recoverConnection(c.id)));fragment.append(card);}el.connections.replaceChildren(fragment);}
+function renderConnectionSelects(){const usable=connections.filter(x=>x.state!=='ERROR');el.source.replaceChildren(option('','가져올 프로그램 선택'),...usable.map(x=>option(x.id,x.name)));el.target.replaceChildren(option('','보낼 프로그램 선택'),...usable.map(x=>option(x.id,x.name)));}
+function statusNode(status){return make('span',`job-status job-${status.toLowerCase()}`,uiLabel(status));}
+function renderJobs(){const fragment=document.createDocumentFragment();for(const job of jobs){const row=document.createElement('tr');const name=document.createElement('td');name.append(make('strong','',job.name));const flow=make('td','',`${connectionName(job.source)} → ${connectionName(job.target)}`),entity=make('td','',entityLabel[job.entity]??job.entity),schedule=make('td','',scheduleLabel[job.schedule]??job.schedule),policy=make('td','',policyLabel[job.policy]??job.policy),status=document.createElement('td');status.append(statusNode(job.status));const last=make('td','',job.lastRun?new Date(job.lastRun).toLocaleString('ko-KR'):'아직 실행 전'),actions=document.createElement('td'),group=make('div','action-group');group.append(button('실행','run',()=>runJob(job.id)),button(job.status==='ACTIVE'?'일시정지':'다시 사용','secondary',()=>toggleJob(job.id)));actions.append(group);row.append(name,flow,entity,schedule,policy,status,last,actions);fragment.append(row);}el.jobs.replaceChildren(fragment);}
+function runDetail(run){if(run.result==='SUCCESS')return `${run.processed.toLocaleString()}건 처리 완료`;if(run.detail==='Connection is paused')return '연결이 일시정지되어 실행하지 못했습니다.';return '연결 상태를 확인해야 합니다.';}
+function renderHistory(){if(!runs.length){el.history.replaceChildren(make('p','form-status','아직 실행 이력이 없습니다.'));return;}const fragment=document.createDocumentFragment();for(const run of runs.slice(0,20)){const row=make('article',`history ${run.result==='FAILED'?'failed':''}`),dot=make('span','dot'),body=make('div',''),title=make('strong','',`${run.jobName} · ${uiLabel(run.result)}`),detail=make('span','',runDetail(run)),time=make('time','',new Date(run.at).toLocaleString('ko-KR'));body.append(title,detail);row.append(dot,body,time);if(run.result==='FAILED')row.append(button('다시 실행','secondary',()=>runJob(run.jobId)));fragment.append(row);}el.history.replaceChildren(fragment);}
+function renderMetrics(){el.metricConnections.textContent=String(connections.length);el.metricActive.textContent=String(jobs.filter(j=>j.status==='ACTIVE').length);el.metricFailed.textContent=String(runs.filter(r=>r.result==='FAILED').length);el.metricRuns.textContent=String(runs.length);}
+function render(){renderConnections();renderConnectionSelects();renderJobs();renderHistory();renderMetrics();}
+function id(prefix){return`${prefix}-${typeof crypto.randomUUID==='function'?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`}`;}
+function recoverConnection(connectionId){connections=connections.map(c=>c.id===connectionId?{...c,state:'ACTIVE'}:c);el.formStatus.textContent=`${connectionName(connectionId)} 연결을 정상화했습니다. 실패한 작업을 다시 실행해보세요.`;render();}
+function toggleJob(jobId){jobs=jobs.map(j=>j.id===jobId?{...j,status:j.status==='ACTIVE'?'PAUSED':'ACTIVE'}:j);persist();render();}
+function runJob(jobId){const job=jobs.find(x=>x.id===jobId);if(!job)return;if(job.status!=='ACTIVE'){el.formStatus.textContent='일시정지된 작업입니다. 먼저 다시 사용으로 바꿔주세요.';return;}const now=new Date().toISOString(),blocked=connectionState(job.source)==='ERROR'||connectionState(job.target)==='ERROR',paused=connectionState(job.source)==='PAUSED'||connectionState(job.target)==='PAUSED',result=blocked||paused?'FAILED':'SUCCESS',seed=[...job.name].reduce((s,c)=>s+c.charCodeAt(0),0),processed=result==='SUCCESS'?80+(seed%421):0,detail=result==='SUCCESS'?'Completed':paused?'Connection is paused':'Connection health check failed';runs=[{id:id('run'),jobId:job.id,jobName:job.name,result,at:now,processed,detail},...runs].slice(0,80);jobs=jobs.map(x=>x.id===jobId?{...x,lastRun:now}:x);persist();render();el.formStatus.textContent=result==='SUCCESS'?'데이터 전달이 완료되었습니다.':'실행에 실패했습니다. 위 연결 상태에서 문제가 있는 프로그램을 정상화해 주세요.';}
+el.form.addEventListener('submit',event=>{event.preventDefault();const name=safeText(el.name.value,80),source=el.source.value,target=el.target.value,entity=el.entity.value,schedule=el.schedule.value,policy=el.policy.value;if(!name||!connectionIds().has(source)||!connectionIds().has(target)||source===target){el.formStatus.textContent='작업 이름과 서로 다른 두 프로그램을 선택해 주세요.';return;}if(!allowedEntities.has(entity)||!allowedSchedules.has(schedule)||!allowedPolicies.has(policy)){el.formStatus.textContent='작업 설정을 다시 확인해 주세요.';return;}jobs=[{id:id('job'),name,source,target,entity,schedule,policy,status:'ACTIVE',lastRun:null},...jobs].slice(0,40);el.form.reset();el.formStatus.textContent='새 데이터 전달 작업을 추가했습니다.';persist();render();});
+$('resetDemo').addEventListener('click',()=>{connections=initialConnections.map(x=>({...x}));jobs=defaultJobs.map(x=>({...x}));runs=[];persist();render();el.formStatus.textContent='가상 데이터를 처음 상태로 되돌렸습니다.';});$('clearHistory').addEventListener('click',()=>{runs=[];persist();render();});render();
