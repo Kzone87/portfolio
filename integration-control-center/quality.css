@@ -1,0 +1,11 @@
+/* Final integration-workspace readability layer. Loaded after styles.css. */
+body{font-size:14px}.topbar a,.topbar strong,.topbar button{font-size:13px!important}.workspace-name{font-size:12px!important}
+.page-head>div>p:last-child{font-size:14px!important;line-height:1.7!important}.breadcrumb{font-size:12px!important}.metrics span{font-size:13px!important}.metrics small{font-size:12px!important}.metrics strong{font-size:22px!important}
+.panel-heading h2{font-size:16px!important}.panel-heading p,.section-title p{font-size:13px!important;line-height:1.6!important}.flow-state{font-size:11px!important;padding:4px 8px!important}
+.flow-node{width:176px!important;min-height:110px!important;padding:15px!important}.flow-node small{font-size:11px!important}.flow-node strong{font-size:14px!important}.flow-node span{font-size:12px!important;line-height:1.5!important}.flow-data{font-size:11px!important;padding:6px 9px!important}.section-title h3{font-size:14px!important}
+.connection{padding:11px 12px!important}.connection strong{font-size:12px!important}.connection-copy span{font-size:11px!important}.state{font-size:10px!important;padding:4px 6px!important}.connection button{min-height:36px!important;font-size:12px!important}
+.form-grid label{font-size:12px!important}.form-grid input,.form-grid select,.form-grid button{font-size:13px!important;min-height:40px!important}.form-status{font-size:13px!important;line-height:1.6!important}
+table{font-size:13px!important}th{font-size:12px!important}td{font-size:13px!important}.job-status{font-size:11px!important}.action-group button{font-size:12px!important;min-height:36px!important}
+.history{padding:11px 12px!important}.history strong{font-size:12px!important}.history span,.history time{font-size:11px!important;line-height:1.5!important}.history button{font-size:12px!important}
+.operator-guide li{grid-template-columns:30px 1fr!important;padding:13px 14px!important}.operator-guide li>span{width:26px!important;height:26px!important;font-size:11px!important}.operator-guide strong{font-size:13px!important}.operator-guide p{font-size:12px!important;line-height:1.6!important}
+@media(max-width:700px){.flow-node{width:100%!important}.workflow-preview{padding:18px 12px!important}}
