@@ -16,31 +16,35 @@ const salesIndex = await readFile(new URL('../sales/README.md', import.meta.url)
 const estimator = await readFile(new URL('../scope-estimator/index.html', import.meta.url), 'utf8');
 const sitemap = await readFile(new URL('../sitemap.xml', import.meta.url), 'utf8');
 
-test('AI workflow is a first-class public case and service without cluttering the homepage', () => {
+test('AI workflow remains a first-class public case while homepage uses customer language', () => {
   assert.match(work, /AI Workflow Review Desk · V2/);
   assert.ok(work.includes('../services/ai-automation.html'));
-  assert.match(html, /AI · 시스템 연동/);
+  assert.match(html, /AI와 외부 서비스를 기존 업무에 연결/);
   assert.ok(html.includes('./services/ai-automation.html'));
   assert.match(readme, /AI Workflow Review Desk/);
   assert.match(aiLab, /AI Workflow Review Desk · V2/);
   assert.match(aiReadme, /AI Workflow Review Desk · V2/);
   assert.match(services, /AI Workflow · Local RAG/);
   assert.ok(serviceHub.includes('./ai-automation.html'));
+  assert.doesNotMatch(serviceHub, /Local RAG|Evidence Retrieval|Structured Output/);
 });
 
-test('AI commercial page exposes transparent price tiers, evidence grounding and human review boundary', () => {
-  for (const price of ['149만원', '299만원', '499만원']) assert.match(aiService, new RegExp(price));
+test('public AI service explains the work first and preserves technical evidence later', () => {
+  assert.match(aiService, /AI가 먼저 읽고 정리하고/);
+  assert.match(aiService, /문의 자동 분류/);
+  assert.match(aiService, /요약·초안 생성/);
+  assert.match(aiService, /사람 최종 검토/);
+  assert.doesNotMatch(aiService, /\d+만원/);
+  assert.doesNotMatch(aiService, /PROJECT-BRIEF/);
   assert.match(aiService, /AI Workflow Review Desk · V2/);
-  assert.match(aiService, /Local Knowledge|local knowledge/);
+  assert.match(aiService, /Local Knowledge Retrieval/);
   assert.match(aiService, /Evidence Snapshot/);
-  assert.match(aiService, /Structured Output/);
-  assert.match(aiService, /Human review|Human Approve|HUMAN REVIEW/i);
-  assert.match(aiService, /Provider Adapter|Provider adapter/i);
-  assert.match(aiService, /실제 API Key는 browser 공개 코드에 넣지 않고 서버 secret/);
+  assert.match(aiService, /Structured Output Validation/);
+  assert.match(aiService, /Human Review/);
   assert.ok(aiService.includes('../ai-workflow-review-desk/'));
 });
 
-test('AI marketplace sales kit covers V2 evidence workflow, Kmong, Soomgo and media assets', () => {
+test('AI marketplace sales kit keeps pricing and technical sales evidence', () => {
   assert.match(aiSales, /AI Workflow Review Desk V2/);
   assert.match(aiSales, /크몽 상품 등록 원고/);
   assert.match(aiSales, /숨고 견적 응답 템플릿/);
@@ -86,7 +90,7 @@ test('AI pages are discoverable through sitemap', () => {
   assert.match(sitemap, /https:\/\/kzone87\.github\.io\/portfolio\/ai-workflow-review-desk\//);
 });
 
-test('public AI commercial assets contain no common credential patterns', () => {
+test('public AI assets contain no common credential patterns', () => {
   const content = [html, work, readme, services, serviceHub, aiService, aiLab, aiReadme, aiSales, estimator, sitemap].join('\n');
   assert.doesNotMatch(content, /sk-[A-Za-z0-9_-]{20,}/);
   assert.doesNotMatch(content, /AIza[0-9A-Za-z_-]{20,}/);
