@@ -62,7 +62,7 @@ export function createStore() {
       {
         id: 4, orderNo: 'ORD-260904', customerName: 'Delta Works', email: 'buyer@delta.example', total: 330000, currency: 'KRW', itemCount: 3,
         opsStatus: OPS_STATUS.ACTIVE, paymentStatus: PAYMENT_STATUS.REFUND_PENDING, fulfillmentStatus: FULFILLMENT_STATUS.DELIVERED,
-        version: 4, holdReason: null, trackingNo: 'CJ-12345678', refundedAmount: 0, createdAt: seededAt, updatedAt: seededAt
+        version: 5, holdReason: null, trackingNo: 'CJ-12345678', refundedAmount: 0, createdAt: seededAt, updatedAt: seededAt
       }
     ],
     refunds: [
@@ -77,8 +77,8 @@ export function createStore() {
       { id: 3, orderId: 4, actor: 'demo-staff', action: 'START_PICKING', detail: '', orderVersion: 2, createdAt: seededAt },
       { id: 4, orderId: 4, actor: 'demo-staff', action: 'SHIP', detail: 'CJ-12345678', orderVersion: 3, createdAt: seededAt },
       { id: 5, orderId: 4, actor: 'demo-staff', action: 'DELIVER', detail: '', orderVersion: 4, createdAt: seededAt },
-      { id: 6, orderId: 4, actor: 'demo-staff', action: 'REQUEST_REFUND', detail: 'DAMAGED · 180000 KRW', orderVersion: 4, createdAt: seededAt },
-      { id: 7, orderId: 4, actor: 'system', action: 'REFUND_REVIEW_REQUIRED', detail: 'high-value or risk-sensitive refund', orderVersion: 4, createdAt: seededAt }
+      { id: 6, orderId: 4, actor: 'demo-staff', action: 'REQUEST_REFUND', detail: 'DAMAGED · 180000 KRW', orderVersion: 5, createdAt: seededAt },
+      { id: 7, orderId: 4, actor: 'system', action: 'REFUND_REVIEW_REQUIRED', detail: 'high-value or risk-sensitive refund', orderVersion: 5, createdAt: seededAt }
     ]
   };
 
@@ -165,6 +165,10 @@ export function createStore() {
       const refund = requireRefund(refundId);
       const order = requireOrder(refund.orderId);
       try { assertExpectedVersion(order, input.expectedVersion); } catch (error) { throw mapEngineError(error); }
+      const role = String(input.role ?? 'STAFF').toUpperCase();
+      if (refund.requiresApproval && role !== 'ADMIN') {
+        throw new DomainError(403, 'REFUND_APPROVAL_FORBIDDEN', 'ADMIN role is required for high-value or risk-sensitive refunds');
+      }
       let result;
       try { result = decideRefund(clone(order), clone(refund), input, nowIso()); }
       catch (error) { throw mapEngineError(error); }
