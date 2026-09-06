@@ -6,6 +6,7 @@ import {
   validateStructuredOutput,
   validateTaskInput
 } from './engine.mjs';
+import { listKnowledgeDocuments } from './knowledge.mjs';
 
 const state = {
   taskSeq: 4,
@@ -21,6 +22,7 @@ const state = {
       version: 1,
       output: null,
       evaluation: null,
+      retrieval: null,
       lastRun: null
     },
     {
@@ -31,6 +33,7 @@ const state = {
       version: 1,
       output: null,
       evaluation: null,
+      retrieval: null,
       lastRun: null
     },
     {
@@ -41,6 +44,7 @@ const state = {
       version: 1,
       output: null,
       evaluation: null,
+      retrieval: null,
       lastRun: null
     }
   ],
@@ -73,6 +77,10 @@ const elements = {
   promptName: $('prompt-name'),
   evalScore: $('eval-score'),
   evalFlags: $('eval-flags'),
+  evidenceCoverage: $('evidence-coverage'),
+  evidenceCount: $('evidence-count'),
+  evidenceList: $('evidence-list'),
+  knowledgeList: $('knowledge-list'),
   editSummary: $('edit-summary'),
   editAction: $('edit-action'),
   editCategory: $('edit-category'),
@@ -96,8 +104,7 @@ function createElement(tag, className, text = '') {
 }
 
 function statusBadge(status) {
-  const span = createElement('span', `status ${status}`, status);
-  return span;
+  return createElement('span', `status ${status}`, status);
 }
 
 function renderStats() {
@@ -120,7 +127,8 @@ function renderTaskList() {
     const header = document.createElement('header');
     header.append(createElement('strong', '', task.title), statusBadge(task.status));
     const copy = createElement('p', '', task.content.replaceAll('[FAIL_PRIMARY]', '').replaceAll('[FAIL_ALL]', '').trim());
-    const meta = createElement('small', '', `v${task.version}${task.lastRun ? ` · ${task.lastRun.providerId ?? 'provider failed'}` : ''}`);
+    const evidenceCount = task.retrieval?.evidence?.length ?? 0;
+    const meta = createElement('small', '', `v${task.version}${task.lastRun ? ` · ${task.lastRun.providerId ?? 'provider failed'} · evidence ${evidenceCount}` : ''}`);
     button.append(header, copy, meta);
     elements.taskList.append(button);
   }
@@ -138,6 +146,33 @@ function renderTrace(task) {
   }
 }
 
+function renderEvidence(task) {
+  elements.evidenceList.replaceChildren();
+  const retrieval = task?.lastRun?.retrieval ?? task?.retrieval ?? null;
+  const evidence = retrieval?.evidence ?? [];
+  elements.evidenceCount.textContent = `${evidence.length} source${evidence.length === 1 ? '' : 's'}`;
+  elements.evidenceCoverage.textContent = retrieval ? `${Math.round(retrieval.coverage * 100)}%` : '-';
+
+  if (!evidence.length) {
+    elements.evidenceList.append(createElement('div', 'evidence-empty', '일치하는 로컬 근거가 없습니다. 자동 신뢰하지 말고 사람이 추가 확인해야 합니다.'));
+    return;
+  }
+
+  for (const item of evidence) {
+    const article = createElement('article', 'evidence-item');
+    const header = document.createElement('header');
+    const source = createElement('div', '');
+    source.append(createElement('strong', '', `${item.rank}. ${item.title}`), createElement('span', '', item.section));
+    header.append(source, createElement('b', '', `score ${item.score}`));
+    article.append(
+      header,
+      createElement('p', '', item.excerpt),
+      createElement('small', '', `source ${item.id} · matched ${item.matchedTerms.join(', ') || 'none'}`)
+    );
+    elements.evidenceList.append(article);
+  }
+}
+
 function fillOutput(task) {
   const ready = Boolean(task?.output && [TASK_STATUS.GENERATED, TASK_STATUS.NEEDS_REVIEW].includes(task.status));
   elements.outputEditor.hidden = !ready;
@@ -152,6 +187,7 @@ function fillOutput(task) {
   elements.editCategory.value = task.output.category;
   elements.editRisk.value = task.output.risk;
   elements.editConfidence.value = String(task.output.confidence);
+  renderEvidence(task);
 }
 
 function renderReviewDesk() {
@@ -166,7 +202,7 @@ function renderReviewDesk() {
   elements.selectedInput.textContent = task.content.replaceAll('[FAIL_PRIMARY]', '').replaceAll('[FAIL_ALL]', '').trim();
   const finalized = [TASK_STATUS.APPROVED, TASK_STATUS.REJECTED].includes(task.status);
   elements.generateSelected.disabled = finalized;
-  elements.generateSelected.textContent = task.lastRun ? 'AI 제안 다시 생성' : 'AI 제안 생성';
+  elements.generateSelected.textContent = task.lastRun ? '근거 검색 + AI 제안 다시 생성' : '근거 검색 + AI 제안';
   renderTrace(task);
   fillOutput(task);
 }
@@ -181,22 +217,37 @@ function historyItem(title, detail) {
 
 function renderHistory() {
   elements.runHistory.replaceChildren();
-  if (!state.runs.length) elements.runHistory.append(createElement('div', 'empty-state', '아직 실행 이력이 없습니다.'));
+  if (!state.runs.length) elements.runHistory.append(createElement('div', 'empty-state compact-empty', '아직 실행 이력이 없습니다.'));
   for (const run of [...state.runs].reverse()) {
     const attempts = run.attempts.map((item) => `${item.providerId}:${item.status}`).join(' → ');
+    const evidence = run.retrieval?.evidence?.length ?? 0;
+    const coverage = Math.round((run.retrieval?.coverage ?? 0) * 100);
     elements.runHistory.append(historyItem(
       `Task #${run.taskId} · ${run.status}`,
-      `${run.promptVersion} · ${attempts} · score ${run.evaluation.score}`
+      `${run.promptVersion} · ${attempts} · score ${run.evaluation.score} · evidence ${evidence} / coverage ${coverage}%`
     ));
   }
 
   elements.reviewHistory.replaceChildren();
-  if (!state.reviews.length) elements.reviewHistory.append(createElement('div', 'empty-state', '아직 사람의 승인/반려 기록이 없습니다.'));
+  if (!state.reviews.length) elements.reviewHistory.append(createElement('div', 'empty-state compact-empty', '아직 사람의 승인/반려 기록이 없습니다.'));
   for (const review of [...state.reviews].reverse()) {
     elements.reviewHistory.append(historyItem(
       `Task #${review.taskId} · ${review.decision}`,
-      `reviewer ${review.reviewer} · version ${review.version} · ${review.edited ? 'edited before decision' : 'unchanged output'}`
+      `reviewer ${review.reviewer} · version ${review.version} · evidence ${review.evidenceIds.length} · ${review.edited ? 'edited before decision' : 'unchanged output'}`
     ));
+  }
+}
+
+function renderKnowledge() {
+  elements.knowledgeList.replaceChildren();
+  for (const document of listKnowledgeDocuments()) {
+    const article = createElement('article', 'knowledge-item');
+    article.append(
+      createElement('span', 'knowledge-category', document.category),
+      createElement('strong', '', document.title),
+      createElement('p', '', `${document.sectionCount} sections · ${document.tags.slice(0, 6).join(' · ')}`)
+    );
+    elements.knowledgeList.append(article);
   }
 }
 
@@ -205,6 +256,7 @@ function render() {
   renderTaskList();
   renderReviewDesk();
   renderHistory();
+  renderKnowledge();
   elements.generateAll.disabled = !state.tasks.some((task) => task.status === TASK_STATUS.PENDING);
 }
 
@@ -221,6 +273,7 @@ function generateTask(task) {
   task.version += 1;
   task.lastRun = runRecord;
   task.evaluation = result.evaluation;
+  task.retrieval = result.retrieval;
   if (result.status === 'SUCCESS') {
     task.output = result.output;
     task.status = nextTaskStatus(result);
@@ -259,6 +312,8 @@ function reviewSelected(decision) {
       reviewer: 'demo-reviewer',
       version: task.version,
       edited: decision === 'APPROVE' && before !== JSON.stringify(editedOutput),
+      evidenceIds: task.retrieval?.evidence?.map((item) => item.id) ?? [],
+      evidenceCoverage: task.retrieval?.coverage ?? 0,
       createdAt: new Date().toISOString()
     });
     render();
@@ -278,6 +333,7 @@ elements.taskForm.addEventListener('submit', (event) => {
       version: 1,
       output: null,
       evaluation: null,
+      retrieval: null,
       lastRun: null
     };
     state.tasks.unshift(task);
@@ -309,7 +365,7 @@ elements.reject.addEventListener('click', () => reviewSelected('REJECT'));
 elements.promptVersion.addEventListener('change', () => {
   const task = selectedTask();
   if (task && ![TASK_STATUS.APPROVED, TASK_STATUS.REJECTED].includes(task.status)) {
-    elements.generateSelected.textContent = '선택 Prompt로 다시 생성';
+    elements.generateSelected.textContent = '선택 Prompt로 근거 검색 + 다시 생성';
   }
 });
 
