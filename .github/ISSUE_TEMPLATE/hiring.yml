@@ -1,0 +1,48 @@
+name: 채용·협업 문의
+description: 개발 포지션, 기술 인터뷰, 프로젝트 협업 제안
+title: "[채용/협업] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        관심 가져주셔서 감사합니다. 이 저장소의 Issue는 공개됩니다. 이메일·전화번호 등 민감한 개인정보는 작성하지 말아 주세요.
+  - type: dropdown
+    id: inquiry_type
+    attributes:
+      label: 문의 유형
+      options:
+        - 채용 포지션
+        - 기술 인터뷰
+        - 프로젝트 협업
+        - 기타
+    validations:
+      required: true
+  - type: input
+    id: organization
+    attributes:
+      label: 회사·팀 또는 프로젝트
+      placeholder: 예) OO회사 플랫폼팀 / 공개 가능한 프로젝트명
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 제안 내용
+      description: 역할, 기대 업무, 기술 환경 등 공개 가능한 범위만 작성해 주세요.
+      placeholder: 어떤 역할과 업무를 제안하시는지 적어 주세요.
+    validations:
+      required: true
+  - type: input
+    id: public_link
+    attributes:
+      label: 확인할 수 있는 공개 링크
+      description: 채용공고, 회사 홈페이지, 프로젝트 페이지 등. 개인 연락처 대신 공개 링크를 권장합니다.
+      placeholder: https://
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 공개 범위 확인
+      options:
+        - label: 이 Issue가 공개된다는 점을 확인했고 민감한 개인정보를 작성하지 않았습니다.
+          required: true
