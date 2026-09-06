@@ -1,12 +1,13 @@
 {
   "name": "kzone87-business-portfolio",
   "private": true,
-  "version": "6.2.0",
+  "version": "6.3.0",
   "type": "module",
   "scripts": {
-    "test": "node --test && node --check scope-estimator/app.js && node --check scope-estimator/engine.mjs && node --check integration-control-center/app.js && node --check integration-control-center/server/app.mjs && node --check integration-control-center/server/store.mjs && node --check ai-workflow-review-desk/app.js && node --check ai-workflow-review-desk/engine.mjs && node --check ai-workflow-review-desk/knowledge.mjs && node --check ai-workflow-review-desk/server/app.mjs && node --check ai-workflow-review-desk/server/store.mjs && node --check commerce-ops-console/app.js && node --check commerce-ops-console/engine.mjs && node --check commerce-ops-console/server/app.mjs && node --check commerce-ops-console/server/store.mjs",
+    "test": "node --test && node --check scope-estimator/app.js && node --check scope-estimator/engine.mjs && node --check integration-control-center/app.js && node --check integration-control-center/server/app.mjs && node --check integration-control-center/server/store.mjs && node --check ai-workflow-review-desk/app.js && node --check ai-workflow-review-desk/engine.mjs && node --check ai-workflow-review-desk/knowledge.mjs && node --check ai-workflow-review-desk/server/app.mjs && node --check ai-workflow-review-desk/server/store.mjs && node --check commerce-ops-console/app.js && node --check commerce-ops-console/engine.mjs && node --check commerce-ops-console/server/app.mjs && node --check commerce-ops-console/server/store.mjs && node --check field-service-ops/app.js && node --check field-service-ops/engine.mjs && node --check field-service-ops/server/app.mjs && node --check field-service-ops/server/store.mjs",
     "start:integration-api": "node integration-control-center/server/app.mjs",
     "start:ai-review-api": "node ai-workflow-review-desk/server/app.mjs",
-    "start:commerce-api": "node commerce-ops-console/server/app.mjs"
+    "start:commerce-api": "node commerce-ops-console/server/app.mjs",
+    "start:field-service-api": "node field-service-ops/server/app.mjs"
   }
 }
