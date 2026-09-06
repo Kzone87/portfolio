@@ -33,3 +33,10 @@ document.addEventListener('click', event => {
   event.preventDefault();
   event.stopImmediatePropagation();
 }, { capture: true });
+
+const resetButton = document.getElementById('resetDemo');
+const formStatus = document.getElementById('formStatus');
+resetButton?.addEventListener('click', () => {
+  if (!formStatus) return;
+  queueMicrotask(() => { formStatus.textContent = '초기 구성을 복원했습니다.'; });
+});
