@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f4f9ff">
-  <meta name="description" content="NEXA TECH SERVICE 고객용 기업 홈페이지와 NEXA Service Operations 내부 현장 운영 시스템을 하나의 기술서비스 업무 도메인으로 설계한 Kzone87 프로젝트 설명입니다.">
+  <meta name="description" content="NEXA TECH SERVICE 고객용 기업 홈페이지와 NEXA Service Operations 직원용 운영시스템을 하나의 현장서비스 업무 흐름으로 설계한 Kzone87 프로젝트 설명입니다.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="NEXA Service Domain | Kzone87 Portfolio">
-  <meta property="og:description" content="고객 문의부터 현장 배차·작업·완료 이력까지, 외부 고객 화면과 내부 직원 화면을 하나의 업무 흐름으로 설계했습니다.">
+  <meta property="og:description" content="고객이 서비스를 알아보는 순간부터 방문 요청, 기사 배정, 현장 처리와 후속관리까지 하나의 흐름으로 설계했습니다.">
   <meta property="og:url" content="https://kzone87.github.io/portfolio/nexa-service-domain/">
   <link rel="canonical" href="https://kzone87.github.io/portfolio/nexa-service-domain/">
   <title>NEXA Service Domain | Kzone87 Portfolio</title>
@@ -15,17 +15,7 @@
 </head>
 <body>
 <a class="skip-link" href="#main">본문으로 바로가기</a>
-<header class="case-header">
-  <div class="shell header-inner">
-    <a class="portfolio-brand" href="../">KZONE87</a>
-    <nav aria-label="프로젝트 링크">
-      <a href="#architecture">구조</a>
-      <a href="#flow">업무 흐름</a>
-      <a href="#proof">구현</a>
-      <a href="../">포트폴리오</a>
-    </nav>
-  </div>
-</header>
+<header class="case-header"><div class="shell header-inner"><a class="portfolio-brand" href="../">KZONE87</a><nav aria-label="프로젝트 링크"><a href="#why">왜 나눴는가</a><a href="#flow">업무 흐름</a><a href="#proof">구현 근거</a><a href="../">포트폴리오</a></nav></div></header>
 
 <main id="main">
   <section class="case-hero">
@@ -33,111 +23,57 @@
     <div class="shell hero-layout">
       <div class="hero-copy">
         <p class="eyebrow">01–02 · NEXA SERVICE DOMAIN</p>
-        <h1>외부 고객용 홈페이지와<br><span>내부 현장 운영 시스템을</span><br>하나의 업무 도메인으로.</h1>
-        <p class="lead">기업용 출력·인쇄장비 기술서비스를 가정해, 고객이 서비스를 이해하고 상담하는 공개 웹사이트와 직원이 방문 요청을 배차·처리하는 내부 운영 시스템을 역할별로 분리해 구현했습니다.</p>
-        <div class="hero-actions">
-          <a class="primary" href="../nexa-tech-service/">고객용 홈페이지 보기 <b>→</b></a>
-          <a class="secondary" href="../field-service-ops/">내부 운영 시스템 보기 <b>→</b></a>
-        </div>
+        <h1>한 기술서비스 업무를<br><span>고객용과 직원용</span><br>두 화면으로 나눴습니다.</h1>
+        <p class="lead">고객은 “어떤 장비를 지원하는지, 어떤 서비스를 받을 수 있는지, 어떻게 상담하는지”가 중요합니다. 직원은 “어떤 요청을 누구에게 언제 배정하고, 지금 현장이 어떤 상태인지”가 중요합니다. 같은 업무를 서로 다른 사용자에게 맞춰 분리했습니다.</p>
+        <div class="hero-actions"><a class="primary" href="../nexa-tech-service/">고객용 기업 홈페이지 <b>→</b></a><a class="secondary" href="../field-service-ops/">직원용 현장 운영 <b>→</b></a></div>
       </div>
-      <aside class="domain-summary" aria-label="프로젝트 요약">
-        <div><span>Customer</span><strong>NEXA TECH SERVICE</strong><p>서비스 탐색 · 적용환경 확인 · 상담</p></div>
-        <i aria-hidden="true">↕</i>
-        <div><span>Operations</span><strong>NEXA Service Operations</strong><p>요청 · 배차 · 현장상태 · 변경이력</p></div>
-        <small>같은 서비스 업무를 사용자 역할에 맞춰 서로 다른 화면으로 설계</small>
+      <aside class="domain-summary" aria-label="프로젝트 구성">
+        <div><span>고객용</span><strong>NEXA TECH SERVICE</strong><p>서비스 확인 · 이용 상황 · 상담</p></div>
+        <i aria-hidden="true">↓</i>
+        <div><span>직원용</span><strong>NEXA Service Operations</strong><p>방문 요청 · 배차 · 현장 상태 · 이력</p></div>
+        <small>같은 장비·사업장·서비스 요청이 역할에 따라 다른 화면으로 이어집니다.</small>
       </aside>
     </div>
   </section>
 
-  <section class="quick-proof">
-    <div class="shell proof-row">
-      <article><span>사용자 01</span><strong>고객·구매담당자</strong><p>서비스 범위와 지원 방식 확인</p></article>
-      <article><span>사용자 02</span><strong>배차 담당자</strong><p>방문 요청과 기사 일정 관리</p></article>
-      <article><span>사용자 03</span><strong>현장 기사</strong><p>출동·현장·완료 상태 처리</p></article>
-      <article><span>사용자 04</span><strong>운영 관리자</strong><p>충돌·긴급 예외·변경이력 확인</p></article>
-    </div>
-  </section>
+  <section class="quick-proof"><div class="shell proof-row"><article><span>고객</span><strong>서비스를 이해한다</strong><p>지원 장비와 필요한 서비스 확인</p></article><article><span>상담</span><strong>문제를 정리한다</strong><p>사업장·장비·업무 영향 확인</p></article><article><span>직원</span><strong>방문을 배정한다</strong><p>기사·시간·긴급도·충돌 확인</p></article><article><span>현장</span><strong>처리 결과를 남긴다</strong><p>출동·도착·완료·후속관리</p></article></div></section>
 
-  <section id="architecture" class="section">
+  <section id="why" class="section">
     <div class="shell">
-      <div class="section-head">
-        <div><span>WHY TWO SURFACES</span><h2>같은 서비스를<br>한 화면에 섞지 않았습니다.</h2></div>
-        <p>고객에게 필요한 정보와 직원에게 필요한 정보는 다릅니다. 공개 홈페이지는 구매 판단과 상담에 집중하고, 내부 시스템은 배차·상태·권한·예외처리에 집중하도록 경계를 분리했습니다.</p>
-      </div>
+      <div class="section-head"><div><span>왜 두 화면인가</span><h2>고객에게 필요한 정보와<br>직원에게 필요한 업무는 다릅니다.</h2></div><p>한 화면에 모든 정보를 넣으면 고객에게는 복잡하고 직원에게는 부족해집니다. 공개 홈페이지는 구매·상담 판단에 집중하고, 내부 운영 시스템은 일정·상태·권한·예외처리에 집중하도록 나눴습니다.</p></div>
       <div class="surface-grid">
-        <article class="surface customer-surface">
-          <div class="surface-head"><span>01 · CUSTOMER-FACING</span><b>공개 웹사이트</b></div>
-          <h3>NEXA TECH SERVICE</h3>
-          <p>고객이 “무슨 회사인지 → 어떤 장비를 지원하는지 → 어떤 서비스를 받을 수 있는지 → 상담 전 무엇을 준비할지”를 이해하는 기업 홈페이지입니다.</p>
-          <ul><li>서비스·지원장비·적용환경</li><li>정기점검·고장대응·설치·이전</li><li>서비스 진행 과정과 관리 기준</li><li>적용 예시·FAQ·상담 요청서</li></ul>
-          <a href="../nexa-tech-service/">실제 고객용 화면 열기 →</a>
-        </article>
-        <article class="surface ops-surface">
-          <div class="surface-head"><span>02 · STAFF-FACING</span><b>내부 운영 시스템</b></div>
-          <h3>NEXA Service Operations</h3>
-          <p>접수된 방문 요청을 직원이 기사별 일정에 배치하고, 출동부터 현장도착·완료까지 운영 상태를 이어서 처리하는 내부 도구입니다.</p>
-          <ul><li>기사별 시간대 배차 보드</li><li>미배정 방문 요청·검색·필터</li><li>일정 충돌 검증과 긴급 예외</li><li>상태 전이·권한·변경 이력</li></ul>
-          <a href="../field-service-ops/">실제 내부 운영 화면 열기 →</a>
-        </article>
+        <article class="surface customer-surface"><div class="surface-head"><span>01 · 고객용</span><b>기업 홈페이지</b></div><h3>NEXA TECH SERVICE</h3><p>처음 방문한 고객이 이 회사가 무엇을 지원하는지 바로 이해하고, 자기 상황과 비슷한 문제를 확인한 뒤 상담할 수 있게 설계했습니다.</p><ul><li>지원 장비와 서비스</li><li>이용 고객과 자주 겪는 문제</li><li>접수부터 작업 후 안내까지 서비스 진행</li><li>FAQ와 유지보수 상담</li></ul><a href="../nexa-tech-service/">고객용 화면 열기 →</a></article>
+        <article class="surface ops-surface"><div class="surface-head"><span>02 · 직원용</span><b>현장 운영 시스템</b></div><h3>NEXA Service Operations</h3><p>접수된 방문 요청을 배차 담당자가 기사 일정에 배치하고, 현장 진행 상태와 예외를 실제 업무처럼 처리할 수 있게 구현했습니다.</p><ul><li>기사별 시간대 일정</li><li>미배정 방문 요청·검색·필터</li><li>일정 충돌과 긴급 예외</li><li>출동·현장도착·완료 상태와 변경 이력</li></ul><a href="../field-service-ops/">직원용 화면 열기 →</a></article>
       </div>
     </div>
   </section>
 
   <section id="flow" class="section alt">
     <div class="shell">
-      <div class="section-head">
-        <div><span>END-TO-END FLOW</span><h2>고객 접점에서<br>현장 완료까지 이어지는 흐름.</h2></div>
-        <p>ServiceNow의 현장서비스 구조처럼 고객 서비스 기록이 현장 작업으로 끊김 없이 이어진다는 원칙을 적용했습니다. 공개 웹과 내부 운영 화면은 분리돼 있지만 업무 개념은 같은 요청·장비·사업장·현장작업을 공유합니다.</p>
-      </div>
+      <div class="section-head"><div><span>하나의 업무 흐름</span><h2>고객 문의에서<br>현장 완료까지 이어집니다.</h2></div><p>웹사이트와 내부 시스템은 화면이 다르지만 실제 업무 기준으로는 하나의 요청이 이어지는 구조입니다. 고객이 알려준 사업장·장비·문제 정보가 방문 요청과 현장 처리의 출발점이 됩니다.</p></div>
       <ol class="domain-flow">
-        <li><span>01</span><strong>서비스 탐색</strong><p>고객이 지원 장비와 유지보수 방식을 확인</p><em>Public Web</em></li>
-        <li><span>02</span><strong>상담 정보 정리</strong><p>사업장·장비·업무 영향·필요 지원을 확인</p><em>Public Web</em></li>
-        <li><span>03</span><strong>방문 요청</strong><p>현장 작업에 필요한 요청과 우선순위를 생성</p><em>Domain Boundary</em></li>
-        <li><span>04</span><strong>기사 배정</strong><p>기술·지역·일정과 충돌 여부를 확인해 배차</p><em>Internal Ops</em></li>
-        <li><span>05</span><strong>현장 처리</strong><p>출동 → 현장도착 → 작업완료 상태를 기록</p><em>Internal Ops</em></li>
-        <li><span>06</span><strong>이력·후속관리</strong><p>작업 결과와 재방문·부품·다음 점검으로 연결</p><em>Operations</em></li>
+        <li><span>01</span><strong>서비스 확인</strong><p>고객이 지원 장비와 필요한 서비스를 확인</p><em>고객용</em></li>
+        <li><span>02</span><strong>상담 정보</strong><p>사업장·장비·증상·업무 영향을 정리</p><em>고객용</em></li>
+        <li><span>03</span><strong>방문 요청</strong><p>현장 작업이 필요한 요청으로 전환</p><em>업무 연결점</em></li>
+        <li><span>04</span><strong>기사 배정</strong><p>지역·시간·업무량·충돌을 확인해 배차</p><em>직원용</em></li>
+        <li><span>05</span><strong>현장 처리</strong><p>출동 → 현장 도착 → 작업 완료 상태 처리</p><em>직원용</em></li>
+        <li><span>06</span><strong>후속관리</strong><p>재방문·부품·다음 점검이 있으면 연결</p><em>운영 결과</em></li>
       </ol>
     </div>
   </section>
 
   <section id="proof" class="section">
     <div class="shell">
-      <div class="section-head">
-        <div><span>IMPLEMENTATION PROOF</span><h2>화면 두 개가 아니라<br>역할과 상태를 설계했습니다.</h2></div>
-        <p>보여주기용 대시보드에서 끝내지 않고 실제 운영에서 문제가 되는 상태 전이, 일정 충돌, 권한, 긴급 예외와 감사 이력까지 구현했습니다.</p>
-      </div>
-      <div class="proof-grid">
-        <article><span>STATE</span><h3>현장 작업 상태</h3><p>접수됨 → 예약 완료 → 출동 중 → 현장 작업 중 → 완료 흐름과 종료 상태를 구분합니다.</p></article>
-        <article><span>SCHEDULING</span><h3>일정 충돌</h3><p>같은 기사에게 겹치는 방문 시간이 저장되지 않도록 검증하고, 긴급 작업만 관리자 사유를 요구합니다.</p></article>
-        <article><span>ROLE</span><h3>운영 권한</h3><p>일반 배차 담당자와 운영 관리자의 가능한 작업을 분리해 예외 처리를 통제합니다.</p></article>
-        <article><span>AUDIT</span><h3>변경 이력</h3><p>배정과 현장 상태 변경을 남겨 누가 어떤 운영 결정을 했는지 확인할 수 있습니다.</p></article>
-      </div>
-      <div class="boundary-note">
-        <span>PORTFOLIO BOUNDARY</span>
-        <p>NEXA는 공개 포트폴리오 시연을 위해 구성한 가상 브랜드입니다. 실제 고객·계약·인증·성과 수치를 꾸며내지 않고, 대신 업무 흐름과 운영 규칙을 실행 가능한 화면과 테스트로 증명합니다.</p>
-      </div>
+      <div class="section-head"><div><span>구현 근거</span><h2>예쁜 화면보다<br>실제 업무에서 막히는 지점을 구현했습니다.</h2></div><p>현장 운영에서는 일정 충돌, 잘못된 상태 변경, 권한 없는 예외처리, 변경 이력 누락이 문제가 됩니다. FIELD OPS에서 이 규칙을 직접 실행하고 확인할 수 있습니다.</p></div>
+      <div class="proof-grid"><article><span>상태</span><h3>작업 진행 단계</h3><p>접수됨 → 예약 완료 → 출동 중 → 현장 작업 중 → 완료 순서와 종료 상태를 구분합니다.</p></article><article><span>일정</span><h3>기사 일정 충돌</h3><p>같은 기사에게 겹치는 방문 시간이 저장되지 않도록 검증합니다.</p></article><article><span>권한</span><h3>긴급 예외 통제</h3><p>일반 배차 담당자와 운영 관리자가 할 수 있는 예외 처리를 구분합니다.</p></article><article><span>이력</span><h3>변경 기록</h3><p>누가 언제 배정·상태를 바꿨는지 최근 변경 이력에서 확인할 수 있습니다.</p></article></div>
+      <div class="boundary-note"><span>포트폴리오 범위</span><p>NEXA는 공개 시연을 위해 구성한 가상 브랜드입니다. 실제 고객·계약·인증·성과 수치를 만들지 않고, 대신 서비스 흐름과 운영 규칙을 실행 가능한 화면과 테스트로 보여줍니다.</p></div>
     </div>
   </section>
 
-  <section class="section decision-section">
-    <div class="shell decision-grid">
-      <div><span>DESIGN DECISION</span><h2>Portfolio는 설명하고,<br>NEXA는 실제처럼 사용합니다.</h2></div>
-      <div class="decision-list">
-        <article><b>Portfolio</b><p>프로젝트 의도, 사용자 역할, 시스템 경계와 구현 근거를 설명합니다.</p></article>
-        <article><b>NEXA TECH SERVICE</b><p>제작 과정 설명 없이 실제 고객이 방문한 기업 홈페이지처럼 서비스 정보만 제공합니다.</p></article>
-        <article><b>NEXA Service Operations</b><p>일반 고객 설명 없이 직원이 업무를 처리하는 내부 운영 화면처럼 동작합니다.</p></article>
-      </div>
-    </div>
-  </section>
+  <section class="section decision-section"><div class="shell decision-grid"><div><span>역할 분리</span><h2>설명은 포트폴리오에서,<br>실제 화면은 사용자 역할에 맞게.</h2></div><div class="decision-list"><article><b>Portfolio / 이 페이지</b><p>왜 두 제품으로 나눴는지와 한 업무가 어떻게 연결되는지를 설명합니다.</p></article><article><b>NEXA TECH SERVICE</b><p>제작 설명 없이 실제 고객이 보는 기업 홈페이지처럼 서비스와 상담 정보만 제공합니다.</p></article><article><b>NEXA Service Operations</b><p>포트폴리오 설명 없이 직원이 배차와 현장상태를 처리하는 내부 업무화면으로 동작합니다.</p></article></div></div></section>
 
-  <section class="final-cta">
-    <div class="shell final-box">
-      <div><span>RUN THE DOMAIN</span><h2>두 사용자 화면을<br>직접 비교해보세요.</h2><p>같은 기술서비스 도메인이 고객 화면과 직원 화면에서 어떻게 다르게 표현되는지 확인할 수 있습니다.</p></div>
-      <div class="final-actions"><a class="primary" href="../nexa-tech-service/">고객용 홈페이지 →</a><a class="secondary" href="../field-service-ops/">내부 운영 시스템 →</a></div>
-    </div>
-  </section>
+  <section class="final-cta"><div class="shell final-box"><div><span>직접 확인</span><h2>같은 업무가<br>두 사용자에게 어떻게 보이는지 비교해보세요.</h2><p>고객용 홈페이지에서 서비스를 확인한 뒤 직원용 운영 시스템에서 방문 요청이 어떻게 배차·처리되는지 확인할 수 있습니다.</p></div><div class="final-actions"><a class="primary" href="../nexa-tech-service/">고객용 홈페이지 →</a><a class="secondary" href="../field-service-ops/">직원용 운영 시스템 →</a></div></div></section>
 </main>
-
 <footer><div class="shell"><span>© 2026 KZONE87 · NEXA Service Domain Case Study</span><a href="../">Portfolio Home ↑</a></div></footer>
 </body>
 </html>
