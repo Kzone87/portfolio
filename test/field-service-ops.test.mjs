@@ -1,83 +1,200 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
-import { readFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { overlaps, validateSlot, createJob, JOB_STATUS, computeMetrics } from '../field-service-ops/engine.mjs';
 import { createFieldServiceServer } from '../field-service-ops/server/app.mjs';
+import { createSqliteStore } from '../field-service-ops/server/sqlite-store.mjs';
 
-async function withServer(run){const server=createFieldServiceServer();server.listen(0,'127.0.0.1');await once(server,'listening');const a=server.address();const base=`http://127.0.0.1:${a.port}`;try{await run(base);}finally{server.close();await once(server,'close');}}
-async function request(base,path,options={}){const r=await fetch(`${base}${path}`,{...options,headers:{'content-type':'application/json',...(options.headers??{})}});return{response:r,body:await r.json()};}
-const load=(path)=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
+async function withServer(run, config = {}) {
+  const server = createFieldServiceServer(config.store, config.options);
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const address = server.address();
+  const base = `http://127.0.0.1:${address.port}`;
+  try { await run(base); }
+  finally { server.close(); await once(server, 'close'); }
+}
 
-test('slot validation and overlap use half-open interval semantics',()=>{
- const slot=validateSlot('2026-09-07T09:00:00+09:00','2026-09-07T10:00:00+09:00');
- assert.equal(slot.startAt,'2026-09-07T00:00:00.000Z');
- assert.equal(overlaps('2026-09-07T00:00:00Z','2026-09-07T01:00:00Z','2026-09-07T00:30:00Z','2026-09-07T01:30:00Z'),true);
- assert.equal(overlaps('2026-09-07T00:00:00Z','2026-09-07T01:00:00Z','2026-09-07T01:00:00Z','2026-09-07T02:00:00Z'),false);
+async function request(base, path, options = {}) {
+  const response = await fetch(`${base}${path}`, {
+    ...options,
+    headers: { 'content-type': 'application/json', ...(options.headers ?? {}) }
+  });
+  return { response, body: await response.json() };
+}
+
+const load = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
+const STAFF_TOKEN = 'staff-token-1234567890';
+const ADMIN_TOKEN = 'admin-token-1234567890';
+const PRINCIPALS = [
+  { token: STAFF_TOKEN, id: 'dispatcher-1', name: 'Dispatcher One', role: 'STAFF' },
+  { token: ADMIN_TOKEN, id: 'ops-admin', name: 'Operations Admin', role: 'ADMIN' }
+];
+const auth = token => ({ authorization: `Bearer ${token}` });
+
+test('slot validation and overlap use half-open interval semantics', () => {
+  const slot = validateSlot('2026-09-07T09:00:00+09:00', '2026-09-07T10:00:00+09:00');
+  assert.equal(slot.startAt, '2026-09-07T00:00:00.000Z');
+  assert.equal(overlaps('2026-09-07T00:00:00Z', '2026-09-07T01:00:00Z', '2026-09-07T00:30:00Z', '2026-09-07T01:30:00Z'), true);
+  assert.equal(overlaps('2026-09-07T00:00:00Z', '2026-09-07T01:00:00Z', '2026-09-07T01:00:00Z', '2026-09-07T02:00:00Z'), false);
 });
 
-test('new jobs start requested and metrics separate field states',()=>{
- const job=createJob({customerName:'Example Co',address:'100 Example Street',summary:'Generic field inspection',priority:'URGENT'},{id:10,createdAt:'2026-09-06T00:00:00Z'});
- assert.equal(job.status,JOB_STATUS.REQUESTED);assert.equal(job.agentId,null);assert.equal(job.version,1);
- assert.deepEqual(computeMetrics([job,{...job,id:11,status:'SCHEDULED',priority:'NORMAL'},{...job,id:12,status:'COMPLETED'}]),{active:2,scheduled:1,dispatched:0,onSite:0,urgent:1,completed:1});
+test('new jobs start requested and metrics separate field states', () => {
+  const job = createJob({ customerName: 'Example Co', address: '100 Example Street', summary: 'Generic field inspection', priority: 'URGENT' }, { id: 10, createdAt: '2026-09-06T00:00:00Z' });
+  assert.equal(job.status, JOB_STATUS.REQUESTED);
+  assert.equal(job.agentId, null);
+  assert.equal(job.version, 1);
+  assert.deepEqual(computeMetrics([job, { ...job, id: 11, status: 'SCHEDULED', priority: 'NORMAL' }, { ...job, id: 12, status: 'COMPLETED' }]), { active: 2, scheduled: 1, dispatched: 0, onSite: 0, urgent: 1, completed: 1 });
 });
 
-test('HTTP API exposes agents, queue and operational metrics',async()=>withServer(async base=>{
- const health=await request(base,'/api/health');assert.equal(health.response.status,200);assert.equal(health.body.service,'field-service-ops');
- const agents=await request(base,'/api/agents');assert.equal(agents.body.items.length,3);
- const metrics=await request(base,'/api/metrics');assert.equal(metrics.body.scheduled,1);assert.equal(metrics.body.dispatched,1);assert.equal(metrics.body.onSite,1);assert.equal(metrics.body.urgent,1);
- const requested=await request(base,'/api/jobs?status=REQUESTED');assert.equal(requested.body.items.length,1);assert.equal(requested.body.items[0].customerName,'Gamma Studio');
+test('HTTP API exposes agents, queue and operational metrics in local mode', async () => withServer(async base => {
+  const health = await request(base, '/api/health');
+  assert.equal(health.response.status, 200);
+  assert.equal(health.body.service, 'field-service-ops');
+  assert.equal(health.body.auth, 'local');
+  const agents = await request(base, '/api/agents');
+  assert.equal(agents.body.items.length, 3);
+  const metrics = await request(base, '/api/metrics');
+  assert.equal(metrics.body.scheduled, 1);
+  assert.equal(metrics.body.dispatched, 1);
+  assert.equal(metrics.body.onSite, 1);
+  assert.equal(metrics.body.urgent, 1);
+  const requested = await request(base, '/api/jobs?status=REQUESTED');
+  assert.equal(requested.body.items.length, 1);
+  assert.equal(requested.body.items[0].customerName, 'Gamma Studio');
 }));
 
-test('normal schedule conflict is rejected and leaves job unchanged',async()=>withServer(async base=>{
- const conflict=await request(base,'/api/jobs/3/schedule',{method:'POST',body:JSON.stringify({expectedVersion:1,agentId:1,startAt:'2026-09-07T00:30:00Z',endAt:'2026-09-07T01:30:00Z',actor:'dispatcher',role:'STAFF'})});
- assert.equal(conflict.response.status,409);assert.equal(conflict.body.error.code,'SLOT_CONFLICT');
- const job=await request(base,'/api/jobs/3');assert.equal(job.body.status,'REQUESTED');assert.equal(job.body.version,1);
+test('normal schedule conflict is rejected and leaves job unchanged', async () => withServer(async base => {
+  const conflict = await request(base, '/api/jobs/3/schedule', { method: 'POST', body: JSON.stringify({ expectedVersion: 1, agentId: 1, startAt: '2026-09-07T00:30:00Z', endAt: '2026-09-07T01:30:00Z' }) });
+  assert.equal(conflict.response.status, 409);
+  assert.equal(conflict.body.error.code, 'SLOT_CONFLICT');
+  const job = await request(base, '/api/jobs/3');
+  assert.equal(job.body.status, 'REQUESTED');
+  assert.equal(job.body.version, 1);
 }));
 
-test('urgent job can override a slot conflict only with ADMIN and reason',async()=>withServer(async base=>{
- const created=await request(base,'/api/jobs',{method:'POST',body:JSON.stringify({customerName:'Urgent Client',address:'77 Emergency Avenue',summary:'Urgent field response required',priority:'URGENT',actor:'dispatcher'})});
- assert.equal(created.response.status,201);
- const id=created.body.id;
- const staff=await request(base,`/api/jobs/${id}/schedule`,{method:'POST',body:JSON.stringify({expectedVersion:1,agentId:1,startAt:'2026-09-07T00:30:00Z',endAt:'2026-09-07T01:30:00Z',role:'STAFF',actor:'dispatcher',overrideReason:'emergency'})});
- assert.equal(staff.response.status,409);assert.equal(staff.body.error.code,'SLOT_CONFLICT');
- const admin=await request(base,`/api/jobs/${id}/schedule`,{method:'POST',body:JSON.stringify({expectedVersion:1,agentId:1,startAt:'2026-09-07T00:30:00Z',endAt:'2026-09-07T01:30:00Z',role:'ADMIN',actor:'ops-admin',overrideReason:'Critical customer outage'})});
- assert.equal(admin.response.status,200);assert.equal(admin.body.status,'SCHEDULED');assert.equal(admin.body.overrideReason,'Critical customer outage');assert.equal(admin.body.version,2);
- const audits=await request(base,`/api/audits?jobId=${id}`);assert.ok(audits.body.items.some(x=>x.action==='SCHEDULE_OVERRIDE'&&x.actor==='ops-admin'));
+test('authenticated API ignores claimed actor and role and allows conflict override only for authenticated ADMIN', async () => withServer(async base => {
+  const unauthenticated = await request(base, '/api/jobs');
+  assert.equal(unauthenticated.response.status, 401);
+  assert.equal(unauthenticated.body.error.code, 'AUTH_REQUIRED');
+
+  const created = await request(base, '/api/jobs', {
+    method: 'POST',
+    headers: auth(STAFF_TOKEN),
+    body: JSON.stringify({ customerName: 'Urgent Client', address: '77 Emergency Avenue', summary: 'Urgent field response required', priority: 'URGENT', actor: 'forged-admin', role: 'ADMIN' })
+  });
+  assert.equal(created.response.status, 201);
+  const id = created.body.id;
+
+  const staff = await request(base, `/api/jobs/${id}/schedule`, {
+    method: 'POST',
+    headers: auth(STAFF_TOKEN),
+    body: JSON.stringify({ expectedVersion: 1, agentId: 1, startAt: '2026-09-07T00:30:00Z', endAt: '2026-09-07T01:30:00Z', role: 'ADMIN', actor: 'forged-admin', overrideReason: 'emergency override' })
+  });
+  assert.equal(staff.response.status, 409);
+  assert.equal(staff.body.error.code, 'SLOT_CONFLICT');
+
+  const admin = await request(base, `/api/jobs/${id}/schedule`, {
+    method: 'POST',
+    headers: auth(ADMIN_TOKEN),
+    body: JSON.stringify({ expectedVersion: 1, agentId: 1, startAt: '2026-09-07T00:30:00Z', endAt: '2026-09-07T01:30:00Z', role: 'STAFF', actor: 'forged-user', overrideReason: 'Critical customer outage' })
+  });
+  assert.equal(admin.response.status, 200);
+  assert.equal(admin.body.status, 'SCHEDULED');
+  assert.equal(admin.body.overrideReason, 'Critical customer outage');
+  assert.equal(admin.body.version, 2);
+
+  const audits = await request(base, `/api/audits?jobId=${id}`, { headers: auth(ADMIN_TOKEN) });
+  assert.ok(audits.body.items.some(item => item.action === 'SCHEDULE_OVERRIDE' && item.actor === 'ops-admin'));
+  assert.ok(audits.body.items.some(item => item.action === 'CREATE' && item.actor === 'dispatcher-1'));
+  assert.ok(!audits.body.items.some(item => item.actor === 'forged-admin' || item.actor === 'forged-user'));
+}, { options: { requireAuth: true, principals: PRINCIPALS, allowedOrigins: ['https://ops.nexa.example'] } }));
+
+test('authenticated API rejects unknown tokens and disallowed browser origins', async () => withServer(async base => {
+  const badToken = await request(base, '/api/jobs', { headers: auth('unknown-token-1234567890') });
+  assert.equal(badToken.response.status, 401);
+  assert.equal(badToken.body.error.code, 'INVALID_AUTH_TOKEN');
+
+  const badOrigin = await request(base, '/api/jobs', { headers: { ...auth(STAFF_TOKEN), origin: 'https://attacker.example' } });
+  assert.equal(badOrigin.response.status, 403);
+  assert.equal(badOrigin.body.error.code, 'ORIGIN_NOT_ALLOWED');
+
+  const allowed = await request(base, '/api/jobs', { headers: { ...auth(STAFF_TOKEN), origin: 'https://ops.nexa.example' } });
+  assert.equal(allowed.response.status, 200);
+  assert.equal(allowed.response.headers.get('access-control-allow-origin'), 'https://ops.nexa.example');
+}, { options: { requireAuth: true, principals: PRINCIPALS, allowedOrigins: ['https://ops.nexa.example'] } }));
+
+test('schedule to complete lifecycle enforces current version and audit', async () => withServer(async base => {
+  const scheduled = await request(base, '/api/jobs/3/schedule', { method: 'POST', body: JSON.stringify({ expectedVersion: 1, agentId: 1, startAt: '2026-09-07T01:00:00Z', endAt: '2026-09-07T02:00:00Z' }) });
+  assert.equal(scheduled.response.status, 200);
+  assert.equal(scheduled.body.version, 2);
+  const stale = await request(base, '/api/jobs/3/dispatch', { method: 'POST', body: JSON.stringify({ expectedVersion: 1 }) });
+  assert.equal(stale.response.status, 409);
+  assert.equal(stale.body.error.code, 'STALE_JOB');
+  const dispatched = await request(base, '/api/jobs/3/dispatch', { method: 'POST', body: JSON.stringify({ expectedVersion: 2 }) });
+  assert.equal(dispatched.body.status, 'DISPATCHED');
+  const onsite = await request(base, '/api/jobs/3/on-site', { method: 'POST', body: JSON.stringify({ expectedVersion: 3 }) });
+  assert.equal(onsite.body.status, 'ON_SITE');
+  const done = await request(base, '/api/jobs/3/complete', { method: 'POST', body: JSON.stringify({ expectedVersion: 4 }) });
+  assert.equal(done.body.status, 'COMPLETED');
+  assert.equal(done.body.version, 5);
+  const audits = await request(base, '/api/audits?jobId=3');
+  assert.ok(audits.body.items.some(item => item.action === 'COMPLETE' && item.actor === 'local-dispatcher'));
 }));
 
-test('schedule to complete lifecycle enforces current version and audit',async()=>withServer(async base=>{
- const scheduled=await request(base,'/api/jobs/3/schedule',{method:'POST',body:JSON.stringify({expectedVersion:1,agentId:1,startAt:'2026-09-07T01:00:00Z',endAt:'2026-09-07T02:00:00Z',actor:'dispatcher',role:'STAFF'})});
- assert.equal(scheduled.response.status,200);assert.equal(scheduled.body.version,2);
- const stale=await request(base,'/api/jobs/3/dispatch',{method:'POST',body:JSON.stringify({expectedVersion:1,actor:'dispatcher'})});assert.equal(stale.response.status,409);assert.equal(stale.body.error.code,'STALE_JOB');
- const dispatched=await request(base,'/api/jobs/3/dispatch',{method:'POST',body:JSON.stringify({expectedVersion:2,actor:'dispatcher'})});assert.equal(dispatched.body.status,'DISPATCHED');
- const onsite=await request(base,'/api/jobs/3/on-site',{method:'POST',body:JSON.stringify({expectedVersion:3,actor:'agent-a'})});assert.equal(onsite.body.status,'ON_SITE');
- const done=await request(base,'/api/jobs/3/complete',{method:'POST',body:JSON.stringify({expectedVersion:4,actor:'agent-a'})});assert.equal(done.body.status,'COMPLETED');assert.equal(done.body.version,5);
- const audits=await request(base,'/api/audits?jobId=3');assert.ok(audits.body.items.some(x=>x.action==='COMPLETE'&&x.actor==='agent-a'));
+test('reassign detects conflict and terminal jobs reject further actions', async () => withServer(async base => {
+  const conflict = await request(base, '/api/jobs/1/reassign', { method: 'POST', body: JSON.stringify({ expectedVersion: 2, agentId: 2, startAt: '2026-09-07T01:30:00Z', endAt: '2026-09-07T02:30:00Z' }) });
+  assert.equal(conflict.response.status, 409);
+  assert.equal(conflict.body.error.code, 'SLOT_CONFLICT');
+  const cancelled = await request(base, '/api/jobs/3/cancel', { method: 'POST', body: JSON.stringify({ expectedVersion: 1 }) });
+  assert.equal(cancelled.body.status, 'CANCELLED');
+  const again = await request(base, '/api/jobs/3/schedule', { method: 'POST', body: JSON.stringify({ expectedVersion: 2, agentId: 1, startAt: '2026-09-08T00:00:00Z', endAt: '2026-09-08T01:00:00Z' }) });
+  assert.equal(again.response.status, 409);
+  assert.equal(again.body.error.code, 'INVALID_JOB_ACTION');
 }));
 
-test('reassign detects conflict and terminal jobs reject further actions',async()=>withServer(async base=>{
- const conflict=await request(base,'/api/jobs/1/reassign',{method:'POST',body:JSON.stringify({expectedVersion:2,agentId:2,startAt:'2026-09-07T01:30:00Z',endAt:'2026-09-07T02:30:00Z',actor:'dispatcher',role:'STAFF'})});assert.equal(conflict.response.status,409);assert.equal(conflict.body.error.code,'SLOT_CONFLICT');
- const cancelled=await request(base,'/api/jobs/3/cancel',{method:'POST',body:JSON.stringify({expectedVersion:1,actor:'dispatcher'})});assert.equal(cancelled.body.status,'CANCELLED');
- const again=await request(base,'/api/jobs/3/schedule',{method:'POST',body:JSON.stringify({expectedVersion:2,agentId:1,startAt:'2026-09-08T00:00:00Z',endAt:'2026-09-08T01:00:00Z',actor:'dispatcher'})});assert.equal(again.response.status,409);assert.equal(again.body.error.code,'INVALID_JOB_ACTION');
-}));
+test('SQLite store persists jobs, versions and audit history across restart', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'nexa-ops-'));
+  const dbPath = join(directory, 'ops.sqlite');
+  try {
+    const first = createSqliteStore(dbPath, { seedDemo: true });
+    const created = first.createJob({ customerName: 'Persistent Client', address: '101 Persistent Road', summary: 'Persistence verification visit', priority: 'NORMAL' }, 'dispatcher-1');
+    const scheduled = first.schedule(created.id, { expectedVersion: 1, agentId: 1, startAt: '2026-09-07T04:00:00Z', endAt: '2026-09-07T05:00:00Z', actor: 'dispatcher-1', role: 'STAFF' });
+    assert.equal(scheduled.version, 2);
+    first.close();
 
-test('dispatch UI keeps a readable day board, accessible queue and detail drawer',async()=>{
- const html=await load('field-service-ops/index.html');
- const css=await load('field-service-ops/styles.css');
- const app=await load('field-service-ops/app.js');
- assert.match(html,/NEXA TECH SERVICE/);
- assert.match(html,/운영 기준일/);
- assert.doesNotMatch(html,/샘플 출장서비스|시연 기준일|운영 안내|감마스튜디오/);
- assert.match(html,/08:00–18:00/);
- assert.match(html,/id="detail-panel"/);
- assert.match(html,/id="detail-backdrop"/);
- assert.match(html,/aria-label="방문 요청 검색"/);
- assert.match(app,/BOARD_HOURS = \[8, 9, 10, 11, 12, 13, 14, 15, 16, 17\]/);
- assert.match(app,/scheduleWindowError/);
- assert.match(app,/event\.key === 'Escape'/);
- assert.match(app,/inputLocal\(currentJob\.startAt\)/);
- assert.match(css,/\.job-card p\{[^}]*font-size:13px/);
- assert.match(css,/\.slot-card strong\{[^}]*font-size:12px/);
- assert.match(css,/\.job-detail-panel\{[^}]*position:fixed/);
+    const second = createSqliteStore(dbPath);
+    const restored = second.getJob(created.id);
+    assert.equal(restored.customerName, 'Persistent Client');
+    assert.equal(restored.status, 'SCHEDULED');
+    assert.equal(restored.version, 2);
+    assert.ok(second.listAudits(created.id).some(item => item.action === 'CREATE' && item.actor === 'dispatcher-1'));
+    assert.ok(second.listAudits(created.id).some(item => item.action === 'SCHEDULE' && item.jobVersion === 2));
+    second.close();
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('dispatch UI keeps a readable day board, accessible queue and detail drawer', async () => {
+  const html = await load('field-service-ops/index.html');
+  const css = await load('field-service-ops/styles.css');
+  const app = await load('field-service-ops/app.js');
+  assert.match(html, /NEXA TECH SERVICE/);
+  assert.match(html, /운영 기준일/);
+  assert.doesNotMatch(html, /샘플 출장서비스|시연 기준일|운영 안내|감마스튜디오/);
+  assert.match(html, /08:00–18:00/);
+  assert.match(html, /id="detail-panel"/);
+  assert.match(html, /id="detail-backdrop"/);
+  assert.match(html, /aria-label="방문 요청 검색"/);
+  assert.match(app, /BOARD_HOURS = \[8, 9, 10, 11, 12, 13, 14, 15, 16, 17\]/);
+  assert.match(app, /scheduleWindowError/);
+  assert.match(app, /event\.key === 'Escape'/);
+  assert.match(app, /inputLocal\(currentJob\.startAt\)/);
+  assert.match(css, /\.job-card p\{[^}]*font-size:13px/);
+  assert.match(css, /\.slot-card strong\{[^}]*font-size:12px/);
+  assert.match(css, /\.job-detail-panel\{[^}]*position:fixed/);
 });
