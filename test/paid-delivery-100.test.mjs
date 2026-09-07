@@ -17,7 +17,7 @@ function visibleText(html) {
 }
 
 test('internal products present a client-grade identity instead of sample/demo chrome', async () => {
-  const expectedBrands = ['MONO MARKET','NEXA TECH SERVICE','MONO OFFICE','MONO SUPPORT','MONO DATA HUB','OPS KIT'];
+  const expectedBrands = ['MONO MARKET','NEXA SERVICE OPERATIONS','MONO OFFICE','MONO SUPPORT','MONO DATA HUB','OPS KIT'];
   for (let i = 0; i < productPages.length; i += 1) {
     const html = await load(productPages[i]);
     const text = visibleText(html);
@@ -31,6 +31,7 @@ test('portfolio home communicates delivery scope while keeping every product dir
   const html = await load('index.html');
   assert.match(html, /대표 작업/);
   assert.match(html, /NEXA TECH SERVICE/);
+  assert.match(html, /NEXA SERVICE DOMAIN/);
   assert.match(html, /MONO OPERATIONS/);
   assert.match(html, /Excel 정리 작업실/);
   assert.match(html, /OPS KIT/);
