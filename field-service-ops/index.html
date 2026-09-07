@@ -10,13 +10,17 @@
 </head>
 <body>
 <header class="topbar">
-  <div><strong>NEXA SERVICE OPERATIONS</strong><span class="workspace-name">직원 전용 · 배차 / 현장 운영</span></div>
-  <label>현재 역할<select id="role"><option value="STAFF">배차 담당자</option><option value="ADMIN">운영 관리자</option></select></label>
+  <div class="product-identity"><strong>NEXA SERVICE OPERATIONS</strong><span class="workspace-name">직원 전용 · 배차 / 현장 운영</span></div>
+  <div class="signed-user" aria-label="현재 로그인 사용자">
+    <span class="user-team">서울 운영팀</span>
+    <span class="user-avatar" aria-hidden="true">김</span>
+    <span class="user-copy"><strong>김현수</strong><small>운영 관리자</small></span>
+  </div>
 </header>
 <main class="dispatch-main">
   <section class="page-head">
-    <div><p class="breadcrumb">NEXA / 현장 서비스 / 배차</p><h1>배차 현황</h1><p>기준일의 방문 요청을 기사 일정에 배치하고 출동·현장도착·완료 상태를 처리합니다. 긴급 요청과 미배정 작업을 먼저 확인하세요.</p></div>
-    <div class="date-card"><span>배차 기준일</span><strong>2026. 09. 07</strong></div>
+    <div><p class="breadcrumb">NEXA / 현장 서비스 / 배차</p><h1>9월 7일 배차 현황</h1><p>방문 요청을 기사 일정에 배치하고 출동·현장도착·완료 상태를 처리합니다. 긴급 요청과 미배정 작업을 먼저 확인하세요.</p></div>
+    <div class="date-card"><span>운영 기준일</span><strong>2026. 09. 07 · 월</strong></div>
   </section>
 
   <section class="metrics" aria-label="배차 현황 요약">
@@ -29,7 +33,7 @@
 
   <section class="dispatch-layout">
     <article class="panel board-panel">
-      <div class="head"><div><h2>기사별 일정</h2><p class="muted">08:00–18:00 방문 일정입니다. 작업을 선택하면 상세정보와 상태 변경을 처리할 수 있습니다.</p></div><span class="board-legend">기준일 일정</span></div>
+      <div class="head"><div><h2>기사별 일정</h2><p class="muted">08:00–18:00 방문 일정입니다. 작업을 선택하면 상세정보와 상태 변경을 처리할 수 있습니다.</p></div><span class="board-legend">9월 7일</span></div>
       <div id="agent-board" class="agent-board" aria-label="기사별 일정 보드"></div>
     </article>
 
