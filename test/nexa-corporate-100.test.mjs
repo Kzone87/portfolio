@@ -141,14 +141,15 @@ test('trust center exposes concrete operating checks without fake people or cred
 });
 
 test('portfolio owns the domain explanation and links to both role-specific products', () => {
-  for (const phrase of ['NEXA SERVICE DOMAIN','ONE DOMAIN · TWO SURFACES','고객용 기업 홈페이지 + 내부 현장 운영','고객 서비스 탐색 → 상담 정보 → 방문 요청 → 기사 배정 → 현장 처리']) assert.match(portfolioHome, new RegExp(phrase));
+  for (const phrase of ['NEXA SERVICE DOMAIN','ONE DOMAIN · TWO SURFACES','고객 서비스 탐색 → 상담 정보 → 방문 요청 → 기사 배정 → 현장 처리']) assert.ok(portfolioHome.includes(phrase), `portfolio missing ${phrase}`);
+  assert.match(portfolioHome, /고객용 기업 홈페이지 \+ 내부 현장 운영/);
   assert.match(portfolioHome, /href="\.\/nexa-service-domain\/"/);
   assert.match(portfolioHome, /href="\.\/nexa-tech-service\/"/);
   assert.match(portfolioHome, /href="\.\/field-service-ops\/"/);
 });
 
 test('dedicated NEXA case study explains architecture while products stay in role', () => {
-  for (const phrase of ['외부 고객용 홈페이지와','ONE DOMAIN','CUSTOMER-FACING','STAFF-FACING','END-TO-END FLOW','PORTFOLIO BOUNDARY','Portfolio는 설명하고']) assert.match(domainCase, new RegExp(phrase));
+  for (const phrase of ['외부 고객용 홈페이지와','NEXA SERVICE DOMAIN','CUSTOMER-FACING','STAFF-FACING','END-TO-END FLOW','PORTFOLIO BOUNDARY','Portfolio는 설명하고']) assert.ok(domainCase.includes(phrase), `case study missing ${phrase}`);
   assert.match(domainCase, /href="\.\.\/nexa-tech-service\/"/);
   assert.match(domainCase, /href="\.\.\/field-service-ops\/"/);
   assert.match(domainCss, /\.surface-grid/);
