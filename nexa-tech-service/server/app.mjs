@@ -100,11 +100,58 @@ function adminInquiryRoute(path, suffix = '') {
   return match ? match[1] : null;
 }
 
+function lookupIdentity(store, input) {
+  const id = String(input?.id || '').trim().toUpperCase();
+  const phone = String(input?.phone || '').replace(/\D/g, '');
+  if (!/^NX-[A-Z0-9-]{6,24}$/.test(id) || phone.length < 9) throw new InquiryError(400, 'INVALID_LOOKUP', '접수번호와 상담 연락처를 확인해 주세요.');
+  let inquiry;
+  try { inquiry = store.get(id); }
+  catch (error) {
+    if (error instanceof InquiryError && error.statusCode === 404) throw new InquiryError(404, 'CUSTOMER_REQUEST_NOT_FOUND', '접수정보를 확인할 수 없습니다.');
+    throw error;
+  }
+  const storedPhone = String(inquiry.phone || '').replace(/\D/g, '');
+  if (storedPhone !== phone) throw new InquiryError(404, 'CUSTOMER_REQUEST_NOT_FOUND', '접수정보를 확인할 수 없습니다.');
+  return inquiry;
+}
+
+function inquiryUpdates(store, inquiry) {
+  const updates = store.audits(inquiry.id).map(item => {
+    if (item.action === 'VISIT_REQUEST_CREATED') return { at: item.createdAt, title: '현장 방문 요청 전달', copy: '현장 운영팀에 방문 요청이 전달되었습니다.' };
+    if (item.action === 'VISIT_REQUEST_PREPARED') return { at: item.createdAt, title: '방문 준비 확인', copy: '방문 장소와 요청 내용을 확인했습니다.' };
+    if (item.toStatus === INQUIRY_STATUS.CLOSED) return { at: item.createdAt, title: '상담 처리 완료', copy: '상담 요청의 처리가 완료되었습니다.' };
+    if (item.toStatus === INQUIRY_STATUS.CONTACTED) return { at: item.createdAt, title: '상담 내용 확인', copy: '담당자가 상담 내용을 확인했습니다.' };
+    return { at: item.createdAt, title: '요청 상태 변경', copy: '서비스 요청 상태가 변경되었습니다.' };
+  });
+  updates.push({ at: inquiry.createdAt, title: '상담 접수', copy: '유지보수 상담 요청이 접수되었습니다.' });
+  return updates.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+}
+
+function publicInquiry(store, inquiry) {
+  return {
+    id: inquiry.id,
+    company: inquiry.company,
+    status: inquiry.status,
+    service: inquiry.service,
+    createdAt: inquiry.createdAt,
+    updatedAt: inquiry.updatedAt,
+    handoff: inquiry.handoff ? {
+      state: inquiry.handoff.state,
+      fieldJobId: inquiry.handoff.fieldJobId,
+      address: inquiry.handoff.address,
+      summary: inquiry.handoff.summary,
+      priority: inquiry.handoff.priority
+    } : null,
+    updates: inquiryUpdates(store, inquiry)
+  };
+}
+
 export function createFieldOpsClient({ baseUrl, token, fetchImpl = fetch }) {
   const root = String(baseUrl || '').trim().replace(/\/+$/, '');
   const credential = String(token || '').trim();
   if (!root) throw new Error('field operations base URL is required');
   if (credential.length < 16) throw new Error('field operations service token must be at least 16 characters');
+  const headers = () => ({ authorization: `Bearer ${credential}` });
   return {
     async createVisitRequest({ inquiry, handoff }) {
       let response;
@@ -113,7 +160,7 @@ export function createFieldOpsClient({ baseUrl, token, fetchImpl = fetch }) {
           method: 'POST',
           headers: {
             'content-type': 'application/json',
-            authorization: `Bearer ${credential}`,
+            ...headers(),
             'idempotency-key': handoff.idempotencyKey
           },
           body: JSON.stringify({
@@ -130,8 +177,53 @@ export function createFieldOpsClient({ baseUrl, token, fetchImpl = fetch }) {
       if (!response.ok) throw new InquiryError(502, 'FIELD_OPS_REJECTED', payload?.error?.message || '현장 운영시스템이 방문 요청을 처리하지 못했습니다.');
       if (!Number.isInteger(Number(payload?.id)) || Number(payload.id) < 1) throw new InquiryError(502, 'INVALID_FIELD_JOB', '현장 운영시스템이 올바른 작업번호를 반환하지 않았습니다.');
       return payload;
+    },
+    async getVisitRequest(jobId) {
+      let jobResponse;
+      let auditResponse;
+      try {
+        [jobResponse, auditResponse] = await Promise.all([
+          fetchImpl(`${root}/api/jobs/${Number(jobId)}`, { headers: headers() }),
+          fetchImpl(`${root}/api/audits?jobId=${Number(jobId)}`, { headers: headers() })
+        ]);
+      } catch {
+        throw new InquiryError(502, 'FIELD_OPS_UNAVAILABLE', '현장 방문 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+      }
+      const job = await jobResponse.json().catch(() => ({}));
+      const auditPayload = await auditResponse.json().catch(() => ({ items: [] }));
+      if (!jobResponse.ok) throw new InquiryError(502, 'FIELD_OPS_REJECTED', job?.error?.message || '현장 방문 상태를 확인하지 못했습니다.');
+      return {
+        id: Number(job.id),
+        status: job.status,
+        priority: job.priority,
+        startAt: job.startAt || null,
+        endAt: job.endAt || null,
+        address: job.address || '',
+        summary: job.summary || '',
+        agentAssigned: Number.isInteger(Number(job.agentId)) && Number(job.agentId) > 0,
+        updates: (auditPayload.items || []).slice(0, 10)
+      };
     }
   };
+}
+
+function fieldUpdates(visit) {
+  const labels = {
+    CREATE: ['방문 요청 접수', '현장 운영팀에 방문 요청이 등록되었습니다.'],
+    SCHEDULE: ['방문 일정 확정', '담당 기사와 방문 일정이 확정되었습니다.'],
+    SCHEDULE_OVERRIDE: ['긴급 방문 일정 확정', '운영 관리자 확인 후 긴급 방문 일정이 확정되었습니다.'],
+    RESCHEDULE: ['방문 일정 변경', '방문 일정이 변경되었습니다.'],
+    REASSIGN: ['담당 기사 변경', '방문 담당 기사가 변경되었습니다.'],
+    DISPATCH: ['기사 출동', '담당 기사가 방문 장소로 출동했습니다.'],
+    ON_SITE: ['현장 도착', '담당 기사가 현장에 도착했습니다.'],
+    COMPLETE: ['현장 작업 완료', '현장 작업이 완료되었습니다.'],
+    CANCEL: ['방문 취소', '방문 요청이 취소되었습니다.'],
+    NO_SHOW: ['방문 일정 재확인', '현장 방문이 완료되지 않아 일정 확인이 필요합니다.']
+  };
+  return (visit?.updates || []).map(item => {
+    const [title, copy] = labels[item.action] || ['현장 진행상태 변경', '현장 서비스 진행상태가 변경되었습니다.'];
+    return { at: item.createdAt, title, copy };
+  });
 }
 
 export function createInquiryServer(store = createInquiryStore(), options = {}) {
@@ -170,7 +262,7 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
       }
 
       if (req.method === 'GET' && path === '/api/health') {
-        send(req, res, config, 200, { ok: true, service: 'nexa-inquiry-api', fieldOpsHandoff: Boolean(config.fieldOpsClient) });
+        send(req, res, config, 200, { ok: true, service: 'nexa-inquiry-api', fieldOpsHandoff: Boolean(config.fieldOpsClient), customerLookup: true });
         return;
       }
 
@@ -178,6 +270,17 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
         consumeRateLimit(req, config);
         const created = store.create(await readBody(req));
         send(req, res, config, 201, created);
+        return;
+      }
+
+      if (req.method === 'POST' && path === '/api/customer/requests/lookup') {
+        consumeRateLimit(req, config);
+        const inquiry = lookupIdentity(store, await readBody(req));
+        const view = publicInquiry(store, inquiry);
+        let visit = null;
+        if (view.handoff?.fieldJobId && config.fieldOpsClient) visit = await config.fieldOpsClient.getVisitRequest(view.handoff.fieldJobId);
+        const updates = [...fieldUpdates(visit), ...view.updates].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 10);
+        send(req, res, config, 200, { ...view, visit: visit ? { id: visit.id, status: visit.status, priority: visit.priority, startAt: visit.startAt, endAt: visit.endAt, address: visit.address, summary: visit.summary, agentAssigned: visit.agentAssigned } : null, updates });
         return;
       }
 
@@ -231,8 +334,8 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
         return;
       }
       console.error(error);
-      try { send(req, res, config, 500, { error: { code: 'INTERNAL_ERROR', message: '상담 요청을 처리하지 못했습니다.' } }); }
-      catch {
+      try { send(req, res, config, 500, { error: { code: 'INTERNAL_ERROR', message: '상담 요청을 처리하지 못했습니다.' } });
+      } catch {
         res.writeHead(500, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
         res.end(JSON.stringify({ error: { code: 'INTERNAL_ERROR', message: '상담 요청을 처리하지 못했습니다.' } }));
       }
