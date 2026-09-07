@@ -49,19 +49,19 @@
       <label>접수번호<input id="request-id" name="requestId" value="NX-260907-0142" autocomplete="off" spellcheck="false" aria-describedby="lookup-help"></label>
       <label>상담 연락처<input id="request-phone" name="phone" value="010-9876-4821" inputmode="tel" autocomplete="tel"></label>
       <button type="submit">요청 조회</button>
-      <p id="lookup-help" class="lookup-help">공개 화면에서는 가상 접수정보가 입력되어 있습니다.</p>
+      <p id="lookup-help" class="lookup-help">공개 화면에서는 가상 접수정보가 입력되어 있습니다. 조회 버튼을 눌러 시연 요청을 확인할 수 있습니다.</p>
       <p id="lookup-message" class="lookup-message" role="status" aria-live="polite"></p>
     </form>
   </section>
 
-  <section id="request-view" class="request-view" aria-live="polite">
+  <section id="request-view" class="request-view" aria-live="polite" hidden>
     <div class="request-toolbar">
       <div>
-        <span id="customer-name" class="customer-name">알파오피스</span>
-        <strong id="request-number">NX-260907-0142</strong>
+        <span id="customer-name" class="customer-name">고객</span>
+        <strong id="request-number">-</strong>
       </div>
       <div class="request-toolbar-actions">
-        <span id="request-status" class="status-badge">방문 일정 확정</span>
+        <span id="request-status" class="status-badge">상태 확인 중</span>
         <a href="../nexa-tech-service/contact.html">문의하기</a>
       </div>
     </div>
@@ -69,11 +69,11 @@
     <div class="overview-grid">
       <article class="current-card">
         <span class="card-label">현재 진행상태</span>
-        <h2 id="current-title">방문 일정이 확정되었습니다.</h2>
-        <p id="current-copy">기사 방문 전 장비 주변 작업공간과 테스트 출력이 가능한 환경을 준비해 주세요.</p>
+        <h2 id="current-title">요청 상태를 확인합니다.</h2>
+        <p id="current-copy">본인 확인 후 최신 진행상태를 표시합니다.</p>
         <div class="next-action">
           <span>다음 일정</span>
-          <strong id="next-schedule">9월 9일 14:00–15:00</strong>
+          <strong id="next-schedule">-</strong>
         </div>
       </article>
 
@@ -83,24 +83,17 @@
           <span id="visit-priority" class="priority-badge">일반</span>
         </div>
         <dl>
-          <div><dt>방문 예정</dt><dd id="visit-time">2026. 09. 09. 14:00–15:00</dd></div>
-          <div><dt>방문 장소</dt><dd id="visit-address">서울 중구 세종대로 10</dd></div>
-          <div><dt>담당 상태</dt><dd id="visit-agent">담당 기사 배정 완료</dd></div>
-          <div><dt>요청 내용</dt><dd id="visit-summary">디지털 인쇄장비 출력 품질 점검</dd></div>
+          <div><dt>방문 예정</dt><dd id="visit-time">-</dd></div>
+          <div><dt>방문 장소</dt><dd id="visit-address">-</dd></div>
+          <div><dt>담당 상태</dt><dd id="visit-agent">-</dd></div>
+          <div><dt>요청 내용</dt><dd id="visit-summary">-</dd></div>
         </dl>
       </article>
     </div>
 
     <section class="timeline-card" aria-labelledby="timeline-title">
       <div class="section-title-row"><div><span class="card-label">진행 단계</span><h2 id="timeline-title">요청 처리 현황</h2></div><small>진행 단계가 바뀌면 최신 상태가 표시됩니다.</small></div>
-      <ol id="timeline" class="timeline">
-        <li class="done"><i>✓</i><div><strong>상담 접수</strong><span>요청 내용을 접수했습니다.</span></div></li>
-        <li class="done"><i>✓</i><div><strong>지원 확인</strong><span>현장 방문이 필요한 요청으로 확인했습니다.</span></div></li>
-        <li class="current"><i>3</i><div><strong>방문 확정</strong><span>방문 날짜와 시간이 확정되었습니다.</span></div></li>
-        <li><i>4</i><div><strong>방문·작업</strong><span>기사 방문 후 현장 작업을 진행합니다.</span></div></li>
-        <li><i>5</i><div><strong>결과 안내</strong><span>작업 결과와 장비 상태를 안내합니다.</span></div></li>
-        <li><i>6</i><div><strong>후속관리</strong><span>필요한 재방문·부품·다음 점검을 안내합니다.</span></div></li>
-      </ol>
+      <ol id="timeline" class="timeline"></ol>
     </section>
 
     <div class="detail-grid">
@@ -115,11 +108,7 @@
 
       <section class="panel-card" aria-labelledby="updates-title">
         <div class="section-title-row"><div><span class="card-label">최근 안내</span><h2 id="updates-title">요청 변경 이력</h2></div></div>
-        <div id="update-list" class="update-list">
-          <article><time>09.08 16:42</time><div><strong>방문 일정 확정</strong><p>9월 9일 14:00 방문으로 일정이 확정되었습니다.</p></div></article>
-          <article><time>09.08 11:20</time><div><strong>현장 방문 필요 확인</strong><p>상담 내용을 확인하고 현장 점검이 필요한 요청으로 분류했습니다.</p></div></article>
-          <article><time>09.07 17:03</time><div><strong>상담 접수</strong><p>유지보수 상담 요청이 접수되었습니다.</p></div></article>
-        </div>
+        <div id="update-list" class="update-list"></div>
       </section>
     </div>
 

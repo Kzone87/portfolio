@@ -103,11 +103,20 @@ const copyButton = document.querySelector('#copy-request');
 const submitButton = form?.querySelector('button[type="submit"]') ?? null;
 const inquiryEndpoint = String(window.NEXA_INQUIRY_ENDPOINT || '').trim().replace(/\/+$/, '');
 const publicDeliveryNote = form ? [...form.querySelectorAll('.form-help')].find((item) => item.textContent.includes('이 공개 페이지에서는 상담 내용을 서버로 전송하지 않습니다')) : null;
+const portalSessionKey = 'nexa:customer-request';
 let currentRequestText = '';
 
 if (inquiryEndpoint && submitButton) {
   submitButton.textContent = '상담 요청 보내기';
   if (publicDeliveryNote) publicDeliveryNote.textContent = '입력한 상담 내용은 NEXA 상담 접수 시스템으로 안전하게 전송되며, 접수번호를 화면에서 확인할 수 있습니다.';
+}
+
+function rememberPortalAccess(requestId, phone) {
+  try {
+    sessionStorage.setItem(portalSessionKey, JSON.stringify({ requestId, phone, savedAt: Date.now() }));
+  } catch {
+    // Storage can be unavailable in privacy modes. The customer can still enter the contact manually.
+  }
 }
 
 function formField(formElement, name) {
@@ -222,6 +231,7 @@ if (form && message) {
     }
 
     if (submitButton) submitButton.disabled = true;
+    form.setAttribute('aria-busy', 'true');
     message.textContent = '상담 요청을 보내고 있습니다.';
     try {
       const response = await fetch(`${inquiryEndpoint}/api/inquiries`, {
@@ -231,6 +241,7 @@ if (form && message) {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload?.error?.message || '상담 요청을 전송하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+      rememberPortalAccess(payload.id, values.phone);
       showSummary(`${currentRequestText}\n\n접수번호: ${payload.id}`, payload.id);
       message.textContent = `상담 요청이 접수되었습니다. 접수번호 ${payload.id}`;
     } catch (error) {
@@ -238,6 +249,7 @@ if (form && message) {
       message.textContent = error instanceof Error ? error.message : '상담 요청을 전송하지 못했습니다. 잠시 후 다시 시도해 주세요.';
       message.classList.add('error');
     } finally {
+      form.removeAttribute('aria-busy');
       if (submitButton) submitButton.disabled = false;
     }
   });
