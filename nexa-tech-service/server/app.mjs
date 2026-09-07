@@ -1,7 +1,7 @@
 import http from 'node:http';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { createInquiryStore, InquiryError, INQUIRY_STATUS } from './inquiry-store.mjs';
+import { createInquiryStore, InquiryError, INQUIRY_STATUS, INQUIRY_HANDOFF_STATE } from './inquiry-store.mjs';
 
 const BODY_LIMIT = 32 * 1024;
 const DEFAULT_RATE_WINDOW_MS = 10 * 60 * 1000;
@@ -100,6 +100,40 @@ function adminInquiryRoute(path, suffix = '') {
   return match ? match[1] : null;
 }
 
+export function createFieldOpsClient({ baseUrl, token, fetchImpl = fetch }) {
+  const root = String(baseUrl || '').trim().replace(/\/+$/, '');
+  const credential = String(token || '').trim();
+  if (!root) throw new Error('field operations base URL is required');
+  if (credential.length < 16) throw new Error('field operations service token must be at least 16 characters');
+  return {
+    async createVisitRequest({ inquiry, handoff }) {
+      let response;
+      try {
+        response = await fetchImpl(`${root}/api/jobs`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            authorization: `Bearer ${credential}`,
+            'idempotency-key': handoff.idempotencyKey
+          },
+          body: JSON.stringify({
+            customerName: inquiry.company,
+            address: handoff.address,
+            summary: handoff.summary,
+            priority: handoff.priority
+          })
+        });
+      } catch {
+        throw new InquiryError(502, 'FIELD_OPS_UNAVAILABLE', '현장 운영시스템에 방문 요청을 전달하지 못했습니다. 다시 시도해 주세요.');
+      }
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new InquiryError(502, 'FIELD_OPS_REJECTED', payload?.error?.message || '현장 운영시스템이 방문 요청을 처리하지 못했습니다.');
+      if (!Number.isInteger(Number(payload?.id)) || Number(payload.id) < 1) throw new InquiryError(502, 'INVALID_FIELD_JOB', '현장 운영시스템이 올바른 작업번호를 반환하지 않았습니다.');
+      return payload;
+    }
+  };
+}
+
 export function createInquiryServer(store = createInquiryStore(), options = {}) {
   const config = {
     allowedOrigins: new Set(options.allowedOrigins || ['*']),
@@ -108,7 +142,8 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
     rateWindowMs: Number(options.rateWindowMs || DEFAULT_RATE_WINDOW_MS),
     rateMax: Number(options.rateMax || DEFAULT_RATE_MAX),
     rateBuckets: new Map(),
-    trustProxy: Boolean(options.trustProxy)
+    trustProxy: Boolean(options.trustProxy),
+    fieldOpsClient: options.fieldOpsClient || null
   };
   if (config.requireAdminConfig && config.admins.size === 0) throw new Error('production inquiry API requires at least one admin principal');
   if (!Number.isFinite(config.rateWindowMs) || config.rateWindowMs < 1000) throw new Error('rateWindowMs must be at least 1000 milliseconds');
@@ -135,7 +170,7 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
       }
 
       if (req.method === 'GET' && path === '/api/health') {
-        send(req, res, config, 200, { ok: true, service: 'nexa-inquiry-api' });
+        send(req, res, config, 200, { ok: true, service: 'nexa-inquiry-api', fieldOpsHandoff: Boolean(config.fieldOpsClient) });
         return;
       }
 
@@ -160,6 +195,20 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
         if (req.method === 'POST' && contactedId) {
           const body = await readBody(req);
           send(req, res, config, 200, store.transition(contactedId, body.expectedVersion, INQUIRY_STATUS.CONTACTED, admin.id));
+          return;
+        }
+        const visitId = adminInquiryRoute(path, '/visit-request');
+        if (req.method === 'POST' && visitId) {
+          if (!config.fieldOpsClient) throw new InquiryError(503, 'FIELD_OPS_NOT_CONFIGURED', '현장 운영시스템 연결이 설정되지 않았습니다.');
+          const input = await readBody(req);
+          const prepared = store.prepareVisitRequest(visitId, input.expectedVersion, input, admin.id);
+          if (prepared.handoff.state === INQUIRY_HANDOFF_STATE.COMPLETED) {
+            send(req, res, config, 200, prepared);
+            return;
+          }
+          const fieldJob = await config.fieldOpsClient.createVisitRequest(prepared);
+          const completed = store.completeVisitRequest(visitId, fieldJob.id, admin.id);
+          send(req, res, config, completed.replay || fieldJob.idempotentReplay ? 200 : 201, { ...completed, fieldJob });
           return;
         }
         const closeId = adminInquiryRoute(path, '/close');
@@ -219,11 +268,27 @@ export function createRuntimeInquiryStore(env = process.env) {
   return createInquiryStore(configuredPath || 'nexa-tech-service/server/data/inquiries.sqlite');
 }
 
+export function createRuntimeFieldOpsClient(env = process.env) {
+  const production = env.NODE_ENV === 'production';
+  const baseUrl = String(env.NEXA_FIELD_OPS_URL || '').trim();
+  const token = String(env.NEXA_FIELD_OPS_SERVICE_TOKEN || '').trim();
+  if (!baseUrl && !token && !production) return null;
+  if (!baseUrl) throw new Error('NEXA_FIELD_OPS_URL is required for visit handoff');
+  if (token.length < 16) throw new Error('NEXA_FIELD_OPS_SERVICE_TOKEN must be at least 16 characters');
+  let parsed;
+  try { parsed = new URL(baseUrl); } catch { throw new Error('NEXA_FIELD_OPS_URL must be a valid URL'); }
+  const localHttp = parsed.protocol === 'http:' && ['127.0.0.1','localhost','::1'].includes(parsed.hostname);
+  if (production && parsed.protocol !== 'https:' && !localHttp) throw new Error('NEXA_FIELD_OPS_URL must use HTTPS in production unless it is loopback');
+  return createFieldOpsClient({ baseUrl, token });
+}
+
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (isMain) {
   const port = Number(process.env.PORT || 8796);
   const store = createRuntimeInquiryStore();
-  const server = createInquiryServer(store, runtimeInquiryOptions());
+  const options = runtimeInquiryOptions();
+  options.fieldOpsClient = createRuntimeFieldOpsClient();
+  const server = createInquiryServer(store, options);
   const close = () => server.close(() => { store.close(); process.exit(0); });
   process.on('SIGINT', close);
   process.on('SIGTERM', close);
