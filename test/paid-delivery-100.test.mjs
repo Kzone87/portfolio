@@ -29,9 +29,11 @@ test('internal products present a client-grade identity instead of sample/demo c
 
 test('portfolio home communicates delivery scope while keeping every product directly runnable', async () => {
   const html = await load('index.html');
-  assert.match(html, /납품 단위로 보기/);
+  assert.match(html, /대표 작업/);
   assert.match(html, /NEXA TECH SERVICE/);
   assert.match(html, /MONO OPERATIONS/);
+  assert.match(html, /Excel 정리 작업실/);
+  assert.match(html, /OPS KIT/);
   for (const href of ['./nexa-tech-service/','./field-service-ops/','./commerce-ops-console/','./document-intake-approval/','./ai-workflow-review-desk/','./integration-control-center/','./mini-labs/','https://kzone87.github.io/customer-map-planner/']) {
     assert.ok(html.includes(`href="${href}"`), `missing direct product link ${href}`);
   }
