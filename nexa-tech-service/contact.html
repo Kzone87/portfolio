@@ -35,10 +35,10 @@
     <label class="wide">현재 가장 불편한 점<textarea name="detail" rows="7" placeholder="예: 지점마다 고장 요청을 개인 메신저로 보내서 본사에서 처리 중인지 알기 어렵습니다." required aria-describedby="detail-help"></textarea><small id="detail-help">장비 모델이나 오류코드를 몰라도 괜찮습니다. 지금 어떤 일이 반복되고 무엇이 달라졌으면 하는지를 적어주세요.</small></label>
 
     <label class="consent"><input type="checkbox" name="consent" value="yes" required><span>입력한 상담 내용을 확인했습니다.</span></label>
-    <button type="submit">상담 내용 확인</button><button id="copy-request" class="copy-request" type="button">상담 내용 복사</button>
-    <p class="form-help">현재 데모 환경에서는 입력 내용이 외부 서버로 전송되지 않습니다.</p>
+    <button type="submit">상담 요청서 만들기</button><button id="copy-request" class="copy-request" type="button">상담 요청서 복사</button>
+    <p class="form-help">입력 내용은 이 브라우저에서 상담 요청서로만 정리됩니다. 온라인 전송은 지원하지 않으며, 생성한 내용을 복사해 상담 전 준비자료로 사용할 수 있습니다.</p>
     <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
-    <section id="form-summary" class="form-summary" aria-live="polite"><h3>상담 내용 미리보기</h3><pre id="form-summary-text"></pre></section>
+    <section id="form-summary" class="form-summary" aria-live="polite"><h3>상담 요청서 미리보기</h3><pre id="form-summary-text"></pre></section>
   </form>
 </section>
 
