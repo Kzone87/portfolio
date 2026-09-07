@@ -110,13 +110,16 @@ test('interaction and responsive layer preserve accessibility and progressive en
   assert.match(css, /@media\(max-width:680px\)/);
   assert.match(css, /@media\(prefers-reduced-motion:reduce\)/);
   assert.match(css, /\.case-filter button\{[^}]*min-height:40px/);
+  assert.match(css, /\.quality-grid\.light-quality h3\{color:#163d60\}/);
+  assert.match(css, /\.industry-grid \.partner-card\{/);
   assert.match(app, /prefers-reduced-motion: reduce/);
   assert.match(app, /IntersectionObserver/);
   assert.match(app, /event\.key === 'Escape'/);
 });
 
-test('all NEXA public copy avoids fabricated commercial proof', () => {
+test('all NEXA public copy avoids fabricated commercial proof while stating the boundary explicitly', () => {
   const text = pages.map(page => visibleText(htmlByPage[page])).join(' ');
+  assert.match(text, /실제 고객 실적을 가장하지 않습니다/);
   for (const pattern of [
     /긴급출동\s*-\d+%/,
     /반복장애\s*-\d+%/,
@@ -125,7 +128,6 @@ test('all NEXA public copy avoids fabricated commercial proof', () => {
     /고객 만족도\s*\d+%/,
     /SLA\s*99\.\d+%/,
     /공식 고객사/,
-    /실제 고객 실적/,
     /24시간 출동 보장/
   ]) assert.doesNotMatch(text, pattern);
 });
