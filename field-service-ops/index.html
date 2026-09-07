@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="NEXA TECH SERVICE의 방문 요청을 기사별 시간대에 배정하고 출동부터 완료까지 관리하는 직원용 현장서비스 운영시스템">
-  <title>NEXA Service Operations | 내부 현장 운영</title>
+  <meta name="description" content="NEXA TECH SERVICE 직원이 방문 요청을 기사별 일정에 배정하고 출동부터 완료까지 관리하는 현장서비스 운영시스템">
+  <title>NEXA Service Operations | 배차·현장 운영</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
 </header>
 <main class="dispatch-main">
   <section class="page-head">
-    <div><p class="breadcrumb">NEXA / 내부 운영 / 배차</p><h1>배차 현황</h1><p>고객 서비스 요청이 현장 방문 작업으로 전환된 이후, 기사별 일정에 배치하고 출동·현장도착·완료까지 상태를 이어서 관리합니다.</p></div>
+    <div><p class="breadcrumb">NEXA / 현장 서비스 / 배차</p><h1>오늘의 배차 현황</h1><p>방문 요청을 기사 일정에 배치하고 출동·현장도착·완료 상태를 처리합니다. 긴급 요청과 미배정 작업을 먼저 확인하세요.</p></div>
     <div class="date-card"><span>운영 기준일</span><strong>2026. 09. 07</strong></div>
   </section>
 
@@ -23,17 +23,17 @@
     <article><strong id="m-scheduled">0</strong><span>예약 완료</span><small>방문 대기</small></article>
     <article><strong id="m-dispatched">0</strong><span>출동 중</span><small>이동 중인 기사</small></article>
     <article><strong id="m-onsite">0</strong><span>현장 작업 중</span><small>고객 현장 도착</small></article>
-    <article><strong id="m-urgent">0</strong><span>긴급</span><small>우선 처리</small></article>
+    <article><strong id="m-urgent">0</strong><span>긴급</span><small>우선 확인</small></article>
   </section>
 
   <section class="dispatch-layout">
     <article class="panel board-panel">
-      <div class="head"><div><h2>기사별 일정</h2><p class="muted">08:00–18:00 배차 현황입니다. 가로로 이동해 전체 시간을 확인할 수 있습니다.</p></div><span class="board-legend">운영일</span></div>
+      <div class="head"><div><h2>기사별 일정</h2><p class="muted">08:00–18:00 방문 일정입니다. 작업을 선택하면 상세정보와 상태 변경을 처리할 수 있습니다.</p></div><span class="board-legend">오늘 일정</span></div>
       <div id="agent-board" class="agent-board" aria-label="기사별 일정 보드"></div>
     </article>
 
     <aside class="panel queue-panel">
-      <div class="head"><div><h2>방문 요청</h2><p class="muted">작업을 선택하면 상세 패널에서 배정과 상태 처리를 할 수 있습니다.</p></div></div>
+      <div class="head"><div><h2>방문 요청</h2><p class="muted">미배정 요청과 진행 중 작업을 검색하거나 상태별로 확인합니다.</p></div></div>
       <div class="filters">
         <input id="search" type="search" aria-label="방문 요청 검색" placeholder="고객명·주소·요청내용 검색">
         <select id="status-filter" aria-label="방문 요청 상태"><option value="">상태 전체</option><option value="REQUESTED">접수됨</option><option value="SCHEDULED">예약 완료</option><option value="DISPATCHED">출동 중</option><option value="ON_SITE">현장 작업 중</option><option value="COMPLETED">완료</option><option value="CANCELLED">취소됨</option><option value="NO_SHOW">방문 불가</option></select>
@@ -43,8 +43,8 @@
   </section>
 
   <section class="lower">
-    <article class="panel"><div class="head"><div><h2>배차 체크리스트</h2><p class="muted">기사 부하와 이동시간을 확인한 뒤 미배정 요청을 처리합니다.</p></div></div><ol class="ops-guide"><li>방문 요청에서 <strong>미배정 작업</strong>을 선택합니다.</li><li>담당 기사와 방문 시간을 정해 <strong>일정 적용</strong>을 누릅니다.</li><li>기사별 일정에서 작업 위치와 겹침 여부를 확인합니다.</li><li>출동 → 현장 도착 → 완료 순서로 상태를 갱신합니다.</li></ol></article>
-    <article class="panel"><div class="head"><div><h2>최근 변경 이력</h2><p class="muted">배정과 현장 상태 변경 기록입니다.</p></div></div><div id="audit-list" class="audit-list"></div></article>
+    <article class="panel"><div class="head"><div><h2>오늘 확인할 항목</h2><p class="muted">배차 전에 긴급도와 일정 충돌, 현장 준비조건을 확인합니다.</p></div></div><ol class="ops-guide"><li><strong>긴급 요청</strong>과 업무중단 작업이 남아 있는지 확인합니다.</li><li><strong>미배정 요청</strong>은 기사 지역·업무량·방문 가능시간을 보고 배치합니다.</li><li>같은 기사 일정이 겹치면 저장되지 않습니다. 긴급 예외는 운영 관리자 사유가 필요합니다.</li><li>출동 → 현장 도착 → 완료 상태가 실제 진행과 일치하는지 확인합니다.</li></ol></article>
+    <article class="panel"><div class="head"><div><h2>최근 변경 이력</h2><p class="muted">배정, 일정 변경과 현장 상태 처리 기록입니다.</p></div></div><div id="audit-list" class="audit-list"></div></article>
   </section>
 </main>
 
@@ -52,11 +52,11 @@
 <section id="detail-panel" class="panel job-detail-panel" aria-label="선택한 방문 작업 상세" aria-hidden="true">
   <div id="empty" class="empty">방문 요청에서 작업을 선택하세요.</div>
   <div id="detail" hidden>
-    <div class="head detail-head"><div><span class="detail-kicker">선택한 현장</span><h2 id="job-title"></h2><p id="job-copy" class="muted"></p></div><div class="detail-tools"><span id="version"></span><button id="close-detail" class="close-detail" type="button" aria-label="상세 패널 닫기">닫기</button></div></div>
+    <div class="head detail-head"><div><span class="detail-kicker">방문 작업</span><h2 id="job-title"></h2><p id="job-copy" class="muted"></p></div><div class="detail-tools"><span id="version"></span><button id="close-detail" class="close-detail" type="button" aria-label="상세 패널 닫기">닫기</button></div></div>
     <div class="state"><article><span>현재 상태</span><strong id="status"></strong></article><article><span>우선순위</span><strong id="priority"></strong></article><article><span>담당 기사</span><strong id="agent"></strong></article><article><span>방문 시간</span><strong id="slot"></strong></article></div>
     <div class="detail-body">
-      <section class="action-area"><div class="section-title"><div><h3>현장 작업 처리</h3><p class="muted">현재 단계에서 가능한 다음 작업만 표시됩니다.</p></div></div><div id="actions" class="actions"></div><p id="message" class="message" role="status" aria-live="polite"></p></section>
-      <section class="plan"><div class="section-title"><div><h3>담당 기사와 방문 시간</h3><p class="muted">업무시간은 08:00–18:00입니다. 일정이 겹치면 저장되지 않으며 긴급 작업만 관리자 예외 처리가 가능합니다.</p></div></div><div class="form">
+      <section class="action-area"><div class="section-title"><div><h3>작업 상태</h3><p class="muted">현재 상태에서 가능한 다음 처리만 표시됩니다.</p></div></div><div id="actions" class="actions"></div><p id="message" class="message" role="status" aria-live="polite"></p></section>
+      <section class="plan"><div class="section-title"><div><h3>담당 기사와 방문 시간</h3><p class="muted">업무시간은 08:00–18:00입니다. 일정 충돌은 저장되지 않으며 긴급 작업만 운영 관리자 예외 처리가 가능합니다.</p></div></div><div class="form">
         <label>담당 기사<select id="agent-select"></select></label>
         <label>방문 시작<input id="start-at" type="datetime-local" value="2026-09-07T10:00" min="2026-09-07T08:00" max="2026-09-07T17:30"></label>
         <label>방문 종료<input id="end-at" type="datetime-local" value="2026-09-07T11:00" min="2026-09-07T08:30" max="2026-09-07T18:00"></label>

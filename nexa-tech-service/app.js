@@ -170,7 +170,7 @@ if (form && message) {
     if (summaryText) summaryText.textContent = currentRequestText;
     if (summary) summary.classList.add('open');
     if (copyButton) copyButton.classList.add('visible');
-    message.textContent = '상담 요청서를 만들었습니다. 내용을 확인한 뒤 복사할 수 있습니다.';
+    message.textContent = '상담 내용을 정리했습니다. 아래에서 확인하거나 복사할 수 있습니다.';
     summary?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
   });
 }
@@ -180,10 +180,10 @@ if (copyButton) {
     if (!currentRequestText) return;
     try {
       await navigator.clipboard.writeText(currentRequestText);
-      if (message) message.textContent = '상담 요청서를 클립보드에 복사했습니다.';
+      if (message) message.textContent = '상담 내용을 클립보드에 복사했습니다.';
     } catch {
       if (message) {
-        message.textContent = '자동 복사를 사용할 수 없습니다. 미리보기 내용을 직접 선택해 복사해 주세요.';
+        message.textContent = '자동 복사를 사용할 수 없습니다. 상담 내용을 직접 선택해 복사해 주세요.';
         message.classList.add('error');
       }
     }

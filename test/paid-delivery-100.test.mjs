@@ -31,10 +31,12 @@ test('portfolio home communicates delivery scope while keeping every product dir
   const html = await load('index.html');
   assert.match(html, /대표 작업/);
   assert.match(html, /NEXA TECH SERVICE/);
-  assert.match(html, /NEXA SERVICE DOMAIN/);
+  assert.match(html, /기업 홈페이지 \+ 기사 배차·현장 관리/);
+  assert.match(html, /프로젝트 구조 보기/);
   assert.match(html, /MONO OPERATIONS/);
   assert.match(html, /Excel 정리 작업실/);
   assert.match(html, /OPS KIT/);
+  assert.ok(html.includes('href="./nexa-service-domain/"'), 'missing NEXA project structure link');
   for (const href of ['./nexa-tech-service/','./field-service-ops/','./commerce-ops-console/','./document-intake-approval/','./ai-workflow-review-desk/','./integration-control-center/','./mini-labs/','https://kzone87.github.io/customer-map-planner/']) {
     assert.ok(html.includes(`href="${href}"`), `missing direct product link ${href}`);
   }
