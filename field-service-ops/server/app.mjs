@@ -45,6 +45,13 @@ function resolvePrincipal(req, config) {
   return config.localPrincipal;
 }
 
+function requestIdempotencyKey(req) {
+  const key = String(req.headers['idempotency-key'] || '').trim();
+  if (!key) return '';
+  if (!/^[A-Za-z0-9._:-]{8,128}$/.test(key)) throw new DomainError(400, 'INVALID_IDEMPOTENCY_KEY', 'Idempotency-Key must be 8-128 safe characters');
+  return key;
+}
+
 function originHeaders(req, config) {
   const origin = String(req.headers.origin || '').trim();
   if (!origin) return {};
@@ -111,7 +118,7 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
         const cors = originHeaders(req, config);
         res.writeHead(204, {
           ...cors,
-          'access-control-allow-headers': 'authorization, content-type',
+          'access-control-allow-headers': 'authorization, content-type, idempotency-key',
           'access-control-allow-methods': 'GET,POST,OPTIONS',
           'access-control-max-age': '600',
           'x-content-type-options': 'nosniff'
@@ -142,7 +149,8 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
       }
       if (req.method === 'POST' && path === '/api/jobs') {
         const input = securedInput(await body(req), principal);
-        send(req, res, config, 201, store.createJob(input, principal.id));
+        const created = store.createJob(input, principal.id, requestIdempotencyKey(req));
+        send(req, res, config, created.idempotentReplay ? 200 : 201, created);
         return;
       }
 
@@ -178,12 +186,17 @@ function parseAgents(raw = '') {
   let value;
   try { value = JSON.parse(raw); } catch { throw new Error('NEXA_OPS_AGENTS_JSON must be valid JSON'); }
   if (!Array.isArray(value)) throw new Error('NEXA_OPS_AGENTS_JSON must be an array');
-  return value.map((agent, index) => ({
-    id: Number(agent?.id ?? index + 1),
-    name: String(agent?.name || '').trim(),
-    region: String(agent?.region || '').trim(),
-    active: agent?.active !== false
-  }));
+  const seen = new Set();
+  return value.map((agent, index) => {
+    const id = Number(agent?.id ?? index + 1);
+    const name = String(agent?.name || '').trim();
+    const region = String(agent?.region || '').trim();
+    if (!Number.isInteger(id) || id < 1 || seen.has(id)) throw new Error(`agent ${index} id must be a unique positive integer`);
+    if (name.length < 2 || name.length > 80) throw new Error(`agent ${index} name is invalid`);
+    if (region.length < 1 || region.length > 80) throw new Error(`agent ${index} region is invalid`);
+    seen.add(id);
+    return { id, name, region, active: agent?.active !== false };
+  });
 }
 
 export function runtimeOptions(env = process.env) {
@@ -192,6 +205,8 @@ export function runtimeOptions(env = process.env) {
   const requireAuth = production || env.NEXA_OPS_REQUIRE_AUTH === '1';
   if (requireAuth && principals.length === 0) throw new Error('NEXA_OPS_PRINCIPALS_JSON is required when authentication is enabled');
   const allowedOrigins = String(env.NEXA_OPS_ALLOWED_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean);
+  if (production && allowedOrigins.length === 0) throw new Error('NEXA_OPS_ALLOWED_ORIGINS is required in production');
+  if (production && allowedOrigins.includes('*')) throw new Error('NEXA_OPS_ALLOWED_ORIGINS must not contain * in production');
   return {
     requireAuth,
     principals,
@@ -201,8 +216,11 @@ export function runtimeOptions(env = process.env) {
 
 export function createRuntimeStore(env = process.env) {
   const production = env.NODE_ENV === 'production';
-  const path = env.NEXA_OPS_DB_PATH || 'field-service-ops/server/data/nexa-ops.sqlite';
+  const configuredPath = String(env.NEXA_OPS_DB_PATH || '').trim();
+  if (production && (!configuredPath || configuredPath === ':memory:')) throw new Error('NEXA_OPS_DB_PATH must point to persistent storage in production');
   const agents = parseAgents(env.NEXA_OPS_AGENTS_JSON || '');
+  if (production && agents.length === 0) throw new Error('NEXA_OPS_AGENTS_JSON is required in production');
+  const path = configuredPath || 'field-service-ops/server/data/nexa-ops.sqlite';
   return createSqliteStore(path, {
     seedDemo: !production && env.NEXA_OPS_SEED_DEMO !== '0',
     ...(agents.length ? { agents } : {})

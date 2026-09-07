@@ -112,6 +112,11 @@ export function createSqliteStore(path = ':memory:', options = {}) {
     );
     CREATE INDEX IF NOT EXISTS idx_jobs_agent_status ON jobs(agent_id, status);
     CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
+    CREATE TABLE IF NOT EXISTS job_idempotency (
+      key TEXT PRIMARY KEY,
+      job_id INTEGER NOT NULL REFERENCES jobs(id),
+      created_at TEXT NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS audits (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       job_id INTEGER NOT NULL REFERENCES jobs(id),
@@ -233,8 +238,13 @@ export function createSqliteStore(path = ':memory:', options = {}) {
       return rows.map(rowToAudit);
     },
     metrics() { return computeMetrics(db.prepare('SELECT * FROM jobs').all().map(rowToJob)); },
-    createJob(input, actor = 'ops-user') {
+    createJob(input, actor = 'ops-user', idempotencyKey = '') {
       return transaction(() => {
+        const key = String(idempotencyKey || '').trim();
+        if (key) {
+          const replay = db.prepare('SELECT job_id FROM job_idempotency WHERE key=?').get(key);
+          if (replay) return { ...snapshotJob(requireJob(replay.job_id)), idempotentReplay: true };
+        }
         const createdAt = nowIso();
         let normalized;
         try { normalized = createJob(input, { id: 0, createdAt }); } catch (error) { throw new DomainError(400, 'INVALID_JOB', error instanceof Error ? error.message : 'invalid job'); }
@@ -242,8 +252,9 @@ export function createSqliteStore(path = ':memory:', options = {}) {
           normalized.customerName, normalized.address, normalized.summary, normalized.priority, normalized.status, null, null, null, 1, null, createdAt, createdAt
         );
         const job = { ...normalized, id: Number(result.lastInsertRowid) };
+        if (key) db.prepare('INSERT INTO job_idempotency(key,job_id,created_at) VALUES(?,?,?)').run(key, job.id, createdAt);
         audit(job, 'CREATE', actor, job.summary);
-        return snapshotJob(job);
+        return key ? { ...snapshotJob(job), idempotentReplay: false } : snapshotJob(job);
       });
     },
     schedule(id, input) { return plan(id, input, 'SCHEDULE'); },

@@ -25,13 +25,13 @@ test('portfolio summary speaks in customer outcomes while routing to the NEXA bu
 });
 
 test('NEXA service flow page explains the maintenance journey directly to customers', () => {
-  for (const phrase of ['유지보수 상담부터','상담 준비','진행 과정','운영 기준','상담 시작하기']) assert.ok(domain.includes(phrase));
+  for (const phrase of ['상담이 끝난 뒤','상담 준비 이후','진행 과정','운영 기준','상담 시작하기']) assert.ok(domain.includes(phrase));
   assert.ok(domain.includes('../nexa-tech-service/services.html'));
   assert.ok(domain.includes('../nexa-tech-service/contact.html'));
   for (const forbidden of ['왜 두 화면인가','역할 분리','구현 근거','직원용 현장 운영','../field-service-ops/']) assert.ok(!stripFooter(domain).includes(forbidden), `service flow leaks portfolio narration ${forbidden}`);
 });
 
 test('field operations is an operational workspace with no portfolio navigation', () => {
-  for (const phrase of ['오늘의 배차 현황','기사별 일정','방문 요청','오늘 확인할 항목','최근 변경 이력']) assert.ok(ops.includes(phrase));
+  for (const phrase of ['배차 현황','배차 기준일','기사별 일정','방문 요청','우선 확인할 항목','최근 변경 이력']) assert.ok(ops.includes(phrase));
   for (const forbidden of ['포트폴리오','프로젝트 구조','고객용 홈페이지','이 시스템은']) assert.ok(!ops.includes(forbidden), `ops surface leaks ${forbidden}`);
 });

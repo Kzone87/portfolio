@@ -6,7 +6,7 @@ function mapError(error){const m=error instanceof Error?error.message:String(err
 
 export function createStore(){
  const seeded='2026-09-06T00:00:00.000Z';
- const state={jobSeq:5,auditSeq:8,agents:[
+ const state={jobSeq:5,auditSeq:8,idempotency:new Map(),agents:[
   {id:1,name:'Agent A',region:'Central',active:true},{id:2,name:'Agent B',region:'East',active:true},{id:3,name:'Agent C',region:'West',active:true}
  ],jobs:[
   {id:1,customerName:'Alpha Office',address:'10 Central Ave',summary:'Routine equipment inspection',priority:PRIORITY.NORMAL,status:JOB_STATUS.SCHEDULED,agentId:1,startAt:'2026-09-07T00:00:00.000Z',endAt:'2026-09-07T01:00:00.000Z',version:2,overrideReason:null,createdAt:seeded,updatedAt:seeded},
@@ -48,7 +48,12 @@ export function createStore(){
   getJob(id){return snapshotJob(requireJob(id));},
   listAudits(jobId=null){return state.audits.filter(a=>jobId===null||a.jobId===Number(jobId)).map(clone).reverse();},
   metrics(){return computeMetrics(state.jobs);},
-  createJob(input,actor='ops-user'){let job;try{job=createJob(input,{id:state.jobSeq++,createdAt:nowIso()});}catch(e){throw new DomainError(400,'INVALID_JOB',e instanceof Error?e.message:'invalid job');}state.jobs.push(job);audit(job,'CREATE',actor,job.summary);return snapshotJob(job);},
+  createJob(input,actor='ops-user',idempotencyKey=''){
+   const key=String(idempotencyKey||'').trim();
+   if(key&&state.idempotency.has(key)){const existing=requireJob(state.idempotency.get(key));return{...snapshotJob(existing),idempotentReplay:true};}
+   let job;try{job=createJob(input,{id:state.jobSeq++,createdAt:nowIso()});}catch(e){throw new DomainError(400,'INVALID_JOB',e instanceof Error?e.message:'invalid job');}
+   state.jobs.push(job);audit(job,'CREATE',actor,job.summary);if(key)state.idempotency.set(key,job.id);return key?{...snapshotJob(job),idempotentReplay:false}:snapshotJob(job);
+  },
   schedule(id,input){return plan(id,input,'SCHEDULE');},
   reschedule(id,input){return plan(id,input,'RESCHEDULE');},
   reassign(id,input){return plan(id,input,'REASSIGN');},
