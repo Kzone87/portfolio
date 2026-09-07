@@ -62,7 +62,7 @@ test('three NEXA product surfaces look like front door, customer portal and sign
   assert.match(corporateApp, /접수 진행 확인/);
   assert.match(corporateApp, /이 요청 진행 조회하기/);
 
-  for (const phrase of ['서비스 요청 조회','접수번호','연락처 뒤 4자리','현재 진행상태','방문 정보','요청 처리 현황','최근 안내','작업 결과']) assert.match(portal, new RegExp(phrase));
+  for (const phrase of ['서비스 요청 조회','접수번호','상담 연락처','현재 진행상태','방문 정보','요청 처리 현황','최근 안내','작업 결과']) assert.match(portal, new RegExp(phrase));
   assert.match(portalApp, /NEXA_CUSTOMER_PORTAL_ENDPOINT/);
   assert.match(portalApp, /\/api\/customer\/requests\/lookup/);
 
@@ -72,7 +72,7 @@ test('three NEXA product surfaces look like front door, customer portal and sign
   assert.doesNotMatch(opsApp, /el\.role\.addEventListener/);
 });
 
-test('customer request lookup verifies phone suffix and never returns private contact fields', async () => {
+test('customer request lookup verifies the full registered contact and never returns private contact fields', async () => {
   const store = createInquiryStore();
   const server = createInquiryServer(store, { rateMax: 20, rateWindowMs: 60_000 });
   const base = await listen(server);
@@ -81,24 +81,24 @@ test('customer request lookup verifies phone suffix and never returns private co
     assert.equal(created.response.status, 201);
 
     const correct = await request(base, '/api/customer/requests/lookup', {
-      method: 'POST', body: JSON.stringify({ id: created.body.id, phoneLast4: '4821' })
+      method: 'POST', body: JSON.stringify({ id: created.body.id, phone: '010-9876-4821' })
     });
     assert.equal(correct.response.status, 200);
     assert.equal(correct.body.id, created.body.id);
     assert.equal(correct.body.company, '리얼서비스 고객사');
     for (const privateKey of ['phone','email','name','detail','engagement','assets','sites']) assert.equal(Object.hasOwn(correct.body, privateKey), false, `customer response leaks ${privateKey}`);
 
-    const wrongSuffix = await request(base, '/api/customer/requests/lookup', {
-      method: 'POST', body: JSON.stringify({ id: created.body.id, phoneLast4: '0000' })
+    const wrongContact = await request(base, '/api/customer/requests/lookup', {
+      method: 'POST', body: JSON.stringify({ id: created.body.id, phone: '010-0000-0000' })
     });
     const unknown = await request(base, '/api/customer/requests/lookup', {
-      method: 'POST', body: JSON.stringify({ id: 'NX-NOTFOUND123', phoneLast4: '4821' })
+      method: 'POST', body: JSON.stringify({ id: 'NX-NOTFOUND123', phone: '010-9876-4821' })
     });
-    assert.equal(wrongSuffix.response.status, 404);
+    assert.equal(wrongContact.response.status, 404);
     assert.equal(unknown.response.status, 404);
-    assert.equal(wrongSuffix.body.error.code, 'CUSTOMER_REQUEST_NOT_FOUND');
+    assert.equal(wrongContact.body.error.code, 'CUSTOMER_REQUEST_NOT_FOUND');
     assert.equal(unknown.body.error.code, 'CUSTOMER_REQUEST_NOT_FOUND');
-    assert.equal(wrongSuffix.body.error.message, unknown.body.error.message);
+    assert.equal(wrongContact.body.error.message, unknown.body.error.message);
   } finally {
     await closeServer(server);
     store.close();
@@ -147,7 +147,7 @@ test('customer portal reflects a real Field Ops schedule after consultation hand
     assert.equal(scheduled.body.status, 'SCHEDULED');
 
     const customerView = await request(inquiryBase, '/api/customer/requests/lookup', {
-      method: 'POST', body: JSON.stringify({ id, phoneLast4: '4821' })
+      method: 'POST', body: JSON.stringify({ id, phone: '010-9876-4821' })
     });
     assert.equal(customerView.response.status, 200);
     assert.equal(customerView.body.visit.status, 'SCHEDULED');
