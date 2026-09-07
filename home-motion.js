@@ -1,9 +1,4 @@
 (() => {
-  const palette = document.createElement('link');
-  palette.rel = 'stylesheet';
-  palette.href = './home-light.css';
-  document.head.appendChild(palette);
-
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion || !('IntersectionObserver' in window)) return;
 
