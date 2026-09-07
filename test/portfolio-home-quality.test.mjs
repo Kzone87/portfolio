@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const css = await readFile(new URL('../home-v3.css', import.meta.url), 'utf8');
-const lightCss = await readFile(new URL('../home-light.css', import.meta.url), 'utf8');
+const freshCss = await readFile(new URL('../home-fresh.css', import.meta.url), 'utf8');
 const motion = await readFile(new URL('../home-motion.js', import.meta.url), 'utf8');
 
 const demoTargets = [
@@ -42,20 +42,27 @@ test('portfolio home has search metadata and keyboard navigation support', () =>
   assert.match(html, /a:focus-visible,button:focus-visible/);
 });
 
-test('visual hierarchy has editorial layout and mobile readability', () => {
-  assert.match(css, /\.mono-bento\{[^}]*grid-template-columns:1\.15fr \.85fr/);
+test('fresh blue visual hierarchy stays bright, editorial and developer-focused', () => {
+  assert.match(html, /<meta name="theme-color" content="#eff7ff">/);
+  assert.match(html, /href="\.\/home-fresh\.css"/);
+  assert.match(freshCss, /--fresh-blue:#2563eb/);
+  assert.match(freshCss, /\.studio-hero h1 span\{[\s\S]*linear-gradient\(90deg,#2563eb 0%,#0ea5e9 54%,#6366f1 100%\)/);
+  assert.match(freshCss, /\.nexa-showcase\{[\s\S]*#edf7ff/);
+  assert.match(freshCss, /\.mono-bento\{[\s\S]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+  assert.match(freshCss, /\.about-contact-section\{[\s\S]*#edf7ff/);
+  assert.doesNotMatch(freshCss, /#101813|#10271e/);
+});
+
+test('palette is statically loaded and motion does not mutate stylesheets', () => {
+  assert.doesNotMatch(motion, /createElement\(['"]link['"]\)|home-light\.css|home-fresh\.css/);
+  assert.match(html, /home-fresh\.css/);
+});
+
+test('editorial capability layout and mobile readability remain intact', () => {
   assert.match(css, /\.editorial-grid\{[^}]*grid-template-columns:1fr 1fr/);
   assert.match(css, /\.proof-rail\{[^}]*grid-template-columns:repeat\(4,1fr\)/);
   assert.match(css, /@media\(max-width:700px\)[\s\S]*\.studio-header nav a\{font-size:\.82rem/);
-});
-
-test('light studio palette keeps major surfaces bright instead of dark walls', () => {
-  assert.match(motion, /home-light\.css/);
-  assert.match(lightCss, /\.nexa-showcase\{background:linear-gradient\(145deg,#e6f0e9/);
-  assert.match(lightCss, /\.mono-bento a:first-child\{background:#dfeae3;color:#193127/);
-  assert.match(lightCss, /\.about-contact-section\{background:linear-gradient\(145deg,#eef3ee/);
-  assert.match(lightCss, /footer\{background:#f3f2ed/);
-  assert.doesNotMatch(lightCss, /background:linear-gradient\(145deg,#101813/);
+  assert.match(freshCss, /@media\(max-width:700px\)[\s\S]*\.mono-bento\{grid-template-columns:1fr 1fr/);
 });
 
 test('reveal motion is progressive enhancement and respects reduced motion', () => {
