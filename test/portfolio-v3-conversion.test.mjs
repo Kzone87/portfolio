@@ -46,11 +46,14 @@ test('contact calls to action route to real public inquiry forms without invente
 });
 
 test('NEXA keeps the fictional boundary without presenting invented KPI achievements', async () => {
-  const html = await load('nexa-tech-service/index.html');
-  assert.match(html, /포트폴리오 시연을 위해 구성한 가상 기업/);
-  assert.doesNotMatch(html, /98\.7%|-31%|96%|평균 1차 응답/);
-  assert.match(html, /영향도 우선순위/);
-  assert.match(html, /MULTI-SITE RETAIL · PORTFOLIO CASE/);
+  const home = await load('nexa-tech-service/index.html');
+  const cases = await load('nexa-tech-service/cases.html');
+  const all = `${home}\n${cases}`;
+  assert.match(all, /포트폴리오 시연을 위해 구성한 가상 기업/);
+  assert.match(cases, /실제 고객, 계약, 성과 수치를 의미하지 않/);
+  assert.match(home, /영향도 기반 우선순위/);
+  assert.match(cases, /PORTFOLIO SCENARIO/);
+  assert.doesNotMatch(all, /98\.7%|-31%|-42%|96%|초기 가동 100%|확인시간 -37%|평균 1차 응답/);
 });
 
 test('repository readme matches the current portfolio identity and contact paths', async () => {
