@@ -45,15 +45,16 @@ test('contact calls to action route to real public inquiry forms without invente
   assert.match(project, /민감한 정보/);
 });
 
-test('NEXA keeps the fictional boundary without presenting invented KPI achievements', async () => {
+test('NEXA keeps the fictional boundary without narrating the customer site as a portfolio case', async () => {
   const home = await load('nexa-tech-service/index.html');
   const cases = await load('nexa-tech-service/cases.html');
   const all = `${home}\n${cases}`;
-  assert.match(all, /포트폴리오 시연을 위해 구성한 가상 기업/);
-  assert.match(cases, /실제 고객, 계약, 성과 수치를 의미하지 않/);
+  assert.match(all, /포트폴리오 시연을 위해 구성한 가상 브랜드/);
   assert.match(home, /긴급도 판단/);
   assert.match(home, /업무 영향/);
-  assert.match(cases, /PORTFOLIO SCENARIO/);
+  assert.match(cases, /SERVICE SCENARIO/);
+  assert.doesNotMatch(home.replace(/<footer[\s\S]*?<\/footer>/i, ''), /포트폴리오|다음 프로젝트/);
+  assert.doesNotMatch(cases.replace(/<footer[\s\S]*?<\/footer>/i, ''), /PORTFOLIO SCENARIO|실제 고객, 계약, 성과 수치를 의미하지 않/);
   assert.doesNotMatch(all, /98\.7%|-31%|-42%|96%|초기 가동 100%|확인시간 -37%|평균 1차 응답/);
 });
 
