@@ -11,8 +11,9 @@ const clarity = await load('nexa-tech-service/clarity.css');
 const portfolioHome = await load('index.html');
 const fieldOps = await load('field-service-ops/index.html');
 const fieldOpsApp = await load('field-service-ops/app.js');
-const domainCase = await load('nexa-service-domain/index.html');
-const domainCss = await load('nexa-service-domain/styles.css');
+const portal = await load('nexa-service-domain/index.html');
+const portalCss = await load('nexa-service-domain/styles.css');
+const portalApp = await load('nexa-service-domain/app.js');
 
 function visibleText(html) {
   return html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
@@ -47,11 +48,14 @@ test('customer-facing NEXA never narrates itself as a portfolio or exposes the s
   }
 });
 
-test('homepage behaves like a real maintenance company website', () => {
+test('homepage behaves like a real maintenance company website and routes existing customers to service status', () => {
   const html = htmlByPage['index.html'];
   const hero = visibleText(html.slice(0, html.indexOf('</section>')));
   for (const phrase of ['기업용 출력·인쇄·사무장비 유지보수','복합기, 프린터, 디지털 인쇄장비','정기점검','고장 대응','설치·이전']) assert.match(hero, new RegExp(phrase));
   for (const phrase of ['서비스','이런 고객이 이용합니다','서비스는 이렇게 진행됩니다','이런 상황이 있나요','안심하고 맡길 수 있도록','자주 묻는 질문','유지보수 상담']) assert.ok(html.includes(phrase), `homepage missing ${phrase}`);
+  assert.match(app, /진행 조회/);
+  assert.match(app, /접수 진행 확인/);
+  assert.match(app, /nexa-service-domain/);
   assert.doesNotMatch(bodyWithoutFooter(html), /SERVICE MANAGEMENT|PERFORMANCE|TRUST & GOVERNANCE|APPLICATION EXAMPLES|FIELD SERVICE/i);
   assert.doesNotMatch(html, /\b\d+(?:\.\d+)?%\b|고객사 로고|공식 파트너|인증 보유/);
 });
@@ -101,10 +105,11 @@ test('contact behaves like a customer worksheet without pretending to submit onl
   assert.match(app, /\[NEXA TECH SERVICE 유지보수 상담\]/);
   assert.match(app, /상담 내용을 정리했습니다/);
   assert.match(app, /aria-invalid/);
-  assert.doesNotMatch(app, /현재 데모 환경|포트폴리오 데모|문의가 정상적으로 접수되었습니다|실제 전송 완료|전송되었습니다/);
+  assert.match(app, /이 요청 진행 조회하기/);
+  assert.doesNotMatch(app, /현재 데모 환경|포트폴리오 데모|문의가 정상적으로 접수되었습니다|실제 전송 완료/);
 });
 
-test('portfolio main explains NEXA in customer outcomes and routes to the flow plus both product surfaces', () => {
+test('portfolio main explains NEXA in customer outcomes and routes to all product surfaces', () => {
   for (const phrase of ['고객 상담부터 현장 배차까지 이어지는 유지보수 서비스','문의가 끊기지 않게','현장 운영을 한눈에','완료 이후까지','서비스 운영 흐름 보기','01 · 고객 서비스 화면','02 · 직원 배차 화면']) assert.ok(portfolioHome.includes(phrase), `portfolio missing ${phrase}`);
   assert.match(portfolioHome, /href="\.\/nexa-service-domain\/"/);
   assert.match(portfolioHome, /href="\.\/nexa-tech-service\/"/);
@@ -112,22 +117,26 @@ test('portfolio main explains NEXA in customer outcomes and routes to the flow p
   assert.doesNotMatch(portfolioHome, /왜 두 화면인가|역할 분리|구현 근거|ONE DOMAIN · TWO SURFACES/);
 });
 
-test('NEXA service flow page speaks to customers instead of explaining portfolio architecture', () => {
-  for (const phrase of ['유지보수 상담부터','상담 준비','진행 과정','운영 기준','장비 모델이나 오류코드를 정확히 몰라도 괜찮습니다','상담 시작하기']) assert.ok(domainCase.includes(phrase), `service flow missing ${phrase}`);
-  assert.match(domainCase, /href="\.\.\/nexa-tech-service\/services\.html"/);
-  assert.match(domainCase, /href="\.\.\/nexa-tech-service\/contact\.html"/);
-  assert.doesNotMatch(bodyWithoutFooter(domainCase), /KZONE87|Portfolio|왜 두 화면인가|역할 분리|구현 근거|직원용 현장 운영|\.\.\/field-service-ops\//i);
-  assert.match(domainCss, /\.surface-grid/);
-  assert.match(domainCss, /\.domain-flow/);
-  assert.match(domainCss, /@media\(max-width:700px\)/);
+test('NEXA customer service is a functional request portal rather than portfolio explanation', () => {
+  for (const phrase of ['서비스 요청 조회','접수번호','연락처 뒤 4자리','현재 진행상태','방문 정보','요청 처리 현황','방문 전 준비','최근 안내','작업 결과']) assert.ok(portal.includes(phrase), `portal missing ${phrase}`);
+  assert.match(portal, /id="lookup-form"/);
+  assert.match(portal, /id="request-view"/);
+  assert.match(portalApp, /NEXA_CUSTOMER_PORTAL_ENDPOINT/);
+  assert.match(portalApp, /\/api\/customer\/requests\/lookup/);
+  assert.doesNotMatch(bodyWithoutFooter(portal), /KZONE87|Portfolio|왜 두 화면인가|역할 분리|구현 근거|직원용 현장 운영|\.\.\/field-service-ops\//i);
+  assert.match(portalCss, /\.lookup-card/);
+  assert.match(portalCss, /\.timeline/);
+  assert.match(portalCss, /@media\(max-width:420px\)/);
 });
 
-test('field operations is a real staff workspace, not a tutorial or portfolio page', () => {
-  for (const phrase of ['NEXA SERVICE OPERATIONS','직원 전용 · 배차 / 현장 운영','배차 현황','배차 기준일','기사별 일정','방문 요청','우선 확인할 항목','최근 변경 이력','작업 상태']) assert.ok(fieldOps.includes(phrase), `field ops missing ${phrase}`);
-  assert.doesNotMatch(fieldOps, /← 프로젝트|포트폴리오|고객용 홈페이지 보기|프로젝트 설명|이 시스템은/);
+test('field operations is a signed-in staff workspace, not a tutorial or role-switching demo', () => {
+  for (const phrase of ['NEXA SERVICE OPERATIONS','직원 전용 · 배차 / 현장 운영','9월 7일 배차 현황','운영 기준일','서울 운영팀','김현수','운영 관리자','기사별 일정','방문 요청','우선 확인할 항목','최근 변경 이력','작업 상태']) assert.ok(fieldOps.includes(phrase), `field ops missing ${phrase}`);
+  assert.doesNotMatch(fieldOps, /← 프로젝트|포트폴리오|고객용 홈페이지 보기|프로젝트 설명|이 시스템은|id="role"|현재 역할/);
+  assert.match(fieldOpsApp, /CURRENT_USER/);
   assert.match(fieldOpsApp, /scheduleWindowError/);
   assert.match(fieldOpsApp, /window\.confirm/);
   assert.match(fieldOpsApp, /friendlyError/);
+  assert.doesNotMatch(fieldOpsApp, /el\.role\.addEventListener/);
 });
 
 test('all NEXA surfaces avoid fabricated commercial proof', () => {
@@ -145,4 +154,5 @@ test('responsive and accessibility foundations stay intact', () => {
   assert.match(app, /prefers-reduced-motion: reduce/);
   assert.match(app, /IntersectionObserver/);
   assert.match(app, /event\.key === 'Escape'/);
+  assert.match(portalCss, /focus-visible/);
 });
