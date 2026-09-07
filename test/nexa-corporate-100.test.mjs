@@ -104,18 +104,19 @@ test('contact behaves like a customer worksheet without pretending to submit onl
   assert.doesNotMatch(app, /현재 데모 환경|포트폴리오 데모|문의가 정상적으로 접수되었습니다|실제 전송 완료|전송되었습니다/);
 });
 
-test('portfolio main summarizes the NEXA bundle and routes to all three NEXA entry points', () => {
-  for (const phrase of ['기업 홈페이지 + 기사 배차·현장 관리','고객용','직원용','한 흐름','프로젝트 구조 보기','01 · 고객용 기업 홈페이지','02 · 기사 배차·현장 관리']) assert.ok(portfolioHome.includes(phrase), `portfolio missing ${phrase}`);
+test('portfolio main explains NEXA in customer outcomes and routes to the flow plus both product surfaces', () => {
+  for (const phrase of ['고객 상담부터 현장 배차까지 이어지는 유지보수 서비스','문의가 끊기지 않게','현장 운영을 한눈에','완료 이후까지','서비스 운영 흐름 보기','01 · 고객 서비스 화면','02 · 직원 배차 화면']) assert.ok(portfolioHome.includes(phrase), `portfolio missing ${phrase}`);
   assert.match(portfolioHome, /href="\.\/nexa-service-domain\/"/);
   assert.match(portfolioHome, /href="\.\/nexa-tech-service\/"/);
   assert.match(portfolioHome, /href="\.\/field-service-ops\/"/);
-  assert.doesNotMatch(portfolioHome, /ONE DOMAIN · TWO SURFACES/);
+  assert.doesNotMatch(portfolioHome, /왜 두 화면인가|역할 분리|구현 근거|ONE DOMAIN · TWO SURFACES/);
 });
 
-test('dedicated NEXA case study owns the explanation of role separation and implementation', () => {
-  for (const phrase of ['한 기술서비스 업무를','왜 두 화면인가','하나의 업무 흐름','구현 근거','역할 분리','고객용 기업 홈페이지','직원용 현장 운영']) assert.ok(domainCase.includes(phrase), `case study missing ${phrase}`);
-  assert.match(domainCase, /href="\.\.\/nexa-tech-service\/"/);
-  assert.match(domainCase, /href="\.\.\/field-service-ops\/"/);
+test('NEXA service flow page speaks to customers instead of explaining portfolio architecture', () => {
+  for (const phrase of ['유지보수 상담부터','상담 준비','진행 과정','운영 기준','장비 모델이나 오류코드를 정확히 몰라도 괜찮습니다','상담 시작하기']) assert.ok(domainCase.includes(phrase), `service flow missing ${phrase}`);
+  assert.match(domainCase, /href="\.\.\/nexa-tech-service\/services\.html"/);
+  assert.match(domainCase, /href="\.\.\/nexa-tech-service\/contact\.html"/);
+  assert.doesNotMatch(bodyWithoutFooter(domainCase), /KZONE87|Portfolio|왜 두 화면인가|역할 분리|구현 근거|직원용 현장 운영|\.\.\/field-service-ops\//i);
   assert.match(domainCss, /\.surface-grid/);
   assert.match(domainCss, /\.domain-flow/);
   assert.match(domainCss, /@media\(max-width:700px\)/);
