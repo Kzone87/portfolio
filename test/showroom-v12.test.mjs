@@ -28,11 +28,11 @@ function visibleText(html) {
 }
 
 test('homepage stays directly runnable while putting work before explanation', () => {
-  assert.match(home, /직접 실행 가능한 제품 화면/);
+  assert.match(home, /직접 실행 가능한/);
   assert.match(home, /Full-stack Web Developer/);
   assert.match(home, /대표 작업/);
   assert.match(home, /맡길 수 있는 일/);
-  assert.match(home, /구현을 어떻게 확인할 수 있는가/);
+  assert.match(home, /정상 흐름뿐 아니라/);
   assert.match(home, /같이 일하고 싶다면/);
   assert.match(home, /NEXA TECH SERVICE/);
   assert.match(home, /MONO OPERATIONS/);

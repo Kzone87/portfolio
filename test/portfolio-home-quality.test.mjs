@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-const css = await readFile(new URL('../home.css', import.meta.url), 'utf8');
-const v3Css = await readFile(new URL('../home-v3.css', import.meta.url), 'utf8');
+const css = await readFile(new URL('../home-v3.css', import.meta.url), 'utf8');
+const motion = await readFile(new URL('../home-motion.js', import.meta.url), 'utf8');
 
 const demoTargets = [
   './nexa-tech-service/',
@@ -18,19 +18,19 @@ const demoTargets = [
 ];
 
 test('portfolio home exposes all eight runnable product surfaces', () => {
-  for (const href of demoTargets) assert.match(html, new RegExp(`href="${href.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
-  assert.match(html, /<b>8<\/b> 직접 실행 가능한 제품 화면/);
+  for (const href of demoTargets) assert.ok(html.includes(`href="${href}"`), `missing ${href}`);
+  assert.match(html, /<strong>08<\/strong><span>LIVE PRODUCTS/);
 });
 
-test('portfolio groups work without repeating the same product navigation', () => {
-  assert.match(html, /NEXA TECH SERVICE/);
-  assert.match(html, /기업 홈페이지 보기/);
-  assert.match(html, /현장운영 시스템 보기/);
-  assert.match(html, /MONO OPERATIONS/);
-  assert.match(html, /Excel 정리 작업실/);
-  assert.match(html, /OPS KIT 실행/);
-  assert.doesNotMatch(html, /운영 제품 바로가기/);
-  assert.doesNotMatch(html, /60초 검토 순서/);
+test('portfolio uses a product-studio hierarchy instead of repeating card grids', () => {
+  assert.match(html, /더 단순하게 만드는/);
+  assert.match(html, /class="flagship nexa-showcase"/);
+  assert.match(html, /class="case-link-grid mono-bento"/);
+  assert.match(html, /class="flagship compact-flagship excel-case"/);
+  assert.match(html, /class="capability-grid editorial-grid"/);
+  assert.match(html, /class="proof-rail"/);
+  assert.match(html, /코드를 먼저 쓰기보다/);
+  assert.doesNotMatch(html, /identity-card|compact-evidence-grid|60초 검토 순서|운영 제품 바로가기/);
 });
 
 test('portfolio home has search metadata and keyboard navigation support', () => {
@@ -41,13 +41,20 @@ test('portfolio home has search metadata and keyboard navigation support', () =>
   assert.match(html, /a:focus-visible,button:focus-visible/);
 });
 
-test('portfolio keeps the hero compact and primary text comfortably readable', () => {
-  assert.match(css, /\.hero-copy\{[^}]*font-size:1\.08rem/);
-  assert.match(css, /\.case-link-grid a\{[^}]*min-height:42px/);
-  assert.match(v3Css, /\.v3-hero\{[^}]*padding:58px 0 54px/);
-  assert.match(v3Css, /\.v3-hero h1\{[^}]*4\.9rem/);
-  assert.match(v3Css, /\.identity-card dd\{[^}]*font-size:\.88rem/);
-  assert.match(v3Css, /\.compact-evidence-grid p\{[^}]*font-size:\.9rem/);
-  assert.match(v3Css, /\.contact-grid a\{[^}]*min-height:46px/);
-  assert.match(v3Css, /@media\(max-width:700px\)[\s\S]*\.site-header nav a\{font-size:\.82rem/);
+test('visual hierarchy has contrast, editorial capability layout and mobile readability', () => {
+  assert.match(css, /\.nexa-showcase\{[^}]*background:linear-gradient/);
+  assert.match(css, /\.mono-bento\{[^}]*grid-template-columns:1\.15fr \.85fr/);
+  assert.match(css, /\.excel-case\{[^}]*background:#f1f8f4/);
+  assert.match(css, /\.editorial-grid\{[^}]*grid-template-columns:1fr 1fr/);
+  assert.match(css, /\.proof-rail\{[^}]*grid-template-columns:repeat\(4,1fr\)/);
+  assert.match(css, /@media\(max-width:700px\)[\s\S]*\.studio-header nav a\{font-size:\.82rem/);
+});
+
+test('reveal motion is progressive enhancement and respects reduced motion', () => {
+  assert.match(html, /home-motion\.js/);
+  assert.doesNotThrow(() => new Function(motion));
+  assert.match(motion, /prefers-reduced-motion: reduce/);
+  assert.match(motion, /IntersectionObserver/);
+  assert.match(css, /\.motion-ready \[data-reveal\]/);
+  assert.match(css, /@media\(prefers-reduced-motion:reduce\)/);
 });

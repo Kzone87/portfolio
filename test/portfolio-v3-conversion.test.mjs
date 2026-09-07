@@ -10,12 +10,13 @@ test('portfolio answers who, work, capability, proof and contact without instruc
     'Full-stack Web Developer',
     '대표 작업',
     '맡길 수 있는 일',
-    '구현을 어떻게 확인할 수 있는가',
+    '정상 흐름뿐 아니라',
     '같이 일하고 싶다면'
   ]) assert.match(html, new RegExp(phrase));
   assert.doesNotMatch(html, /60초 검토 순서/);
   assert.doesNotMatch(html, /운영 제품 바로가기/);
   assert.match(html, /home-v3\.css/);
+  assert.match(html, /home-motion\.js/);
 });
 
 test('portfolio keeps all eight runnable product surfaces', async () => {
