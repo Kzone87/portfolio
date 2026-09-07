@@ -1,0 +1,63 @@
+/* Final copy positioning and line-break control. */
+
+/* Keep the three intended hero lines stable across widths. */
+.studio-hero h1{
+  max-width:none;
+  font-size:clamp(3rem,5vw,4.9rem);
+  white-space:nowrap;
+}
+
+/* Keep section support copy visually attached to its heading. */
+.editorial-heading>p{
+  max-width:430px;
+  justify-self:end;
+  align-self:end;
+}
+
+/* NEXA: prevent accidental title wrapping and keep actions attached to facts. */
+.nexa-showcase h3{
+  font-size:clamp(2.15rem,3vw,3.05rem);
+  white-space:nowrap;
+}
+.nexa-showcase .case-links{
+  margin-top:22px;
+  padding-top:0;
+}
+.nexa-showcase .project-facts dt{padding-top:2px}
+
+/* Capability number and title belong to the same reading unit. */
+.editorial-grid h3{margin-top:22px}
+
+/* Proof: body copy should start beside the headline, not beside the tiny PROOF label. */
+.proof-story h2{max-width:14ch}
+.proof-story>div:last-child{padding-top:34px}
+
+/* About: the previous 12ch limit forced an awkward extra wrap. */
+.about-profile h2{
+  max-width:16ch;
+  font-size:clamp(2.25rem,3.25vw,3.25rem);
+}
+
+/* Contact labels read better centered against the two-line content block. */
+.contact-rows article>span{
+  align-self:center;
+  padding-top:0;
+}
+
+@media(max-width:1100px){
+  .editorial-heading>p{justify-self:start}
+}
+
+@media(max-width:700px){
+  .studio-hero h1{
+    font-size:clamp(1.85rem,9.35vw,2.85rem);
+    line-height:1.08;
+    letter-spacing:-.047em;
+  }
+  .editorial-heading>p{max-width:100%}
+  .nexa-showcase h3{white-space:normal}
+  .proof-story>div:last-child{padding-top:0}
+  .proof-story h2{max-width:13ch}
+  .about-profile h2{max-width:15ch}
+  .contact-rows article>span{align-self:start}
+}
