@@ -1,0 +1,8 @@
+/* NEXA Service Domain — responsive/overflow hardening */
+.hero-layout>*,.section-head>*,.surface-grid>*,.surface,.domain-summary,.domain-flow>*,.proof-grid>*,.final-box>*{min-width:0}
+.hero-copy h1,.lead,.domain-summary strong,.domain-summary p,.surface h3,.surface p,.surface li,.domain-flow strong,.domain-flow p,.domain-flow em,.boundary-note p,.proof-grid h3,.proof-grid p,.final-box h2,.final-box p{overflow-wrap:anywhere}
+.primary,.secondary,.surface a,.boundary-note a{max-width:100%;white-space:normal;text-align:center;line-height:1.35;overflow-wrap:anywhere}
+.portfolio-brand{flex:0 0 auto;white-space:nowrap}.header-inner nav{min-width:0}.header-inner nav a{white-space:nowrap}
+@media(max-width:860px) and (min-width:701px){.header-inner{gap:16px}.header-inner nav{gap:14px;font-size:.82rem}.header-inner nav a:first-child{display:none}}
+@media(max-width:700px){.header-inner{gap:12px}.portfolio-brand{font-size:.9rem}.domain-summary strong{font-size:1.08rem}.surface h3{font-size:1.7rem}.proof-grid h3{font-size:1.02rem}.final-actions{width:100%}.final-actions a{width:100%}}
+@media(max-width:380px){.shell{width:min(100% - 22px,1180px)}.hero-copy h1{font-size:clamp(2.2rem,11.5vw,2.8rem)}.section-head h2{font-size:2.05rem}.surface{padding:22px}.final-box{padding:26px 20px}.final-box h2{font-size:1.95rem}}
