@@ -19,15 +19,16 @@ test('customer-facing NEXA contains customer actions, not portfolio narration', 
   }
 });
 
-test('portfolio summary stays concise while routing to the NEXA bundle', () => {
-  for (const phrase of ['기업 홈페이지 + 기사 배차·현장 관리','프로젝트 구조 보기','01 · 고객용 기업 홈페이지','02 · 기사 배차·현장 관리']) assert.ok(portfolio.includes(phrase));
-  assert.ok(!portfolio.includes('ONE DOMAIN · TWO SURFACES'));
+test('portfolio summary speaks in customer outcomes while routing to the NEXA bundle', () => {
+  for (const phrase of ['고객 상담부터 현장 배차까지 이어지는 유지보수 서비스','서비스 운영 흐름 보기','01 · 고객 서비스 화면','02 · 직원 배차 화면']) assert.ok(portfolio.includes(phrase));
+  for (const forbidden of ['왜 두 화면인가','역할 분리','구현 근거','ONE DOMAIN · TWO SURFACES']) assert.ok(!portfolio.includes(forbidden), `portfolio leaks design narration ${forbidden}`);
 });
 
-test('domain page owns architecture explanation instead of product surfaces', () => {
-  for (const phrase of ['한 기술서비스 업무를','왜 두 화면인가','하나의 업무 흐름','구현 근거']) assert.ok(domain.includes(phrase));
-  assert.ok(domain.includes('../nexa-tech-service/'));
-  assert.ok(domain.includes('../field-service-ops/'));
+test('NEXA service flow page explains the maintenance journey directly to customers', () => {
+  for (const phrase of ['유지보수 상담부터','상담 준비','진행 과정','운영 기준','상담 시작하기']) assert.ok(domain.includes(phrase));
+  assert.ok(domain.includes('../nexa-tech-service/services.html'));
+  assert.ok(domain.includes('../nexa-tech-service/contact.html'));
+  for (const forbidden of ['왜 두 화면인가','역할 분리','구현 근거','직원용 현장 운영','../field-service-ops/']) assert.ok(!stripFooter(domain).includes(forbidden), `service flow leaks portfolio narration ${forbidden}`);
 });
 
 test('field operations is an operational workspace with no portfolio navigation', () => {
