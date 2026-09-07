@@ -192,6 +192,7 @@ export function runtimeOptions(env = process.env) {
   const requireAuth = production || env.NEXA_OPS_REQUIRE_AUTH === '1';
   if (requireAuth && principals.length === 0) throw new Error('NEXA_OPS_PRINCIPALS_JSON is required when authentication is enabled');
   const allowedOrigins = String(env.NEXA_OPS_ALLOWED_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean);
+  if (production && allowedOrigins.length === 0) throw new Error('NEXA_OPS_ALLOWED_ORIGINS is required in production');
   return {
     requireAuth,
     principals,
@@ -201,8 +202,11 @@ export function runtimeOptions(env = process.env) {
 
 export function createRuntimeStore(env = process.env) {
   const production = env.NODE_ENV === 'production';
-  const path = env.NEXA_OPS_DB_PATH || 'field-service-ops/server/data/nexa-ops.sqlite';
+  const configuredPath = String(env.NEXA_OPS_DB_PATH || '').trim();
+  if (production && (!configuredPath || configuredPath === ':memory:')) throw new Error('NEXA_OPS_DB_PATH must point to persistent storage in production');
   const agents = parseAgents(env.NEXA_OPS_AGENTS_JSON || '');
+  if (production && agents.length === 0) throw new Error('NEXA_OPS_AGENTS_JSON is required in production');
+  const path = configuredPath || 'field-service-ops/server/data/nexa-ops.sqlite';
   return createSqliteStore(path, {
     seedDemo: !production && env.NEXA_OPS_SEED_DEMO !== '0',
     ...(agents.length ? { agents } : {})
