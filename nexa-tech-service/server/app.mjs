@@ -102,16 +102,16 @@ function adminInquiryRoute(path, suffix = '') {
 
 function lookupIdentity(store, input) {
   const id = String(input?.id || '').trim().toUpperCase();
-  const last4 = String(input?.phoneLast4 || '').replace(/\D/g, '').slice(-4);
-  if (!/^NX-[A-Z0-9-]{6,24}$/.test(id) || last4.length !== 4) throw new InquiryError(400, 'INVALID_LOOKUP', '접수번호와 연락처 뒤 4자리를 확인해 주세요.');
+  const phone = String(input?.phone || '').replace(/\D/g, '');
+  if (!/^NX-[A-Z0-9-]{6,24}$/.test(id) || phone.length < 9) throw new InquiryError(400, 'INVALID_LOOKUP', '접수번호와 상담 연락처를 확인해 주세요.');
   let inquiry;
   try { inquiry = store.get(id); }
   catch (error) {
     if (error instanceof InquiryError && error.statusCode === 404) throw new InquiryError(404, 'CUSTOMER_REQUEST_NOT_FOUND', '접수정보를 확인할 수 없습니다.');
     throw error;
   }
-  const digits = String(inquiry.phone || '').replace(/\D/g, '');
-  if (digits.slice(-4) !== last4) throw new InquiryError(404, 'CUSTOMER_REQUEST_NOT_FOUND', '접수정보를 확인할 수 없습니다.');
+  const storedPhone = String(inquiry.phone || '').replace(/\D/g, '');
+  if (storedPhone !== phone) throw new InquiryError(404, 'CUSTOMER_REQUEST_NOT_FOUND', '접수정보를 확인할 수 없습니다.');
   return inquiry;
 }
 
@@ -334,8 +334,8 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
         return;
       }
       console.error(error);
-      try { send(req, res, config, 500, { error: { code: 'INTERNAL_ERROR', message: '상담 요청을 처리하지 못했습니다.' } }); }
-      catch {
+      try { send(req, res, config, 500, { error: { code: 'INTERNAL_ERROR', message: '상담 요청을 처리하지 못했습니다.' } });
+      } catch {
         res.writeHead(500, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
         res.end(JSON.stringify({ error: { code: 'INTERNAL_ERROR', message: '상담 요청을 처리하지 못했습니다.' } }));
       }
