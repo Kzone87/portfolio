@@ -27,12 +27,13 @@ function visibleText(html) {
     .replace(/\s+/g, ' ');
 }
 
-test('homepage stays directly runnable while grouping work by delivery scope', () => {
-  assert.match(home, /설명보다 실행 가능한 결과물/);
+test('homepage stays directly runnable while putting work before explanation', () => {
   assert.match(home, /직접 실행 가능한 제품 화면/);
   assert.match(home, /Full-stack Web Developer/);
-  assert.match(home, /무엇으로 증명하는가/);
-  assert.match(home, /채용·협업·프로젝트 문의/);
+  assert.match(home, /대표 작업/);
+  assert.match(home, /맡길 수 있는 일/);
+  assert.match(home, /구현을 어떻게 확인할 수 있는가/);
+  assert.match(home, /같이 일하고 싶다면/);
   assert.match(home, /NEXA TECH SERVICE/);
   assert.match(home, /MONO OPERATIONS/);
   assert.ok(home.includes('./nexa-tech-service/'), 'missing corporate website demo');
@@ -40,8 +41,8 @@ test('homepage stays directly runnable while grouping work by delivery scope', (
   assert.ok(home.includes('https://kzone87.github.io/customer-map-planner/'));
   assert.ok(home.includes('https://github.com/Kzone87/portfolio'));
   assert.ok(home.includes('issues/new?template=hiring.yml'));
-  for (const removed of ['./services/', './work/', './scope-estimator/', 'Business Ops', '견적 문의']) {
-    assert.ok(!home.includes(removed), `obsolete homepage content returned: ${removed}`);
+  for (const removed of ['./services/', './work/', './scope-estimator/', 'Business Ops', '견적 문의', '60초 검토 순서', '운영 제품 바로가기']) {
+    assert.ok(!home.includes(removed), `obsolete or duplicated homepage content returned: ${removed}`);
   }
 });
 
