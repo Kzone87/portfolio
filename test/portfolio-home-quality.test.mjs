@@ -30,7 +30,7 @@ test('portfolio uses a product-studio hierarchy instead of repeating card grids'
   assert.match(html, /class="flagship compact-flagship excel-case"/);
   assert.match(html, /class="capability-grid editorial-grid"/);
   assert.match(html, /class="proof-rail"/);
-  assert.match(html, /코드를 먼저 쓰기보다/);
+  assert.match(html, /코드보다 먼저,<br>업무 흐름을 봅니다/);
   assert.doesNotMatch(html, /identity-card|compact-evidence-grid|60초 검토 순서|운영 제품 바로가기/);
 });
 
