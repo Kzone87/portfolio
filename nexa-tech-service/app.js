@@ -1,6 +1,25 @@
 const menuButton = document.querySelector('.menu-button');
 const nav = document.querySelector('.site-nav');
 
+if (nav && !nav.querySelector('[data-service-status]')) {
+  const statusLink = document.createElement('a');
+  statusLink.href = '../nexa-service-domain/';
+  statusLink.textContent = '진행 조회';
+  statusLink.dataset.serviceStatus = 'true';
+  const contactNav = nav.querySelector('a[href="./contact.html"]');
+  nav.insertBefore(statusLink, contactNav || null);
+}
+
+const homeHeroActions = document.querySelector('.hero.hero-100 .hero-actions');
+if (homeHeroActions && !homeHeroActions.querySelector('[data-service-status]')) {
+  const statusAction = document.createElement('a');
+  statusAction.href = '../nexa-service-domain/';
+  statusAction.className = 'secondary-link';
+  statusAction.textContent = '접수 진행 확인';
+  statusAction.dataset.serviceStatus = 'true';
+  homeHeroActions.append(statusAction);
+}
+
 function closeMenu({ restoreFocus = false } = {}) {
   if (!menuButton || !nav) return;
   nav.classList.remove('open');
@@ -127,9 +146,19 @@ function buildRequestText(values) {
   ].join('\n');
 }
 
-function showSummary(text) {
+function showSummary(text, requestId = '') {
   if (summaryText) summaryText.textContent = text;
-  if (summary) summary.classList.add('open');
+  if (summary) {
+    summary.classList.add('open');
+    summary.querySelector('.request-track-link')?.remove();
+    if (requestId) {
+      const track = document.createElement('a');
+      track.className = 'secondary-link request-track-link';
+      track.href = `../nexa-service-domain/?request=${encodeURIComponent(requestId)}`;
+      track.textContent = '이 요청 진행 조회하기 →';
+      summary.append(track);
+    }
+  }
   if (copyButton) copyButton.classList.add('visible');
   summary?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
 }
@@ -202,7 +231,7 @@ if (form && message) {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload?.error?.message || '상담 요청을 전송하지 못했습니다. 잠시 후 다시 시도해 주세요.');
-      showSummary(`${currentRequestText}\n\n접수번호: ${payload.id}`);
+      showSummary(`${currentRequestText}\n\n접수번호: ${payload.id}`, payload.id);
       message.textContent = `상담 요청이 접수되었습니다. 접수번호 ${payload.id}`;
     } catch (error) {
       showSummary(currentRequestText);
