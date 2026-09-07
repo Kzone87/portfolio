@@ -45,16 +45,16 @@ test('contact calls to action route to real public inquiry forms without invente
   assert.match(project, /민감한 정보/);
 });
 
-test('NEXA keeps the fictional boundary without narrating the customer site as a portfolio case', async () => {
+test('NEXA keeps the fictional boundary while the customer site stays customer-facing', async () => {
   const home = await load('nexa-tech-service/index.html');
   const cases = await load('nexa-tech-service/cases.html');
   const all = `${home}\n${cases}`;
   assert.match(all, /포트폴리오 시연을 위해 구성한 가상 브랜드/);
-  assert.match(home, /긴급도 판단/);
-  assert.match(home, /업무 영향/);
-  assert.match(cases, /SERVICE SCENARIO/);
-  assert.doesNotMatch(home.replace(/<footer[\s\S]*?<\/footer>/i, ''), /포트폴리오|다음 프로젝트/);
-  assert.doesNotMatch(cases.replace(/<footer[\s\S]*?<\/footer>/i, ''), /PORTFOLIO SCENARIO|실제 고객, 계약, 성과 수치를 의미하지 않/);
+  for (const phrase of ['문제 접수','방문 안내','현장 점검','작업 진행','결과 확인','후속 일정','업무 영향']) assert.match(home, new RegExp(phrase));
+  assert.match(cases, /이용 상황/);
+  assert.match(cases, /지점마다 장비 고장 요청이 따로 들어옵니다/);
+  assert.doesNotMatch(home.replace(/<footer[\s\S]*?<\/footer>/i, ''), /포트폴리오|다음 프로젝트|SERVICE MANAGEMENT|TRUST CENTER/);
+  assert.doesNotMatch(cases.replace(/<footer[\s\S]*?<\/footer>/i, ''), /PORTFOLIO SCENARIO|SERVICE SCENARIO|SERVICE BLUEPRINT|실제 고객, 계약, 성과 수치를 의미하지 않/);
   assert.doesNotMatch(all, /98\.7%|-31%|-42%|96%|초기 가동 100%|확인시간 -37%|평균 1차 응답/);
 });
 
