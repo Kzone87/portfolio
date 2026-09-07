@@ -21,6 +21,12 @@
 }
 .studio-hero .hero-main{max-width:780px}
 
+/* Korean functional title is longer than the brand name; keep it stable on desktop. */
+.nexa-showcase h3{
+  font-size:clamp(1.95rem,2.45vw,2.55rem);
+  letter-spacing:-.045em;
+}
+
 /* Proof is one story, not two distant columns. */
 .proof-story{
   display:block;
@@ -78,6 +84,7 @@
 @media(max-width:700px){
   .editorial-heading{margin-bottom:30px}
   .editorial-heading>p{margin-top:8px}
+  .nexa-showcase h3{font-size:1.78rem}
   .proof-story{padding-top:42px}
   .proof-story>div:last-child{padding-top:14px}
   .contact-rows article{grid-template-columns:1fr;grid-template-rows:auto;gap:5px}
