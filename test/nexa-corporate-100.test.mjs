@@ -10,6 +10,8 @@ const css = await load('nexa-tech-service/styles-100.css');
 const clarity = await load('nexa-tech-service/clarity.css');
 const portfolioHome = await load('index.html');
 const fieldOps = await load('field-service-ops/index.html');
+const domainCase = await load('nexa-service-domain/index.html');
+const domainCss = await load('nexa-service-domain/styles.css');
 
 function visibleText(html) {
   return html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
@@ -88,18 +90,20 @@ test('company page reads like a service company rather than a design case study'
   assert.doesNotMatch(html, /ISO\s*\d+\s*인증|공식 인증 보유|제조사 공인|보험 가입 완료/);
 });
 
-test('contact behaves like a real consultation flow while preserving demo honesty', () => {
+test('contact behaves like a service request worksheet without pretending to submit online', () => {
   const html = htmlByPage['contact.html'];
   for (const name of ['company','name','phone','email','industry','sites','assets','impact','service','engagement','detail','consent']) assert.match(html, new RegExp(`name="${name}"`));
   assert.match(html, /장비 모델을 정확히 몰라도/);
   assert.match(html, /현재 가장 불편한 점/);
-  assert.match(html, /상담 내용 확인/);
-  assert.match(html, /현재 데모 환경에서는 입력 내용이 외부 서버로 전송되지 않습니다/);
+  assert.match(html, /상담 요청서 만들기/);
+  assert.match(html, /온라인 전송은 지원하지 않/);
+  assert.match(html, /상담 요청서 미리보기/);
   assert.match(html, /id="form-summary"/);
   assert.match(app, /navigator\.clipboard/);
   assert.match(app, /\[NEXA TECH SERVICE 유지보수 상담\]/);
+  assert.match(app, /상담 요청서를 만들었습니다/);
   assert.match(app, /aria-invalid/);
-  assert.doesNotMatch(app, /포트폴리오 데모|문의가 정상적으로 접수되었습니다|실제 전송 완료|전송되었습니다/);
+  assert.doesNotMatch(app, /현재 데모 환경|포트폴리오 데모|문의가 정상적으로 접수되었습니다|실제 전송 완료|전송되었습니다/);
 });
 
 test('clarity layer remains responsive and uses Korean-first hierarchy', () => {
@@ -136,13 +140,28 @@ test('trust center exposes concrete operating checks without fake people or cred
   assert.doesNotMatch(html, /대표이사|CEO|공인 엔지니어|ISO\s*\d+/i);
 });
 
-test('portfolio explains the two-surface domain while each product stays in role', () => {
-  assert.match(portfolioHome, /고객이 보는 기업 홈페이지부터 기사가 사용하는 배차·현장 관리 화면까지/);
+test('portfolio owns the domain explanation and links to both role-specific products', () => {
+  for (const phrase of ['NEXA SERVICE DOMAIN','ONE DOMAIN · TWO SURFACES','고객용 기업 홈페이지 + 내부 현장 운영','고객 서비스 탐색 → 상담 정보 → 방문 요청 → 기사 배정 → 현장 처리']) assert.match(portfolioHome, new RegExp(phrase));
+  assert.match(portfolioHome, /href="\.\/nexa-service-domain\/"/);
   assert.match(portfolioHome, /href="\.\/nexa-tech-service\/"/);
   assert.match(portfolioHome, /href="\.\/field-service-ops\/"/);
-  assert.match(fieldOps, /Service Operations · 내부 현장 운영/);
+});
+
+test('dedicated NEXA case study explains architecture while products stay in role', () => {
+  for (const phrase of ['외부 고객용 홈페이지와','ONE DOMAIN','CUSTOMER-FACING','STAFF-FACING','END-TO-END FLOW','PORTFOLIO BOUNDARY','Portfolio는 설명하고']) assert.match(domainCase, new RegExp(phrase));
+  assert.match(domainCase, /href="\.\.\/nexa-tech-service\/"/);
+  assert.match(domainCase, /href="\.\.\/field-service-ops\/"/);
+  assert.match(domainCss, /\.surface-grid/);
+  assert.match(domainCss, /\.domain-flow/);
+  assert.match(domainCss, /@media\(max-width:700px\)/);
+});
+
+test('staff workspace reads like an internal operations product, not a portfolio page', () => {
+  assert.match(fieldOps, /NEXA SERVICE OPERATIONS/);
+  assert.match(fieldOps, /직원 전용 · 배차 \/ 현장 운영/);
+  assert.match(fieldOps, /NEXA \/ 내부 운영 \/ 배차/);
   assert.match(fieldOps, /배차 현황/);
-  assert.doesNotMatch(fieldOps, /← 프로젝트|포트폴리오/);
+  assert.doesNotMatch(fieldOps, /← 프로젝트|포트폴리오|고객용 홈페이지 보기/);
 });
 
 test('all NEXA copy avoids fabricated commercial proof while keeping only a footer boundary notice', () => {
