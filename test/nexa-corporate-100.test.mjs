@@ -118,7 +118,7 @@ test('portfolio main explains NEXA in customer outcomes and routes to all produc
 });
 
 test('NEXA customer service is a functional request portal rather than portfolio explanation', () => {
-  for (const phrase of ['서비스 요청 조회','접수번호','연락처 뒤 4자리','현재 진행상태','방문 정보','요청 처리 현황','방문 전 준비','최근 안내','작업 결과']) assert.ok(portal.includes(phrase), `portal missing ${phrase}`);
+  for (const phrase of ['서비스 요청 조회','접수번호','상담 연락처','현재 진행상태','방문 정보','요청 처리 현황','방문 전 준비','최근 안내','작업 결과']) assert.ok(portal.includes(phrase), `portal missing ${phrase}`);
   assert.match(portal, /id="lookup-form"/);
   assert.match(portal, /id="request-view"/);
   assert.match(portalApp, /NEXA_CUSTOMER_PORTAL_ENDPOINT/);
