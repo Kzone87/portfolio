@@ -4,7 +4,8 @@ import { readFile } from 'node:fs/promises';
 
 const load = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 const home = await load('index.html');
-const domain = await load('nexa-service-domain/index.html');
+const portal = await load('nexa-service-domain/index.html');
+const customerApp = await load('nexa-tech-service/app.js');
 const ops = await load('field-service-ops/index.html');
 
 const visibleText = html => html
@@ -15,11 +16,16 @@ const visibleText = html => html
   .replace(/<[^>]+>/g, ' ')
   .replace(/\s+/g, ' ');
 
-test('each NEXA surface addresses its actual audience', () => {
+test('each NEXA surface addresses the person who would actually use it', () => {
   assert.match(home, /고객 상담부터 현장 배차까지 이어지는 유지보수 서비스/);
-  assert.match(domain, /장비 모델이나 오류코드를 정확히 몰라도 괜찮습니다/);
+  assert.match(portal, /접수번호와 상담 시 남긴 연락처 뒤 4자리/);
+  assert.match(portal, /현재 진행상태/);
+  assert.match(customerApp, /진행 조회/);
   assert.match(ops, /긴급 요청과 미배정 작업을 먼저 확인하세요/);
+  assert.match(ops, /서울 운영팀/);
+  assert.match(ops, /김현수/);
 
-  assert.doesNotMatch(visibleText(domain), /왜 두 화면인가|역할 분리|구현 근거|KZONE87|Portfolio/i);
+  assert.doesNotMatch(visibleText(portal), /왜 두 화면인가|역할 분리|구현 근거|KZONE87|Portfolio|FIELD OPS/i);
   assert.doesNotMatch(visibleText(ops), /포트폴리오|프로젝트 설명|고객용 홈페이지 보기/);
+  assert.doesNotMatch(ops, /현재 역할|id="role"/);
 });
