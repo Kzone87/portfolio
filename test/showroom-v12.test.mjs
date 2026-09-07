@@ -16,7 +16,7 @@ const demos = [
   { route: 'integration-control-center/', html: 'integration-control-center/index.html', app: 'integration-control-center/app.js', controls: ['jobForm','resetDemo','clearHistory'], results: ['jobTable','historyList','formStatus'] },
   { route: 'mini-labs/', html: 'mini-labs/index.html', app: 'mini-labs/app.js', controls: ['cms-run','extract-run','automation-run'], results: ['cms-output','extract-output','automation-output'] }
 ];
-const corporatePages = ['nexa-tech-service/','nexa-tech-service/about.html','nexa-tech-service/services.html','nexa-tech-service/cases.html','nexa-tech-service/contact.html'];
+const corporatePages = ['nexa-tech-service/','nexa-tech-service/about.html','nexa-tech-service/services.html','nexa-tech-service/industries.html','nexa-tech-service/cases.html','nexa-tech-service/contact.html'];
 
 function visibleText(html) {
   return html
@@ -48,7 +48,7 @@ test('homepage stays directly runnable while putting work before explanation', (
 
 test('sitemap publishes all runnable portfolio and corporate pages', () => {
   const locs = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
-  assert.equal(locs.length, 12);
+  assert.equal(locs.length, 13);
   assert.equal(locs[0], 'https://kzone87.github.io/portfolio/');
   for (const demo of demos) assert.ok(locs.includes(`https://kzone87.github.io/portfolio/${demo.route}`), `missing runnable sitemap route: ${demo.route}`);
   for (const page of corporatePages) assert.ok(locs.includes(`https://kzone87.github.io/portfolio/${page}`), `missing corporate sitemap route: ${page}`);
@@ -74,36 +74,43 @@ test('corporate website has complete navigation, responsive controls and a worki
     home: await load('nexa-tech-service/index.html'),
     about: await load('nexa-tech-service/about.html'),
     services: await load('nexa-tech-service/services.html'),
+    industries: await load('nexa-tech-service/industries.html'),
     cases: await load('nexa-tech-service/cases.html'),
     contact: await load('nexa-tech-service/contact.html')
   };
   const app = await load('nexa-tech-service/app.js');
   for (const html of Object.values(pages)) {
-    for (const href of ['./','./about.html','./services.html','./cases.html','./contact.html']) assert.ok(html.includes(`href="${href}"`), `corporate page missing nav ${href}`);
+    for (const href of ['./','./about.html','./services.html','./industries.html','./cases.html','./contact.html']) assert.ok(html.includes(`href="${href}"`), `corporate page missing nav ${href}`);
     assert.match(html, /<meta name="viewport"/);
+    assert.match(html, /styles-100\.css/);
     assert.match(html, /menu-button/);
     assert.match(html, /포트폴리오 시연을 위해 구성한 가상 기업/);
   }
   assert.match(pages.home, /faq-button/);
   assert.match(pages.contact, /id="contact-form"/);
-  assert.match(pages.contact, /id="form-message"/);
+  assert.match(pages.contact, /id="form-summary"/);
   assert.match(app, /contact-form/);
   assert.match(app, /menu-button/);
   assert.match(app, /faq-button/);
+  assert.match(app, /data-case-filter/);
 });
 
 test('NEXA keeps customer-facing text readable and interactive controls accessible', async () => {
   const css = await load('nexa-tech-service/styles.css');
+  const css100 = await load('nexa-tech-service/styles-100.css');
   const app = await load('nexa-tech-service/app.js');
   assert.match(css, /\.service-card p\{[^}]*font-size:15px/);
   assert.match(css, /\.section-head p\{[^}]*font-size:15px/);
   assert.match(css, /\.faq-answer\{[^}]*font-size:14px/);
   assert.match(css, /\.contact-form label\{[^}]*font-size:13px/);
   assert.match(css, /\.footer-col a,\.footer-col span\{[^}]*font-size:13px/);
+  assert.match(css100, /focus-visible/);
+  assert.match(css100, /prefers-reduced-motion:reduce/);
   assert.match(app, /aria-controls/);
   assert.match(app, /메뉴 닫기/);
   assert.match(app, /event\.key === 'Escape'/);
   assert.match(app, /aria-invalid/);
+  assert.match(app, /IntersectionObserver/);
 });
 
 test('customer-visible demo text excludes developer implementation jargon', async () => {
@@ -136,7 +143,7 @@ test('showroom checks all live public scripts', () => {
 
 test('public showroom assets contain no common credential patterns', async () => {
   const content = [home, sitemap, customerUi, await load('nexa-tech-service/app.js')];
-  for (const page of ['index.html','about.html','services.html','cases.html','contact.html']) content.push(await load(`nexa-tech-service/${page}`));
+  for (const page of ['index.html','about.html','services.html','industries.html','cases.html','contact.html']) content.push(await load(`nexa-tech-service/${page}`));
   for (const demo of demos) content.push(await load(demo.html), await load(demo.app));
   const all = content.join('\n');
   assert.doesNotMatch(all, /sk-[A-Za-z0-9_-]{20,}/);
