@@ -123,7 +123,7 @@ test('NEXA service flow page speaks to customers instead of explaining portfolio
 });
 
 test('field operations is a real staff workspace, not a tutorial or portfolio page', () => {
-  for (const phrase of ['NEXA SERVICE OPERATIONS','직원 전용 · 배차 / 현장 운영','오늘의 배차 현황','기사별 일정','방문 요청','오늘 확인할 항목','최근 변경 이력','작업 상태']) assert.ok(fieldOps.includes(phrase), `field ops missing ${phrase}`);
+  for (const phrase of ['NEXA SERVICE OPERATIONS','직원 전용 · 배차 / 현장 운영','배차 현황','배차 기준일','기사별 일정','방문 요청','우선 확인할 항목','최근 변경 이력','작업 상태']) assert.ok(fieldOps.includes(phrase), `field ops missing ${phrase}`);
   assert.doesNotMatch(fieldOps, /← 프로젝트|포트폴리오|고객용 홈페이지 보기|프로젝트 설명|이 시스템은/);
   assert.match(fieldOpsApp, /scheduleWindowError/);
   assert.match(fieldOpsApp, /window\.confirm/);
@@ -138,6 +138,7 @@ test('all NEXA surfaces avoid fabricated commercial proof', () => {
 
 test('responsive and accessibility foundations stay intact', () => {
   assert.match(clarity, /word-break:keep-all/);
+  assert.match(clarity, /responsive-100\.css/);
   assert.match(clarity, /@media\(max-width:700px\)/);
   assert.match(css, /focus-visible/);
   assert.match(css, /@media\(prefers-reduced-motion:reduce\)/);
