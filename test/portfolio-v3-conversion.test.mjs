@@ -4,16 +4,17 @@ import { readFile } from 'node:fs/promises';
 
 const load = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('portfolio answers who, what, evidence and contact within the primary page', async () => {
+test('portfolio answers who, work, capability, proof and contact without instructional duplication', async () => {
   const html = await load('index.html');
   for (const phrase of [
     'Full-stack Web Developer',
-    '무엇을 만들 수 있는가',
-    '납품 단위로 보기',
-    '무엇으로 증명하는가',
-    '채용·협업·프로젝트 문의',
-    '60초 검토 순서'
+    '대표 작업',
+    '맡길 수 있는 일',
+    '구현을 어떻게 확인할 수 있는가',
+    '같이 일하고 싶다면'
   ]) assert.match(html, new RegExp(phrase));
+  assert.doesNotMatch(html, /60초 검토 순서/);
+  assert.doesNotMatch(html, /운영 제품 바로가기/);
   assert.match(html, /home-v3\.css/);
 });
 
