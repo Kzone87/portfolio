@@ -31,7 +31,6 @@ if (menuButton && nav) {
   });
 }
 
-// Progressive reveal: the page remains fully visible when JS is disabled or motion is reduced.
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const revealItems = [...document.querySelectorAll('[data-reveal]')];
 if (!reduceMotion && revealItems.length && 'IntersectionObserver' in window) {
@@ -46,17 +45,14 @@ if (!reduceMotion && revealItems.length && 'IntersectionObserver' in window) {
   revealItems.forEach((item) => observer.observe(item));
 }
 
-// Accessible FAQ accordions.
 document.querySelectorAll('.faq-item').forEach((item, index) => {
   const button = item.querySelector('.faq-button');
   const answer = item.querySelector('.faq-answer');
   if (!button || !answer) return;
-
   const answerId = `faq-answer-${index + 1}`;
   answer.id = answerId;
   button.setAttribute('aria-controls', answerId);
   answer.setAttribute('aria-hidden', 'true');
-
   button.addEventListener('click', () => {
     const open = item.classList.toggle('open');
     button.setAttribute('aria-expanded', String(open));
@@ -66,7 +62,6 @@ document.querySelectorAll('.faq-item').forEach((item, index) => {
   });
 });
 
-// Portfolio scenario filter.
 const filterButtons = [...document.querySelectorAll('[data-case-filter]')];
 const caseCards = [...document.querySelectorAll('[data-case]')];
 if (filterButtons.length && caseCards.length) {
@@ -158,7 +153,7 @@ if (form && message) {
     }
 
     currentRequestText = [
-      '[NEXA TECH SERVICE 상담 요청서 · 포트폴리오 데모]',
+      '[NEXA TECH SERVICE 유지보수 상담]',
       requestLine('회사·조직', values.company),
       requestLine('담당자', values.name),
       requestLine('연락처', values.phone),
@@ -169,15 +164,13 @@ if (form && message) {
       requestLine('업무 영향', values.impact),
       requestLine('관심 서비스', values.service),
       requestLine('희망 방식', values.engagement),
-      `현재 문제:\n${values.detail}`,
-      '',
-      '※ 이 요청서는 포트폴리오 데모에서 생성되며 실제 전송되지 않습니다.'
+      `현재 문제:\n${values.detail}`
     ].join('\n');
 
     if (summaryText) summaryText.textContent = currentRequestText;
     if (summary) summary.classList.add('open');
     if (copyButton) copyButton.classList.add('visible');
-    message.textContent = '상담 요청서 미리보기를 만들었습니다. 실제 서버 전송은 이루어지지 않습니다.';
+    message.textContent = '상담 내용을 확인했습니다. 현재 데모 환경에서는 외부 서버로 전송되지 않습니다.';
     summary?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
   });
 }
@@ -187,7 +180,7 @@ if (copyButton) {
     if (!currentRequestText) return;
     try {
       await navigator.clipboard.writeText(currentRequestText);
-      if (message) message.textContent = '상담 요청서를 클립보드에 복사했습니다.';
+      if (message) message.textContent = '상담 내용을 클립보드에 복사했습니다.';
     } catch {
       if (message) {
         message.textContent = '자동 복사를 사용할 수 없습니다. 미리보기 내용을 직접 선택해 복사해 주세요.';

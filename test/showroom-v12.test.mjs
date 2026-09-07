@@ -10,7 +10,7 @@ const packageJson = JSON.parse(await load('package.json'));
 
 const demos = [
   { route: 'commerce-ops-console/', html: 'commerce-ops-console/index.html', app: 'commerce-ops-console/app.js', controls: ['search','request-refund'], results: ['order-list','status-message','audit-list'] },
-  { route: 'field-service-ops/', html: 'field-service-ops/index.html', app: 'field-service-ops/app.js', controls: ['search','schedule'], results: ['job-list','message','audit-list'] },
+  { route: 'field-service-ops/', html: 'field-service-ops/index.html', app: 'field-service-ops/app.js', controls: ['search','schedule'], results: ['job-list','message','audit-list'], internalWorkspace: true },
   { route: 'document-intake-approval/', html: 'document-intake-approval/index.html', app: 'document-intake-approval/app.js', controls: ['search','save','extract','submit'], results: ['doc-list','message','audit-list'] },
   { route: 'ai-workflow-review-desk/', html: 'ai-workflow-review-desk/index.html', app: 'ai-workflow-review-desk/app.js', controls: ['task-form','generate-selected','approve','reject'], results: ['task-list','evidence-list','review-history'] },
   { route: 'integration-control-center/', html: 'integration-control-center/index.html', app: 'integration-control-center/app.js', controls: ['jobForm','resetDemo','clearHistory'], results: ['jobTable','historyList','formStatus'] },
@@ -62,7 +62,12 @@ test('every internal showroom page exposes real controls and visible results', a
       assert.ok(app.includes(id), `${demo.route} control ${id} is not wired in app`);
     }
     for (const id of demo.results) assert.ok(html.includes(`id="${id}"`), `${demo.route} missing result area ${id}`);
-    assert.match(html, /<a href="\.\.\/"[^>]*>← (?:체험센터|포트폴리오|프로젝트)<\/a>/);
+    if (demo.internalWorkspace) {
+      assert.match(html, /Service Operations · 내부 현장 운영/);
+      assert.doesNotMatch(html, /← (?:체험센터|포트폴리오|프로젝트)/);
+    } else {
+      assert.match(html, /<a href="\.\.\/"[^>]*>← (?:체험센터|포트폴리오|프로젝트)<\/a>/);
+    }
     assert.doesNotMatch(html, /services\//);
   }
 });
@@ -83,7 +88,7 @@ test('corporate website has complete navigation, responsive controls and a worki
     assert.match(html, /<meta name="viewport"/);
     assert.match(html, /styles-100\.css/);
     assert.match(html, /menu-button/);
-    assert.match(html, /포트폴리오 시연을 위해 구성한 가상 기업/);
+    assert.match(html, /포트폴리오 시연을 위해 구성한 가상 브랜드/);
   }
   assert.match(pages.home, /faq-button/);
   assert.match(pages.contact, /id="contact-form"/);
