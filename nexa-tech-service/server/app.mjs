@@ -111,6 +111,8 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
     trustProxy: Boolean(options.trustProxy)
   };
   if (config.requireAdminConfig && config.admins.size === 0) throw new Error('production inquiry API requires at least one admin principal');
+  if (!Number.isFinite(config.rateWindowMs) || config.rateWindowMs < 1000) throw new Error('rateWindowMs must be at least 1000 milliseconds');
+  if (!Number.isInteger(config.rateMax) || config.rateMax < 1) throw new Error('rateMax must be a positive integer');
 
   return http.createServer(async (req, res) => {
     try {
@@ -193,20 +195,28 @@ export function runtimeInquiryOptions(env = process.env) {
   const production = env.NODE_ENV === 'production';
   const allowedOrigins = String(env.NEXA_INQUIRY_ALLOWED_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean);
   if (production && allowedOrigins.length === 0) throw new Error('NEXA_INQUIRY_ALLOWED_ORIGINS is required in production');
+  if (production && allowedOrigins.includes('*')) throw new Error('NEXA_INQUIRY_ALLOWED_ORIGINS must not contain * in production');
   const admins = parseAdmins(env.NEXA_INQUIRY_ADMINS_JSON || '');
   if (production && admins.length === 0) throw new Error('NEXA_INQUIRY_ADMINS_JSON is required in production');
+  const rateWindowMs = Number(env.NEXA_INQUIRY_RATE_WINDOW_MS || DEFAULT_RATE_WINDOW_MS);
+  const rateMax = Number(env.NEXA_INQUIRY_RATE_MAX || DEFAULT_RATE_MAX);
+  if (!Number.isFinite(rateWindowMs) || rateWindowMs < 1000) throw new Error('NEXA_INQUIRY_RATE_WINDOW_MS must be at least 1000');
+  if (!Number.isInteger(rateMax) || rateMax < 1) throw new Error('NEXA_INQUIRY_RATE_MAX must be a positive integer');
   return {
     allowedOrigins: production ? allowedOrigins : (allowedOrigins.length ? allowedOrigins : ['*']),
     admins,
     requireAdminConfig: production,
     trustProxy: env.NEXA_INQUIRY_TRUST_PROXY === '1',
-    rateWindowMs: Number(env.NEXA_INQUIRY_RATE_WINDOW_MS || DEFAULT_RATE_WINDOW_MS),
-    rateMax: Number(env.NEXA_INQUIRY_RATE_MAX || DEFAULT_RATE_MAX)
+    rateWindowMs,
+    rateMax
   };
 }
 
 export function createRuntimeInquiryStore(env = process.env) {
-  return createInquiryStore(env.NEXA_INQUIRY_DB_PATH || 'nexa-tech-service/server/data/inquiries.sqlite');
+  const production = env.NODE_ENV === 'production';
+  const configuredPath = String(env.NEXA_INQUIRY_DB_PATH || '').trim();
+  if (production && (!configuredPath || configuredPath === ':memory:')) throw new Error('NEXA_INQUIRY_DB_PATH must point to persistent storage in production');
+  return createInquiryStore(configuredPath || 'nexa-tech-service/server/data/inquiries.sqlite');
 }
 
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
