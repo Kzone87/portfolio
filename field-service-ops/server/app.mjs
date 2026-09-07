@@ -5,7 +5,7 @@ import { createStore, DomainError } from './store.mjs';
 import { createSqliteStore } from './sqlite-store.mjs';
 
 const LIMIT = 64 * 1024;
-const LOCAL_PRINCIPAL = Object.freeze({ id: 'local-dispatcher', name: 'Local Dispatcher', role: 'STAFF' });
+const LOCAL_PRINCIPAL = Object.freeze({ id: 'local-dispatcher', name: 'Local Dispatcher', role: 'STAFF', team: 'Local Operations' });
 
 const tokenKey = token => createHash('sha256').update(String(token)).digest('hex');
 const normalizeRole = role => String(role || '').toUpperCase() === 'ADMIN' ? 'ADMIN' : 'STAFF';
@@ -20,12 +20,23 @@ export function parsePrincipals(raw = '') {
     const id = String(item?.id || '').trim();
     if (token.length < 16) throw new Error(`principal ${index} token must be at least 16 characters`);
     if (!/^[a-zA-Z0-9._-]{2,80}$/.test(id)) throw new Error(`principal ${index} id is invalid`);
-    return { token, id, name: String(item?.name || id).slice(0, 80), role: normalizeRole(item?.role) };
+    return {
+      token,
+      id,
+      name: String(item?.name || id).slice(0, 80),
+      role: normalizeRole(item?.role),
+      team: String(item?.team || '').trim().slice(0, 80)
+    };
   });
 }
 
 function principalRegistry(principals = []) {
-  return new Map(principals.map(principal => [tokenKey(principal.token), { id: principal.id, name: principal.name, role: normalizeRole(principal.role) }]));
+  return new Map(principals.map(principal => [tokenKey(principal.token), {
+    id: principal.id,
+    name: principal.name,
+    role: normalizeRole(principal.role),
+    team: principal.team || ''
+  }]));
 }
 
 function bearer(req) {
@@ -134,6 +145,10 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
 
       const principal = resolvePrincipal(req, config);
 
+      if (req.method === 'GET' && path === '/api/me') {
+        send(req, res, config, 200, { id: principal.id, name: principal.name, role: principal.role, team: principal.team || '' });
+        return;
+      }
       if (req.method === 'GET' && path === '/api/agents') { send(req, res, config, 200, { items: store.listAgents() }); return; }
       if (req.method === 'GET' && path === '/api/metrics') { send(req, res, config, 200, store.metrics()); return; }
       if (req.method === 'GET' && path === '/api/jobs') {

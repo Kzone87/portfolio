@@ -5,6 +5,11 @@ const requestView = $('request-view');
 const emptyView = $('lookup-empty');
 const message = $('lookup-message');
 const linkedRequestId = String(new URLSearchParams(window.location.search).get('request') || '').trim().toUpperCase();
+const portalSessionKey = 'nexa:customer-request';
+const portalSessionMaxAge = 30 * 60 * 1000;
+
+requestView.hidden = true;
+emptyView.hidden = true;
 
 const demoRequest = {
   id: 'NX-260907-0142',
@@ -171,6 +176,31 @@ function normalizedPhone(value) {
   return String(value || '').replace(/\D/g, '');
 }
 
+function readRememberedAccess() {
+  try {
+    const raw = sessionStorage.getItem(portalSessionKey);
+    if (!raw) return null;
+    const value = JSON.parse(raw);
+    if (!value?.requestId || !value?.phone || !Number.isFinite(value?.savedAt)) return null;
+    if (Date.now() - value.savedAt > portalSessionMaxAge) {
+      sessionStorage.removeItem(portalSessionKey);
+      return null;
+    }
+    return { requestId: String(value.requestId).trim().toUpperCase(), phone: String(value.phone).trim() };
+  } catch {
+    return null;
+  }
+}
+
+function clearRememberedAccess(requestId) {
+  try {
+    const remembered = readRememberedAccess();
+    if (!requestId || remembered?.requestId === requestId) sessionStorage.removeItem(portalSessionKey);
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
 async function lookup(requestId, phone) {
   if (!endpoint) {
     if (requestId.toUpperCase() === demoRequest.id && normalizedPhone(phone) === normalizedPhone(demoRequest.phone)) return demoRequest;
@@ -196,33 +226,42 @@ form?.addEventListener('submit', async event => {
   event.preventDefault();
   message.className = 'lookup-message';
   message.textContent = '';
+  emptyView.hidden = true;
   const requestId = String($('request-id')?.value || '').trim().toUpperCase();
   const phone = String($('request-phone')?.value || '').trim();
   if (!/^NX-[A-Z0-9-]{6,24}$/.test(requestId) || normalizedPhone(phone).length < 9) {
+    requestView.hidden = true;
     message.textContent = '접수번호와 상담 연락처를 확인해 주세요.';
     message.classList.add('error');
     return;
   }
   const button = form.querySelector('button[type="submit"]');
   if (button) button.disabled = true;
+  form.setAttribute('aria-busy', 'true');
   message.textContent = '요청 정보를 확인하고 있습니다.';
   try {
     const data = await lookup(requestId, phone);
     render(data);
+    history.replaceState(null, '', `${location.pathname}?request=${encodeURIComponent(requestId)}`);
     message.textContent = '최신 요청 상태를 불러왔습니다.';
   } catch (error) {
+    clearRememberedAccess(requestId);
     showNotFound(error instanceof Error ? error.message : undefined);
     message.textContent = error instanceof Error ? error.message : '요청을 조회하지 못했습니다.';
     message.classList.add('error');
   } finally {
+    form.removeAttribute('aria-busy');
     if (button) button.disabled = false;
   }
 });
 
+const remembered = readRememberedAccess();
 if (linkedRequestId && /^NX-[A-Z0-9-]{6,24}$/.test(linkedRequestId)) {
   $('request-id').value = linkedRequestId;
-  $('request-phone').value = linkedRequestId === demoRequest.id ? demoRequest.phone : '';
+  if (remembered?.requestId === linkedRequestId) $('request-phone').value = remembered.phone;
+  else if (!endpoint && linkedRequestId === demoRequest.id) $('request-phone').value = demoRequest.phone;
 }
 
-if (!endpoint && (!linkedRequestId || linkedRequestId === demoRequest.id)) render(demoRequest);
-else requestView.hidden = true;
+if (linkedRequestId && remembered?.requestId === linkedRequestId && remembered.phone) {
+  queueMicrotask(() => form?.requestSubmit());
+}
