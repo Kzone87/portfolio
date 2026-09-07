@@ -202,9 +202,10 @@ export function runtimeOptions(env = process.env) {
 export function createRuntimeStore(env = process.env) {
   const production = env.NODE_ENV === 'production';
   const path = env.NEXA_OPS_DB_PATH || 'field-service-ops/server/data/nexa-ops.sqlite';
+  const agents = parseAgents(env.NEXA_OPS_AGENTS_JSON || '');
   return createSqliteStore(path, {
     seedDemo: !production && env.NEXA_OPS_SEED_DEMO !== '0',
-    agents: parseAgents(env.NEXA_OPS_AGENTS_JSON || '')
+    ...(agents.length ? { agents } : {})
   });
 }
 
