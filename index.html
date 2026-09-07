@@ -93,8 +93,17 @@
             <article><span>직원용</span><strong>NEXA Service Operations</strong><small>방문 요청 · 배차 · 현장 상태 · 이력</small></article>
           </div>
           <div class="nexa-domain-flow">고객 상담 → 방문 요청 → 기사 배정 → 현장 처리 → 작업 결과·후속관리</div>
+          <section class="nexa-engineering-proof" aria-label="NEXA 기술 검증">
+            <div class="nexa-proof-head"><span>ENGINEERING EVIDENCE</span><strong>실제 운영에서 깨지기 쉬운 지점을 코드와 테스트로 막았습니다.</strong></div>
+            <div class="nexa-proof-grid">
+              <article><b>일정·동시성</b><span>일정 충돌 차단 · stale update 방어</span><small>SLOT_CONFLICT · expectedVersion</small></article>
+              <article><b>권한·이력</b><span>서버 권한 판정 · 변경 이력 보존</span><small>Server-side RBAC · Audit · SQLite</small></article>
+              <article><b>검증</b><span>상태 전이와 실패 흐름 자동 검증</span><small>REST API · Domain Tests · Node 24 CI</small></article>
+            </div>
+            <div class="nexa-proof-links"><a href="https://github.com/Kzone87/portfolio/tree/main/field-service-ops" target="_blank" rel="noreferrer">Field Ops Source ↗</a><a href="https://github.com/Kzone87/portfolio/blob/main/test/field-service-ops.test.mjs" target="_blank" rel="noreferrer">Domain Tests ↗</a></div>
+          </section>
           <div class="case-links">
-            <a class="project-enter case-study-link" href="./nexa-service-domain/">서비스 운영 흐름 보기 <b>→</b></a>
+            <a class="project-enter case-study-link" href="./nexa-service-domain/">상담 이후 진행 보기 <b>→</b></a>
             <a class="project-enter" href="./nexa-tech-service/">01 · 고객 서비스 화면 <b>→</b></a>
             <a class="project-enter secondary-case-link" href="./field-service-ops/">02 · 직원 배차 화면 <b>→</b></a>
           </div>
