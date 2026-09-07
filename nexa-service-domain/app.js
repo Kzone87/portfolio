@@ -8,7 +8,7 @@ const linkedRequestId = String(new URLSearchParams(window.location.search).get('
 
 const demoRequest = {
   id: 'NX-260907-0142',
-  phoneLast4: '4821',
+  phone: '010-9876-4821',
   company: '알파오피스',
   statusLabel: '방문 일정 확정',
   currentTitle: '방문 일정이 확정되었습니다.',
@@ -160,16 +160,20 @@ function render(data) {
   }
 }
 
-function showNotFound(copy = '접수번호와 연락처 뒤 4자리를 다시 확인해 주세요.') {
+function showNotFound(copy = '접수번호와 상담 연락처를 다시 확인해 주세요.') {
   requestView.hidden = true;
   emptyView.hidden = false;
   const p = emptyView.querySelector('p');
   if (p) p.textContent = `${copy} 계속 확인되지 않으면 상담 페이지에서 문의해 주세요.`;
 }
 
-async function lookup(requestId, phoneLast4) {
+function normalizedPhone(value) {
+  return String(value || '').replace(/\D/g, '');
+}
+
+async function lookup(requestId, phone) {
   if (!endpoint) {
-    if (requestId.toUpperCase() === demoRequest.id && phoneLast4 === demoRequest.phoneLast4) return demoRequest;
+    if (requestId.toUpperCase() === demoRequest.id && normalizedPhone(phone) === normalizedPhone(demoRequest.phone)) return demoRequest;
     const error = new Error('접수정보를 확인할 수 없습니다.');
     error.code = 'NOT_FOUND';
     throw error;
@@ -177,7 +181,7 @@ async function lookup(requestId, phoneLast4) {
   const response = await fetch(`${endpoint}/api/customer/requests/lookup`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ id: requestId, phoneLast4 })
+    body: JSON.stringify({ id: requestId, phone })
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -193,9 +197,9 @@ form?.addEventListener('submit', async event => {
   message.className = 'lookup-message';
   message.textContent = '';
   const requestId = String($('request-id')?.value || '').trim().toUpperCase();
-  const phoneLast4 = String($('phone-last4')?.value || '').replace(/\D/g, '').slice(-4);
-  if (!/^NX-[A-Z0-9-]{6,24}$/.test(requestId) || phoneLast4.length !== 4) {
-    message.textContent = '접수번호와 연락처 뒤 4자리를 확인해 주세요.';
+  const phone = String($('request-phone')?.value || '').trim();
+  if (!/^NX-[A-Z0-9-]{6,24}$/.test(requestId) || normalizedPhone(phone).length < 9) {
+    message.textContent = '접수번호와 상담 연락처를 확인해 주세요.';
     message.classList.add('error');
     return;
   }
@@ -203,7 +207,7 @@ form?.addEventListener('submit', async event => {
   if (button) button.disabled = true;
   message.textContent = '요청 정보를 확인하고 있습니다.';
   try {
-    const data = await lookup(requestId, phoneLast4);
+    const data = await lookup(requestId, phone);
     render(data);
     message.textContent = '최신 요청 상태를 불러왔습니다.';
   } catch (error) {
@@ -217,7 +221,7 @@ form?.addEventListener('submit', async event => {
 
 if (linkedRequestId && /^NX-[A-Z0-9-]{6,24}$/.test(linkedRequestId)) {
   $('request-id').value = linkedRequestId;
-  $('phone-last4').value = linkedRequestId === demoRequest.id ? demoRequest.phoneLast4 : '';
+  $('request-phone').value = linkedRequestId === demoRequest.id ? demoRequest.phone : '';
 }
 
 if (!endpoint && (!linkedRequestId || linkedRequestId === demoRequest.id)) render(demoRequest);
