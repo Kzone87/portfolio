@@ -15,17 +15,19 @@ const staffApp = await load('field-service-ops/app.js');
 
 const withoutFooter = html => html.replace(/<footer[\s\S]*?<\/footer>/i, '');
 
-test('portfolio NEXA card exposes operational engineering evidence without reverting to architecture narration', () => {
+test('portfolio NEXA card exposes current operational engineering evidence without reverting to architecture narration', () => {
   for (const phrase of [
     'ENGINEERING EVIDENCE',
-    '일정 충돌 차단 · stale update 방어',
-    'SLOT_CONFLICT · expectedVersion',
-    'Server-side RBAC · Audit · SQLite',
-    'REST API · Domain Tests · Node 24 CI',
+    'Inquiry → Field Job → Customer Portal',
+    'SLOT_CONFLICT · expectedVersion · Server-side RBAC',
+    'SQLite · Audit · E2E Tests · Node 24 CI',
     'Field Ops Source',
+    'Customer Source',
+    'E2E Tests',
     'Domain Tests'
   ]) assert.ok(portfolio.includes(phrase), `portfolio missing engineering evidence: ${phrase}`);
   assert.match(portfolio, /href="https:\/\/github\.com\/Kzone87\/portfolio\/tree\/main\/field-service-ops"/);
+  assert.match(portfolio, /href="https:\/\/github\.com\/Kzone87\/portfolio\/blob\/main\/test\/nexa-bundle-100\.test\.mjs"/);
   assert.match(portfolio, /href="https:\/\/github\.com\/Kzone87\/portfolio\/blob\/main\/test\/field-service-ops\.test\.mjs"/);
   assert.doesNotMatch(portfolio, /왜 두 화면인가|역할 분리|구현 근거|ONE DOMAIN · TWO SURFACES/);
   assert.match(portfolioCss, /\.nexa-engineering-proof/);
@@ -44,12 +46,13 @@ test('service domain is an actual customer request portal while playbook remains
   assert.ok(!portal.includes('1. 고장 접수'), 'portal must not duplicate the detailed playbook structure');
 });
 
-test('customer portal exposes customer state, never internal implementation state', () => {
+test('customer portal keeps customer state behind lookup and never exposes internal implementation state', () => {
   const body = withoutFooter(portal);
   for (const forbidden of ['KZONE87','Portfolio','FIELD OPS','NEXA SERVICE OPERATIONS','../field-service-ops/','REQUESTED','SCHEDULED','DISPATCHED','ON_SITE','SLOT_CONFLICT','expectedVersion']) {
     assert.ok(!body.includes(forbidden), `portal leaks internal or portfolio language: ${forbidden}`);
   }
-  for (const phrase of ['상담 접수','지원 확인','방문 확정','방문·작업','결과 안내','후속관리']) assert.match(body, new RegExp(phrase));
+  assert.match(portal, /id="request-view"[^>]*hidden/);
+  for (const phrase of ['상담 접수','지원 확인','방문 확정','방문·작업','결과 안내','후속관리']) assert.match(portalApp, new RegExp(phrase));
 });
 
 test('customer website routes existing customers to the portal without exposing staff operations', () => {
