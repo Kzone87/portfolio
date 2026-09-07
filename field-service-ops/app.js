@@ -2,10 +2,11 @@ import { createStore } from './server/store.mjs';
 import { ACTION_LABELS, STATUS_LABELS, friendlyActor, friendlyError, uiLabel } from '../customer-ui.js';
 
 const store = createStore();
-const state = { selectedId: null, role: 'STAFF' };
+const CURRENT_USER = Object.freeze({ id: 'ops-admin', name: '김현수', role: 'ADMIN', team: '서울 운영팀' });
+const state = { selectedId: null };
 const $ = (id) => document.getElementById(id);
 const el = {
-  role: $('role'), search: $('search'), statusFilter: $('status-filter'), jobList: $('job-list'),
+  search: $('search'), statusFilter: $('status-filter'), jobList: $('job-list'),
   empty: $('empty'), detail: $('detail'), detailPanel: $('detail-panel'), detailBackdrop: $('detail-backdrop'), closeDetail: $('close-detail'),
   jobTitle: $('job-title'), jobCopy: $('job-copy'), version: $('version'), status: $('status'), priority: $('priority'), agent: $('agent'), slot: $('slot'),
   actions: $('actions'), agentSelect: $('agent-select'), startAt: $('start-at'), endAt: $('end-at'), override: $('override'), schedule: $('schedule'), message: $('message'),
@@ -23,7 +24,7 @@ const JOBS = {
 const BOARD_HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 const node = (tag, cls = '', text = '') => { const n = document.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
 const badge = (value) => node('span', `badge ${value}`, uiLabel(value));
-const actor = () => state.role === 'ADMIN' ? 'demo-admin' : 'dispatcher';
+const actor = () => CURRENT_USER.id;
 
 function job() {
   if (state.selectedId == null) return null;
@@ -195,7 +196,7 @@ function audits() {
   for (const audit of store.listAudits().slice(0, 20)) {
     const row = node('article', 'audit');
     const heading = node('div');
-    heading.append(node('strong', '', `${ACTION_LABELS[audit.action] ?? uiLabel(audit.action)} · 작업 #${audit.jobId}`), node('span', '', friendlyActor(audit.actor)));
+    heading.append(node('strong', '', `${ACTION_LABELS[audit.action] ?? uiLabel(audit.action)} · 작업 #${audit.jobId}`), node('span', '', audit.actor === CURRENT_USER.id ? CURRENT_USER.name : friendlyActor(audit.actor)));
     let detailText = audit.detail || '';
     for (const [key, label] of Object.entries(STATUS_LABELS)) detailText = detailText.replaceAll(key, label);
     detailText = detailText.replaceAll('Agent A', '김도현').replaceAll('Agent B', '이준호').replaceAll('Agent C', '박민수').replaceAll('unassigned request', '미배정 요청');
@@ -222,11 +223,6 @@ function scheduleWindowError(startValue, endValue) {
   return '';
 }
 
-el.role.addEventListener('change', () => {
-  state.role = el.role.value;
-  message(`${state.role === 'ADMIN' ? '관리자' : '배차 담당자'} 화면으로 전환했습니다.`);
-  render();
-});
 el.search.addEventListener('input', list);
 el.statusFilter.addEventListener('change', list);
 el.closeDetail.addEventListener('click', closeDrawer);
@@ -245,7 +241,7 @@ el.schedule.addEventListener('click', () => {
       agentId: Number(el.agentSelect.value),
       startAt: koreaIso(el.startAt.value),
       endAt: koreaIso(el.endAt.value),
-      role: state.role,
+      role: CURRENT_USER.role,
       actor: actor(),
       overrideReason: el.override.value
     };
