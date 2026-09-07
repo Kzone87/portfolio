@@ -35,7 +35,9 @@ test('homepage stays directly runnable while putting work before explanation', (
   assert.match(home, /정상 흐름뿐 아니라/);
   assert.match(home, /같이 일하고 싶다면/);
   assert.match(home, /NEXA TECH SERVICE/);
+  assert.match(home, /NEXA SERVICE DOMAIN/);
   assert.match(home, /MONO OPERATIONS/);
+  assert.ok(home.includes('./nexa-service-domain/'), 'missing NEXA domain case study');
   assert.ok(home.includes('./nexa-tech-service/'), 'missing corporate website demo');
   for (const demo of demos) assert.ok(home.includes(`./${demo.route}`), `missing direct demo link: ${demo.route}`);
   assert.ok(home.includes('https://kzone87.github.io/customer-map-planner/'));
@@ -46,8 +48,9 @@ test('homepage stays directly runnable while putting work before explanation', (
 
 test('sitemap publishes all runnable portfolio and corporate pages', () => {
   const locs = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
-  assert.equal(locs.length, 14);
+  assert.equal(locs.length, 15);
   assert.equal(locs[0], 'https://kzone87.github.io/portfolio/');
+  assert.ok(locs.includes('https://kzone87.github.io/portfolio/nexa-service-domain/'), 'missing NEXA domain case study');
   for (const demo of demos) assert.ok(locs.includes(`https://kzone87.github.io/portfolio/${demo.route}`), `missing runnable sitemap route: ${demo.route}`);
   for (const page of corporatePages) assert.ok(locs.includes(`https://kzone87.github.io/portfolio/${page}`), `missing corporate sitemap route: ${page}`);
   for (const removed of ['/services/', '/work/', '/scope-estimator/']) assert.ok(!sitemap.includes(removed));
@@ -63,7 +66,8 @@ test('every internal showroom page exposes real controls and visible results', a
     }
     for (const id of demo.results) assert.ok(html.includes(`id="${id}"`), `${demo.route} missing result area ${id}`);
     if (demo.internalWorkspace) {
-      assert.match(html, /Service Operations · 내부 현장 운영/);
+      assert.match(html, /NEXA SERVICE OPERATIONS/);
+      assert.match(html, /직원 전용 · 배차 \/ 현장 운영/);
       assert.doesNotMatch(html, /← (?:체험센터|포트폴리오|프로젝트)/);
     } else {
       assert.match(html, /<a href="\.\.\/"[^>]*>← (?:체험센터|포트폴리오|프로젝트)<\/a>/);
@@ -136,7 +140,7 @@ test('showroom checks all live public scripts', () => {
 });
 
 test('public showroom assets contain no common credential patterns', async () => {
-  const content = [home, sitemap, customerUi, await load('nexa-tech-service/app.js')];
+  const content = [home, sitemap, customerUi, await load('nexa-tech-service/app.js'), await load('nexa-service-domain/index.html')];
   for (const page of ['index.html','about.html','services.html','industries.html','cases.html','playbook.html','contact.html']) content.push(await load(`nexa-tech-service/${page}`));
   for (const demo of demos) content.push(await load(demo.html), await load(demo.app));
   const all = content.join('\n');
