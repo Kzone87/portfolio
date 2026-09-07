@@ -51,7 +51,8 @@ test('NEXA keeps the fictional boundary without presenting invented KPI achievem
   const all = `${home}\n${cases}`;
   assert.match(all, /포트폴리오 시연을 위해 구성한 가상 기업/);
   assert.match(cases, /실제 고객, 계약, 성과 수치를 의미하지 않/);
-  assert.match(home, /영향도 기반 우선순위/);
+  assert.match(home, /긴급도 판단/);
+  assert.match(home, /업무 영향/);
   assert.match(cases, /PORTFOLIO SCENARIO/);
   assert.doesNotMatch(all, /98\.7%|-31%|-42%|96%|초기 가동 100%|확인시간 -37%|평균 1차 응답/);
 });
