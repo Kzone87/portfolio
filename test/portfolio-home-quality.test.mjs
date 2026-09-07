@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const css = await readFile(new URL('../home-v3.css', import.meta.url), 'utf8');
+const lightCss = await readFile(new URL('../home-light.css', import.meta.url), 'utf8');
 const motion = await readFile(new URL('../home-motion.js', import.meta.url), 'utf8');
 
 const demoTargets = [
@@ -41,13 +42,20 @@ test('portfolio home has search metadata and keyboard navigation support', () =>
   assert.match(html, /a:focus-visible,button:focus-visible/);
 });
 
-test('visual hierarchy has contrast, editorial capability layout and mobile readability', () => {
-  assert.match(css, /\.nexa-showcase\{[^}]*background:linear-gradient/);
+test('visual hierarchy has editorial layout and mobile readability', () => {
   assert.match(css, /\.mono-bento\{[^}]*grid-template-columns:1\.15fr \.85fr/);
-  assert.match(css, /\.excel-case\{[^}]*background:#f1f8f4/);
   assert.match(css, /\.editorial-grid\{[^}]*grid-template-columns:1fr 1fr/);
   assert.match(css, /\.proof-rail\{[^}]*grid-template-columns:repeat\(4,1fr\)/);
   assert.match(css, /@media\(max-width:700px\)[\s\S]*\.studio-header nav a\{font-size:\.82rem/);
+});
+
+test('light studio palette keeps major surfaces bright instead of dark walls', () => {
+  assert.match(motion, /home-light\.css/);
+  assert.match(lightCss, /\.nexa-showcase\{background:linear-gradient\(145deg,#e6f0e9/);
+  assert.match(lightCss, /\.mono-bento a:first-child\{background:#dfeae3;color:#193127/);
+  assert.match(lightCss, /\.about-contact-section\{background:linear-gradient\(145deg,#eef3ee/);
+  assert.match(lightCss, /footer\{background:#f3f2ed/);
+  assert.doesNotMatch(lightCss, /background:linear-gradient\(145deg,#101813/);
 });
 
 test('reveal motion is progressive enhancement and respects reduced motion', () => {

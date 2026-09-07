@@ -1,0 +1,38 @@
+:root{--light-ink:#172019;--light-muted:#66716a;--light-line:#d8ddd8;--light-ivory:#f8f7f2;--light-paper:#fffdfa;--light-sage:#e7f0ea;--light-sage-2:#dce9e1;--light-green:#2f5b4c;--light-green-soft:#6f927f}
+
+body{background:var(--light-ivory);color:var(--light-ink)}
+.studio-header{background:rgba(250,249,245,.92);border-bottom-color:#dde2dd}
+.studio-hero{background:linear-gradient(180deg,#fbfaf7 0%,#f4f6f1 100%)}
+.hero-grid-pattern{opacity:.22}.hero-glow-a{background:radial-gradient(circle,rgba(102,151,126,.16),rgba(102,151,126,0) 70%)}.hero-glow-b{background:radial-gradient(circle,rgba(218,229,221,.58),rgba(218,229,221,0) 70%)}
+.studio-hero .primary-action{background:#274d3f}.studio-hero .primary-action:hover{background:#1f3f34}.live-mark strong{color:#28463a}
+
+.studio-work{background:#fffdfa}.editorial-heading>div>span{color:#7f9487}
+
+/* Light flagship: keep hierarchy without a dark wall. */
+.nexa-showcase{background:linear-gradient(145deg,#e6f0e9 0%,#dce9e1 58%,#eef4f0 100%);color:#183126;border:1px solid #c9d9cf;box-shadow:0 26px 66px rgba(45,83,63,.10)}
+.nexa-showcase:hover{box-shadow:0 30px 76px rgba(45,83,63,.14)}
+.nexa-showcase .case-watermark{color:rgba(47,91,76,.055)}
+.nexa-showcase .project-kicker span{color:#6f8f7e}.nexa-showcase .project-kicker b{color:#416353}.nexa-showcase .project-kicker em{background:rgba(47,91,76,.08);color:#365946}
+.nexa-showcase h3{color:#173126}.nexa-showcase .project-lead{color:#52685c}
+.nexa-showcase .project-facts>div{border-color:rgba(47,91,76,.14)}.nexa-showcase .project-facts dt{color:#779082}.nexa-showcase .project-facts dd{color:#3f5449}
+.nexa-showcase .project-enter{color:#244f3c}.nexa-showcase .secondary-case-link{color:#547566}
+.nexa-showcase .browser-preview{border-color:#c8d7ce;background:#fff;box-shadow:0 24px 56px rgba(44,73,58,.13)}
+
+/* Soften the only heavy MONO tile. */
+.mono-bento a:first-child{background:#dfeae3;color:#193127}.mono-bento a:first-child span,.mono-bento a:first-child small{color:#708a7b}.mono-bento a:first-child:hover{background:#d3e2d9}
+
+.excel-case{background:#f4faf6}.excel-case .flagship-copy{background:linear-gradient(180deg,#f7fbf8,#edf7f1)}
+.work-mini-banner{background:#f0efe9}
+
+.editorial-capabilities{background:#f7f6f1}.proof-section{background:#f7f6f1}
+
+/* Contact becomes a light studio closing section, not a dark footer wall. */
+.about-contact-section{background:linear-gradient(145deg,#eef3ee 0%,#f8f7f2 52%,#fffdfa 100%);color:#172019;border-top:1px solid #d7ddd7}
+.contact-heading>span,.contact-intro>span{color:#668171}.about-profile>p{color:#5d6b63}.about-facts>div{border-top-color:#d5ddd7}.about-facts dt{color:#819087}.about-facts dd{color:#36463d}.profile-link{color:#2d5845;border-bottom-color:#9eb3a7}
+.contact-intro p{color:#647169}.contact-rows{border-top-color:#cfd8d2}.contact-rows article{border-bottom-color:#d4ddd6}.contact-rows article>span{color:#71857a}.contact-rows p{color:#637169}
+.contact-rows a{border-color:#9fb5a8;background:#fff;color:#234b39}.contact-rows a:hover{background:#2f5b4c;color:#fff;border-color:#2f5b4c}
+.contact-foot{border-top-color:#d2dad4;color:#78857d}.contact-foot a{color:#2d5745}
+
+footer{background:#f3f2ed;color:#6e7771;border-top:1px solid #d8ddd8}
+
+@media(max-width:700px){.nexa-showcase{background:linear-gradient(180deg,#e7f0ea,#f3f7f4)}.about-contact-section{background:linear-gradient(180deg,#eef3ee,#fffdfa)}}
