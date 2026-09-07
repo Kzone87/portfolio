@@ -45,6 +45,13 @@ function resolvePrincipal(req, config) {
   return config.localPrincipal;
 }
 
+function requestIdempotencyKey(req) {
+  const key = String(req.headers['idempotency-key'] || '').trim();
+  if (!key) return '';
+  if (!/^[A-Za-z0-9._:-]{8,128}$/.test(key)) throw new DomainError(400, 'INVALID_IDEMPOTENCY_KEY', 'Idempotency-Key must be 8-128 safe characters');
+  return key;
+}
+
 function originHeaders(req, config) {
   const origin = String(req.headers.origin || '').trim();
   if (!origin) return {};
@@ -111,7 +118,7 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
         const cors = originHeaders(req, config);
         res.writeHead(204, {
           ...cors,
-          'access-control-allow-headers': 'authorization, content-type',
+          'access-control-allow-headers': 'authorization, content-type, idempotency-key',
           'access-control-allow-methods': 'GET,POST,OPTIONS',
           'access-control-max-age': '600',
           'x-content-type-options': 'nosniff'
@@ -142,7 +149,8 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
       }
       if (req.method === 'POST' && path === '/api/jobs') {
         const input = securedInput(await body(req), principal);
-        send(req, res, config, 201, store.createJob(input, principal.id));
+        const created = store.createJob(input, principal.id, requestIdempotencyKey(req));
+        send(req, res, config, created.idempotentReplay ? 200 : 201, created);
         return;
       }
 
