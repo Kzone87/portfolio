@@ -6,16 +6,17 @@
   <meta name="description" content="NEXA TECH SERVICE 직원이 방문 요청을 기사별 일정에 배정하고 출동부터 완료까지 관리하는 현장서비스 운영시스템">
   <title>NEXA Service Operations | 배차·현장 운영</title>
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./responsive-100.css">
 </head>
 <body>
 <header class="topbar">
   <div><strong>NEXA SERVICE OPERATIONS</strong><span class="workspace-name">직원 전용 · 배차 / 현장 운영</span></div>
-  <label>업무 권한<select id="role"><option value="STAFF">배차 담당자</option><option value="ADMIN">운영 관리자</option></select></label>
+  <label>현재 역할<select id="role"><option value="STAFF">배차 담당자</option><option value="ADMIN">운영 관리자</option></select></label>
 </header>
 <main class="dispatch-main">
   <section class="page-head">
-    <div><p class="breadcrumb">NEXA / 현장 서비스 / 배차</p><h1>오늘의 배차 현황</h1><p>방문 요청을 기사 일정에 배치하고 출동·현장도착·완료 상태를 처리합니다. 긴급 요청과 미배정 작업을 먼저 확인하세요.</p></div>
-    <div class="date-card"><span>운영 기준일</span><strong>2026. 09. 07</strong></div>
+    <div><p class="breadcrumb">NEXA / 현장 서비스 / 배차</p><h1>배차 현황</h1><p>기준일의 방문 요청을 기사 일정에 배치하고 출동·현장도착·완료 상태를 처리합니다. 긴급 요청과 미배정 작업을 먼저 확인하세요.</p></div>
+    <div class="date-card"><span>배차 기준일</span><strong>2026. 09. 07</strong></div>
   </section>
 
   <section class="metrics" aria-label="배차 현황 요약">
@@ -28,7 +29,7 @@
 
   <section class="dispatch-layout">
     <article class="panel board-panel">
-      <div class="head"><div><h2>기사별 일정</h2><p class="muted">08:00–18:00 방문 일정입니다. 작업을 선택하면 상세정보와 상태 변경을 처리할 수 있습니다.</p></div><span class="board-legend">오늘 일정</span></div>
+      <div class="head"><div><h2>기사별 일정</h2><p class="muted">08:00–18:00 방문 일정입니다. 작업을 선택하면 상세정보와 상태 변경을 처리할 수 있습니다.</p></div><span class="board-legend">기준일 일정</span></div>
       <div id="agent-board" class="agent-board" aria-label="기사별 일정 보드"></div>
     </article>
 
@@ -43,7 +44,7 @@
   </section>
 
   <section class="lower">
-    <article class="panel"><div class="head"><div><h2>오늘 확인할 항목</h2><p class="muted">배차 전에 긴급도와 일정 충돌, 현장 준비조건을 확인합니다.</p></div></div><ol class="ops-guide"><li><strong>긴급 요청</strong>과 업무중단 작업이 남아 있는지 확인합니다.</li><li><strong>미배정 요청</strong>은 기사 지역·업무량·방문 가능시간을 보고 배치합니다.</li><li>같은 기사 일정이 겹치면 저장되지 않습니다. 긴급 예외는 운영 관리자 사유가 필요합니다.</li><li>출동 → 현장 도착 → 완료 상태가 실제 진행과 일치하는지 확인합니다.</li></ol></article>
+    <article class="panel"><div class="head"><div><h2>우선 확인할 항목</h2><p class="muted">배차 전에 긴급도와 일정 충돌, 현장 준비조건을 확인합니다.</p></div></div><ol class="ops-guide"><li><strong>긴급 요청</strong>과 업무중단 작업이 남아 있는지 확인합니다.</li><li><strong>미배정 요청</strong>은 기사 지역·업무량·방문 가능시간을 보고 배치합니다.</li><li>같은 기사 일정이 겹치면 저장되지 않습니다. 긴급 예외는 운영 관리자 사유가 필요합니다.</li><li>출동 → 현장 도착 → 완료 상태가 실제 진행과 일치하는지 확인합니다.</li></ol></article>
     <article class="panel"><div class="head"><div><h2>최근 변경 이력</h2><p class="muted">배정, 일정 변경과 현장 상태 처리 기록입니다.</p></div></div><div id="audit-list" class="audit-list"></div></article>
   </section>
 </main>
