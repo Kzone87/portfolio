@@ -4,6 +4,7 @@ const form = $('lookup-form');
 const requestView = $('request-view');
 const emptyView = $('lookup-empty');
 const message = $('lookup-message');
+const linkedRequestId = String(new URLSearchParams(window.location.search).get('request') || '').trim().toUpperCase();
 
 const demoRequest = {
   id: 'NX-260907-0142',
@@ -214,5 +215,10 @@ form?.addEventListener('submit', async event => {
   }
 });
 
-if (!endpoint) render(demoRequest);
+if (linkedRequestId && /^NX-[A-Z0-9-]{6,24}$/.test(linkedRequestId)) {
+  $('request-id').value = linkedRequestId;
+  $('phone-last4').value = linkedRequestId === demoRequest.id ? demoRequest.phoneLast4 : '';
+}
+
+if (!endpoint && (!linkedRequestId || linkedRequestId === demoRequest.id)) render(demoRequest);
 else requestView.hidden = true;
