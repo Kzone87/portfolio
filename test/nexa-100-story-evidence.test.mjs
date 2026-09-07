@@ -33,7 +33,7 @@ test('portfolio NEXA card exposes operational engineering evidence without rever
 });
 
 test('service domain is an actual customer request portal while playbook remains the service procedure', () => {
-  for (const phrase of ['서비스 요청 조회','접수번호','연락처 뒤 4자리','현재 진행상태','방문 정보','요청 처리 현황','방문 전 준비','최근 안내','작업 결과']) {
+  for (const phrase of ['서비스 요청 조회','접수번호','상담 연락처','현재 진행상태','방문 정보','요청 처리 현황','방문 전 준비','최근 안내','작업 결과']) {
     assert.ok(portal.includes(phrase), `portal missing ${phrase}`);
   }
   for (const phrase of ['1. 고장 접수','2. 방문 전 안내','3. 현장 작업','4. 작업 결과 안내','5. 후속 작업']) {
