@@ -1,0 +1,96 @@
+TED:'방문 일정 확인 중',SCHEDULED:'방문 일정 확정',DISPATCHED:'기사 출동 중',
++    ON_SITE:'현장 작업 중',COMPLETED:'작업 완료',CANCELLED:'방문 취소',NO_SHOW:'방문 일정 재확인'
++  }[String(value||'').toUpperCase()]||'진행상태 확인');
++  const actionLabel=item=>item?.type==='MESSAGE'&&String(item?.note||'').startsWith('[재방문 요청]')?'재방문 요청':({MESSAGE:'추가 문의',RESCHEDULE:'일정 변경 요청',CANCEL:'방문 취소 요청'}[item?.type]||'고객 요청');
++  const fmt=value=>value?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value)):'-';
++  const addText=(parent,tag,text,cls='')=>{const node=document.createElement(tag);if(cls)node.className=cls;node.textContent=text;parent.append(node);return node;};
++
++  async function request(path,opt={}){
++    const method=opt.method||'GET';
++    const headers={...(opt.body?{'content-type':'application/json'}:{}),...(csrfToken&&method!=='GET'&&method!=='HEAD'?{'x-csrf-token':csrfToken}:{})};
++    const response=await fetch(`${secureEndpoint}${path}`,{method,headers,credentials:'include',cache:'no-store',body:opt.body?JSON.stringify(opt.body):undefined});
++    const payload=await response.json().catch(()=>({}));
++    if(!response.ok)throw new Error(payload?.error?.message||'요청을 처리하지 못했습니다.');
++    return payload;
++  }
++
++  function demoReport(data){
++    return {
++      requestId:data.id,
++      status:data.visit?.status||data.status,
++      address:data.visit?.address||data.handoff?.address||'',
++      summary:data.visit?.summary||data.handoff?.summary||'',
++      scheduledAt:data.visit?.startAt||'',
++      completedAt:data.visit?.status==='COMPLETED'?'2026-09-09T06:05:00.000Z':'',
++      service:data.service||'고장·장애 현장지원',
++      fieldReport:data.visit?.fieldReport||{
++        checks:{customer:true,access:true,result:true},
++        note:'출력 품질과 급지 상태를 확인하고 테스트 출력으로 정상 작동을 확인했습니다.',
++        photo:null,
++        updatedAt:'2026-09-09T06:03:00.000Z'
++      }
++    };
++  }
++
++  function renderReport(container,report,data){
++    container.replaceChildren();
++    const dl=document.createElement('dl');
++    const rows=[
++      ['접수번호',report.requestId||data.id],['서비스',report.service||data.service||'-'],['진행상태',customerStatus(report.status||data.status)],
++      ['방문 장소',report.address||'-'],['작업 내용',report.summary||'-'],['방문 일정',report.scheduledAt?fmt(report.scheduledAt):'-'],
++      ['완료 시각',report.completedAt?fmt(report.completedAt):'작업 진행 중']
++    ];
++    for(const [key,value] of rows){const row=document.createElement('div');addText(row,'dt',key);addText(row,'dd',String(value));dl.append(row)}
++    container.append(dl);
++
++    const field=report.fieldReport;
++    if(field){
++      const detail=document.createElement('div');detail.className='field-report-detail';
++      addText(detail,'strong','기사 작업기록');
++      const checks=document.createElement('ul');checks.className='field-report-checks';
++      const checkRows=[['customer','고객 요청 확인'],['access','현장 접근·작업환경 확인'],['result','작업 후 정상 여부 확인']];
++      for(const [key,label] of checkRows)addText(checks,'li',`${field.checks?.[key]?'✓':'–'} ${label}`);
++      detail.append(checks);
++      addText(detail,'p',field.note||'별도 작업 메모가 없습니다.','field-report-note');
++      if(field.updatedAt)addText(detail,'small',`현장 기록 ${fmt(field.updatedAt)}`);
++      if(field.photo?.data&&/^data:image\/(jpeg|png|webp);base64,/i.test(field.photo.data)){
++        const figure=document.createElement('figure');figure.className='field-report-photo';
++        const image=document.createElement('img');image.src=field.photo.data;image.alt='현장 작업 사진';image.loading='lazy';
++        figure.append(image);if(field.photo.name)addText(figure,'figcaption',field.photo.name);detail.append(figure);
++      }
++      container.append(detail);
++    }else{
++      addText(container,'p','현장 작업기록은 기사 작업 후 표시됩니다.','field-report-empty');
++    }
++
++    const copyButton=document.createElement('button');copyButton.type='button';copyButton.className='report-download';copyButton.textContent='보고서 내용 복사';
++    copyButton.addEventListener('click',async()=>{
++      const checks=field?.checks||{};
++      const text=[
++        '[NEXA 서비스 작업 보고서]',`접수번호: ${report.requestId||data.id}`,`서비스: ${report.service||data.service||'-'}`,
++        `진행상태: ${customerStatus(report.status||data.status)}`,`방문 장소: ${report.address||'-'}`,`작업 내용: ${report.summary||'-'}`,
++        `기사 작업기록: ${field?.note||'아직 없음'}`,`고객 요청 확인: ${checks.customer?'완료':'-'}`,`작업환경 확인: ${checks.access?'완료':'-'}`,`정상 여부 확인: ${checks.result?'완료':'-'}`
++      ].join('\n');
++      try{await navigator.clipboard.writeText(text);setMsg('작업 보고서 내용을 복사했습니다.')}catch{setMsg('자동 복사를 사용할 수 없습니다.',true)}
++    });
++    container.append(copyButton);
++  }
++
++  async function renderHistory(data){
++    let box=document.querySelector('.secure-history');
++    if(!box){box=document.createElement('section');box.className='secure-history';document.getElementById('request-view')?.append(box)}
++    let historyData,report;
++    if(demo){historyData={items:[{id:data.id,status:data.visit?.status||data.status,service:data.service||'고장·장애 현장지원',createdAt:data.createdAt,updatedAt:data.updatedAt}]};report=demoReport(data)}
++    else [historyData,report]=await Promise.all([request('/api/customer/access/history'),request(`/api/customer/access/report?requestId=${encodeURIComponent(data.id)}`)]);
++
++    box.replaceChildren();
++    const historySection=document.createElement('section');addText(historySection,'span','서비스 이력','card-label');addText(historySection,'h2','최근 요청·작업');
++    const list=document.createElement('div');list.className='service-history-list';
++    for(const item of (historyData.items||[]).slice(0,8)){
++      const row=document.createElement('article');row.className='history-row';
++      addText(row,'strong',item.id||'서비스 요청');addText(row,'span',`${item.service||'서비스 요청'} · ${customerStatus(item.status)}`);addText(row,'small',fmt(item.updatedAt||item.createdAt));list.append(row);
++    }
++    if(!list.childElementCount)addText(list,'div','최근 서비스 이력이 없습니다.','customer-action-empty');
++    historySection.append(list);
++
++    const reportSection=document.createElement('section');addText(reportSection,'span','작업 보고서','card-label');addText(reportSect
