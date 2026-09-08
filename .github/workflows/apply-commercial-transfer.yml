@@ -32,35 +32,26 @@ jobs:
           python - <<'PY'
           import base64, json, os, pathlib, urllib.request
           raw = pathlib.Path('/tmp/nexa-commercial-raw.patch').read_text(encoding='utf-8')
-
-          start_marker = 'diff --git a/nexa-service-domain/secure-access.js b/nexa-service-domain/secure-access.js'
-          next_marker = 'diff --git a/nexa-tech-service/cases.html b/nexa-tech-service/cases.html'
-          start = raw.find(start_marker); end = raw.find(next_marker)
-          if start < 0 or end < 0 or end <= start: raise SystemExit('secure access repair markers not found')
-          url = 'https://api.github.com/repos/Kzone87/portfolio/git/blobs/bc2a7cba5852ec6f0b0c617192bee0b81869378d'
-          req = urllib.request.Request(url, headers={'Authorization': f"Bearer {os.environ['GH_TOKEN']}", 'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'nexa-commercial-transfer'})
-          with urllib.request.urlopen(req) as response: payload = json.load(response)
-          secure = base64.b64decode(payload['content']).decode('utf-8')
-          lines = secure.splitlines()
-          secure_diff = [start_marker,'new file mode 100644','--- /dev/null','+++ b/nexa-service-domain/secure-access.js',f'@@ -0,0 +1,{len(lines)} @@'] + ['+'+line for line in lines]
-          repaired = raw[:start] + '\n'.join(secure_diff) + '\n' + raw[end:]
-
-          repaired = repaired.replace(';+}\n+\n+async function render() {', ';\n+}\n+\n+async function render() {')
-
-          # Exclude corrupted whole-file diffs and rebuild from clean main files after applying the rest.
-          for begin_marker, end_marker, label in [
-              ('diff --git a/field-service-ops/server/sqlite-store.mjs b/field-service-ops/server/sqlite-store.mjs','diff --git a/field-service-ops/server/store.mjs b/field-service-ops/server/store.mjs','sqlite store'),
-              ('diff --git a/field-service-ops/team-admin.mjs b/field-service-ops/team-admin.mjs','diff --git a/index.html b/index.html','team admin')
-          ]:
-              a = repaired.find(begin_marker); b = repaired.find(end_marker)
-              if a < 0 or b < 0 or b <= a: raise SystemExit(f'{label} repair markers not found')
-              repaired = repaired[:a] + repaired[b:]
-
-          pathlib.Path('/tmp/nexa-commercial.patch').write_text(repaired, encoding='utf-8')
+          start_marker='diff --git a/nexa-service-domain/secure-access.js b/nexa-service-domain/secure-access.js'; next_marker='diff --git a/nexa-tech-service/cases.html b/nexa-tech-service/cases.html'
+          start=raw.find(start_marker); end=raw.find(next_marker)
+          if start<0 or end<0 or end<=start: raise SystemExit('secure access repair markers not found')
+          req=urllib.request.Request('https://api.github.com/repos/Kzone87/portfolio/git/blobs/bc2a7cba5852ec6f0b0c617192bee0b81869378d',headers={'Authorization':f"Bearer {os.environ['GH_TOKEN']}",'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'nexa-commercial-transfer'})
+          with urllib.request.urlopen(req) as response: payload=json.load(response)
+          secure=base64.b64decode(payload['content']).decode('utf-8'); lines=secure.splitlines()
+          secure_diff=[start_marker,'new file mode 100644','--- /dev/null','+++ b/nexa-service-domain/secure-access.js',f'@@ -0,0 +1,{len(lines)} @@']+['+'+line for line in lines]
+          repaired=raw[:start]+'\n'.join(secure_diff)+'\n'+raw[end:]
+          repaired=repaired.replace(';+}\n+\n+async function render() {',';\n+}\n+\n+async function render() {')
+          for begin_marker,end_marker,label in [
+            ('diff --git a/field-service-ops/server/sqlite-store.mjs b/field-service-ops/server/sqlite-store.mjs','diff --git a/field-service-ops/server/store.mjs b/field-service-ops/server/store.mjs','sqlite store'),
+            ('diff --git a/field-service-ops/team-admin.mjs b/field-service-ops/team-admin.mjs','diff --git a/index.html b/index.html','team admin')]:
+              a=repaired.find(begin_marker); b=repaired.find(end_marker)
+              if a<0 or b<0 or b<=a: raise SystemExit(f'{label} repair markers not found')
+              repaired=repaired[:a]+repaired[b:]
+          pathlib.Path('/tmp/nexa-commercial.patch').write_text(repaired,encoding='utf-8')
           PY
           if ! git apply --check /tmp/nexa-commercial.patch; then
-            echo '--- PATCH FAILURE ---'
-            git apply --check --verbose /tmp/nexa-commercial.patch || true
+            echo '--- PATCH CONTEXT 1490-1600 ---'
+            nl -ba /tmp/nexa-commercial.patch | sed -n '1490,1600p'
             exit 1
           fi
       - name: Apply verified commercial source
@@ -70,37 +61,25 @@ jobs:
           git apply /tmp/nexa-commercial.patch
           python - <<'PY'
           from pathlib import Path
-
-          # about.html transport tail was incomplete.
-          path = Path('nexa-tech-service/about.html'); text = path.read_text(encoding='utf-8')
-          if './commercial-scope.css' not in text: text = text.replace('<link rel="stylesheet" href="./clarity.css">','<link rel="stylesheet" href="./clarity.css"><link rel="stylesheet" href="./commercial-scope.css">')
-          text = text.replace('<span>NEXA TECH<small>','<span>NEXA TECH SERVICE<small>')
-          if './commercial-scope.js' not in text: text = text.replace('<script src="./app.js"></script>','<script src="./app.js"></script>\n<script src="./commercial-scope.js"></script>')
+          path=Path('nexa-tech-service/about.html'); text=path.read_text(encoding='utf-8')
+          if './commercial-scope.css' not in text:text=text.replace('<link rel="stylesheet" href="./clarity.css">','<link rel="stylesheet" href="./clarity.css"><link rel="stylesheet" href="./commercial-scope.css">')
+          text=text.replace('<span>NEXA TECH<small>','<span>NEXA TECH SERVICE<small>')
+          if './commercial-scope.js' not in text:text=text.replace('<script src="./app.js"></script>','<script src="./app.js"></script>\n<script src="./commercial-scope.js"></script>')
           path.write_text(text,encoding='utf-8')
-
-          # Rebuild staff↔agent mapping from the clean Team Admin file.
           path=Path('field-service-ops/team-admin.mjs'); text=path.read_text(encoding='utf-8')
-          text=text.replace("    team: $('team-team'),\n    role:","    team: $('team-team'),\n    agent: $('team-agent'),\n    role:")
-          text=text.replace("    newTeam: $('new-user-team'),\n    newRole:","    newTeam: $('new-user-team'),\n    newAgent: $('new-user-agent'),\n    newRole:")
-          text=text.replace("const state = { items: [], selectedId: null, audits: [] };","const state = { items: [], selectedId: null, audits: [], agents: [] };")
+          text=text.replace("    team: $('team-team'),\n    role:","    team: $('team-team'),\n    agent: $('team-agent'),\n    role:").replace("    newTeam: $('new-user-team'),\n    newRole:","    newTeam: $('new-user-team'),\n    newAgent: $('new-user-agent'),\n    newRole:").replace("const state = { items: [], selectedId: null, audits: [] };","const state = { items: [], selectedId: null, audits: [], agents: [] };")
           text=text.replace("node('p', '', `${user.username} · ${user.team || '운영팀'}`),","node('p', '', `${user.username} · ${user.team || '운영팀'}${user.agentId ? ` · ${state.agents.find(agent => Number(agent.id) === Number(user.agentId))?.name || `기사 #${user.agentId}`}` : ''}`),")
-          marker="  function renderDetail() {\n"
-          fill="  function fillAgentSelect(select, selectedValue = '') {\n    if (!select) return;\n    const current = String(selectedValue || '');\n    select.replaceChildren();\n    const none = document.createElement('option'); none.value = ''; none.textContent = '운영/배차 전용'; select.append(none);\n    for (const agent of state.agents.filter(item => item.active !== false)) {\n      const option = document.createElement('option'); option.value = String(agent.id); option.textContent = `${agent.name}${agent.region ? ` · ${agent.region}` : ''}`; select.append(option);\n    }\n    if ([...select.options].some(option => option.value === current)) select.value = current;\n  }\n\n"
-          if 'function fillAgentSelect' not in text: text=text.replace(marker,fill+marker)
+          marker="  function renderDetail() {\n"; fill="  function fillAgentSelect(select, selectedValue = '') {\n    if (!select) return;\n    const current = String(selectedValue || '');\n    select.replaceChildren();\n    const none = document.createElement('option'); none.value = ''; none.textContent = '운영/배차 전용'; select.append(none);\n    for (const agent of state.agents.filter(item => item.active !== false)) {\n      const option = document.createElement('option'); option.value = String(agent.id); option.textContent = `${agent.name}${agent.region ? ` · ${agent.region}` : ''}`; select.append(option);\n    }\n    if ([...select.options].some(option => option.value === current)) select.value = current;\n  }\n\n"
+          if 'function fillAgentSelect' not in text:text=text.replace(marker,fill+marker)
           text=text.replace("    if (el.team) el.team.value = user.team || '';\n    if (el.role)","    if (el.team) el.team.value = user.team || '';\n    fillAgentSelect(el.agent, user.agentId || '');\n    if (el.role)")
           text=text.replace("const [users, audits] = await Promise.all([adapter.listUsers(), adapter.authAudits()]);\n      state.items = users.items || [];\n      state.audits = audits.items || [];","const [users, audits, agents] = await Promise.all([adapter.listUsers(), adapter.authAudits(), adapter.listAgents ? adapter.listAgents() : Promise.resolve({ items: [] })]);\n      state.items = users.items || [];\n      state.audits = audits.items || [];\n      state.agents = agents.items || [];\n      fillAgentSelect(el.newAgent, el.newAgent?.value || '');")
-          text=text.replace("        team: String(el.team?.value || '').trim(),\n        role:","        team: String(el.team?.value || '').trim(),\n        agentId: el.agent?.value ? Number(el.agent.value) : null,\n        role:")
-          text=text.replace("      team: String(el.newTeam?.value || '').trim(),\n      role:","      team: String(el.newTeam?.value || '').trim(),\n      agentId: el.newAgent?.value ? Number(el.newAgent.value) : null,\n      role:")
+          text=text.replace("        team: String(el.team?.value || '').trim(),\n        role:","        team: String(el.team?.value || '').trim(),\n        agentId: el.agent?.value ? Number(el.agent.value) : null,\n        role:").replace("      team: String(el.newTeam?.value || '').trim(),\n      role:","      team: String(el.newTeam?.value || '').trim(),\n      agentId: el.newAgent?.value ? Number(el.newAgent.value) : null,\n      role:")
           path.write_text(text,encoding='utf-8')
-
-          # Rebuild field-report persistence from the clean SQLite store.
           path=Path('field-service-ops/server/sqlite-store.mjs'); text=path.read_text(encoding='utf-8')
-          schema="""    CREATE TABLE IF NOT EXISTS field_reports (\n      job_id INTEGER PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,\n      checks_json TEXT NOT NULL DEFAULT '{}',\n      note TEXT NOT NULL DEFAULT '',\n      photo_name TEXT,\n      photo_type TEXT,\n      photo_data TEXT,\n      updated_by TEXT NOT NULL DEFAULT '',\n      updated_at TEXT\n    );\n"""
-          anchor="    CREATE INDEX IF NOT EXISTS idx_audits_job_id ON audits(job_id, id DESC);\n"
-          if 'CREATE TABLE IF NOT EXISTS field_reports' not in text: text=text.replace(anchor,anchor+schema)
-          methods="""    getFieldReport(id) {\n      const job = requireJob(id);\n      const row = db.prepare('SELECT * FROM field_reports WHERE job_id=?').get(job.id);\n      if (!row) return { jobId: job.id, checks: { customer: false, access: false, result: false }, note: '', photo: null, updatedBy: '', updatedAt: null };\n      let checks = { customer: false, access: false, result: false };\n      try { checks = { ...checks, ...JSON.parse(row.checks_json || '{}') }; } catch {}\n      return { jobId: job.id, checks, note: row.note || '', photo: row.photo_data ? { name: row.photo_name || 'photo', type: row.photo_type || '', data: row.photo_data } : null, updatedBy: row.updated_by || '', updatedAt: row.updated_at || null };\n    },\n    saveFieldReport(id, input = {}, actor = 'ops-user') {\n      return transaction(() => {\n        const job = requireJob(id);\n        const existing = db.prepare('SELECT * FROM field_reports WHERE job_id=?').get(job.id);\n        const checks = { customer: Boolean(input?.checks?.customer), access: Boolean(input?.checks?.access), result: Boolean(input?.checks?.result) };\n        const note = String(input?.note || '').trim().slice(0, 2000);\n        let photoName = existing?.photo_name || null, photoType = existing?.photo_type || null, photoData = existing?.photo_data || null;\n        if (input?.clearPhoto) photoName = photoType = photoData = null;\n        if (input?.photo) {\n          const type = String(input.photo.type || ''); const name = String(input.photo.name || 'photo').slice(0,120); const data = String(input.photo.data || '');\n          if (!['image/jpeg','image/png','image/webp'].includes(type)) throw new DomainError(400,'INVALID_FIELD_PHOTO','supported field photo types are JPEG, PNG, WebP');\n          if (!/^data:image\\/(jpeg|png|webp);base64,/.test(data) || data.length > 1100000) throw new DomainError(413,'FIELD_PHOTO_TOO_LARGE','field photo must be a supported image under 800KB');\n          photoName=name; photoType=type; photoData=data;\n        }\n        const at=nowIso();\n        db.prepare(`INSERT INTO field_reports(job_id,checks_json,note,photo_name,photo_type,photo_data,updated_by,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(job_id) DO UPDATE SET checks_json=excluded.checks_json,note=excluded.note,photo_name=excluded.photo_name,photo_type=excluded.photo_type,photo_data=excluded.photo_data,updated_by=excluded.updated_by,updated_at=excluded.updated_at`).run(job.id,JSON.stringify(checks),note,photoName,photoType,photoData,String(actor||'ops-user').slice(0,80),at);\n        audit(job,'FIELD_REPORT',actor,`checks ${Object.values(checks).filter(Boolean).length}/3${photoData ? ' · photo' : ''}`);\n        return { jobId:job.id, checks, note, photo:photoData?{name:photoName,type:photoType,data:photoData}:null, updatedBy:String(actor||'ops-user').slice(0,80), updatedAt:at };\n      });\n    },\n"""
-          close_anchor="    close() { db.close(); }\n"
-          if 'getFieldReport(id)' not in text: text=text.replace(close_anchor,methods+close_anchor)
+          schema="""    CREATE TABLE IF NOT EXISTS field_reports (\n      job_id INTEGER PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,\n      checks_json TEXT NOT NULL DEFAULT '{}',\n      note TEXT NOT NULL DEFAULT '',\n      photo_name TEXT,\n      photo_type TEXT,\n      photo_data TEXT,\n      updated_by TEXT NOT NULL DEFAULT '',\n      updated_at TEXT\n    );\n"""; anchor="    CREATE INDEX IF NOT EXISTS idx_audits_job_id ON audits(job_id, id DESC);\n"
+          if 'CREATE TABLE IF NOT EXISTS field_reports' not in text:text=text.replace(anchor,anchor+schema)
+          methods="""    getFieldReport(id) {\n      const job = requireJob(id);\n      const row = db.prepare('SELECT * FROM field_reports WHERE job_id=?').get(job.id);\n      if (!row) return { jobId: job.id, checks: { customer: false, access: false, result: false }, note: '', photo: null, updatedBy: '', updatedAt: null };\n      let checks = { customer: false, access: false, result: false };\n      try { checks = { ...checks, ...JSON.parse(row.checks_json || '{}') }; } catch {}\n      return { jobId: job.id, checks, note: row.note || '', photo: row.photo_data ? { name: row.photo_name || 'photo', type: row.photo_type || '', data: row.photo_data } : null, updatedBy: row.updated_by || '', updatedAt: row.updated_at || null };\n    },\n    saveFieldReport(id, input = {}, actor = 'ops-user') {\n      return transaction(() => {\n        const job = requireJob(id); const existing = db.prepare('SELECT * FROM field_reports WHERE job_id=?').get(job.id);\n        const checks = { customer: Boolean(input?.checks?.customer), access: Boolean(input?.checks?.access), result: Boolean(input?.checks?.result) }; const note=String(input?.note||'').trim().slice(0,2000);\n        let photoName=existing?.photo_name||null, photoType=existing?.photo_type||null, photoData=existing?.photo_data||null; if(input?.clearPhoto)photoName=photoType=photoData=null;\n        if(input?.photo){const type=String(input.photo.type||'');const name=String(input.photo.name||'photo').slice(0,120);const data=String(input.photo.data||'');if(!['image/jpeg','image/png','image/webp'].includes(type))throw new DomainError(400,'INVALID_FIELD_PHOTO','supported field photo types are JPEG, PNG, WebP');if(!/^data:image\\/(jpeg|png|webp);base64,/.test(data)||data.length>1100000)throw new DomainError(413,'FIELD_PHOTO_TOO_LARGE','field photo must be a supported image under 800KB');photoName=name;photoType=type;photoData=data;}\n        const at=nowIso(); db.prepare(`INSERT INTO field_reports(job_id,checks_json,note,photo_name,photo_type,photo_data,updated_by,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(job_id) DO UPDATE SET checks_json=excluded.checks_json,note=excluded.note,photo_name=excluded.photo_name,photo_type=excluded.photo_type,photo_data=excluded.photo_data,updated_by=excluded.updated_by,updated_at=excluded.updated_at`).run(job.id,JSON.stringify(checks),note,photoName,photoType,photoData,String(actor||'ops-user').slice(0,80),at);\n        audit(job,'FIELD_REPORT',actor,`checks ${Object.values(checks).filter(Boolean).length}/3${photoData?' · photo':''}`); return {jobId:job.id,checks,note,photo:photoData?{name:photoName,type:photoType,data:photoData}:null,updatedBy:String(actor||'ops-user').slice(0,80),updatedAt:at};\n      });\n    },\n"""; close_anchor="    close() { db.close(); }\n"
+          if 'getFieldReport(id)' not in text:text=text.replace(close_anchor,methods+close_anchor)
           path.write_text(text,encoding='utf-8')
           PY
           rm -rf .commercial-transfer-v2
@@ -110,13 +89,11 @@ jobs:
       - name: Verify delivery build
         shell: bash
         run: |
-          set -euo pipefail
           rm -rf /tmp/nexa-delivery
           NEXA_PUBLIC_API_ORIGIN=http://127.0.0.1:8796 NEXA_OPS_API_ORIGIN=http://127.0.0.1:8792 NEXA_CUSTOMER_SECURE_ORIGIN=http://127.0.0.1:8797 NEXA_DELIVERY_DIR=/tmp/nexa-delivery npm run build:nexa-delivery
       - name: Commit verified source
         shell: bash
         run: |
-          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
