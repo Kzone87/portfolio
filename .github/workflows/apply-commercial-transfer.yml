@@ -31,15 +31,13 @@ jobs:
           find .commercial-transfer-v2 -type f -name 'part-*' -print0 | sort -z | xargs -0 cat > /tmp/nexa-commercial-raw.patch
           python - <<'PY'
           import base64, json, os, pathlib, urllib.request
-          raw_path = pathlib.Path('/tmp/nexa-commercial-raw.patch')
-          raw = raw_path.read_text(encoding='utf-8')
+          raw = pathlib.Path('/tmp/nexa-commercial-raw.patch').read_text(encoding='utf-8')
           start_marker = 'diff --git a/nexa-service-domain/secure-access.js b/nexa-service-domain/secure-access.js'
           next_marker = 'diff --git a/nexa-tech-service/cases.html b/nexa-tech-service/cases.html'
           start = raw.find(start_marker)
           end = raw.find(next_marker)
           if start < 0 or end < 0 or end <= start:
               raise SystemExit('commercial patch repair markers not found')
-
           url = 'https://api.github.com/repos/Kzone87/portfolio/git/blobs/bc2a7cba5852ec6f0b0c617192bee0b81869378d'
           req = urllib.request.Request(url, headers={
               'Authorization': f"Bearer {os.environ['GH_TOKEN']}",
@@ -59,11 +57,14 @@ jobs:
               f'@@ -0,0 +1,{len(lines)} @@'
           ]
           secure_diff.extend('+' + line for line in lines)
-          secure_text = '\n'.join(secure_diff) + '\n'
-          repaired = raw[:start] + secure_text + raw[end:]
+          repaired = raw[:start] + '\n'.join(secure_diff) + '\n' + raw[end:]
           pathlib.Path('/tmp/nexa-commercial.patch').write_text(repaired, encoding='utf-8')
           PY
-          git apply --check /tmp/nexa-commercial.patch
+          if ! git apply --check /tmp/nexa-commercial.patch; then
+            echo '--- PATCH CONTEXT 380-455 ---'
+            nl -ba /tmp/nexa-commercial.patch | sed -n '380,455p'
+            exit 1
+          fi
       - name: Apply verified commercial source
         shell: bash
         run: |
