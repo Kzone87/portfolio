@@ -110,11 +110,11 @@ test('contact behaves like a customer worksheet without pretending to submit onl
 });
 
 test('portfolio main explains NEXA in customer outcomes and routes to all product surfaces', () => {
-  for (const phrase of ['고객 상담부터 현장 배차까지 이어지는 유지보수 서비스','문의가 끊기지 않게','현장 운영을 한눈에','완료 이후까지','서비스 운영 흐름 보기','01 · 고객 서비스 화면','02 · 직원 배차 화면']) assert.ok(portfolioHome.includes(phrase), `portfolio missing ${phrase}`);
+  for (const phrase of ['NEXA SERVICE SUITE','고객 상담부터 현장 완료까지, 하나로 이어지는 서비스 운영 시스템','신규 고객','기존 고객','NEXA CUSTOMER SERVICE','NEXA SERVICE OPERATIONS','서비스 홈페이지 열기','고객 서비스 열기','운영 Workspace 열기']) assert.ok(portfolioHome.includes(phrase), `portfolio missing ${phrase}`);
   assert.match(portfolioHome, /href="\.\/nexa-service-domain\/"/);
   assert.match(portfolioHome, /href="\.\/nexa-tech-service\/"/);
   assert.match(portfolioHome, /href="\.\/field-service-ops\/"/);
-  assert.doesNotMatch(portfolioHome, /왜 두 화면인가|역할 분리|구현 근거|ONE DOMAIN · TWO SURFACES/);
+  assert.doesNotMatch(portfolioHome, /왜 두 화면인가|역할 분리|구현 근거|ONE DOMAIN · TWO SURFACES|01 · 고객 서비스 화면|02 · 직원 배차 화면/);
 });
 
 test('NEXA customer service is a functional request portal rather than portfolio explanation', () => {
