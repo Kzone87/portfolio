@@ -48,7 +48,7 @@ async function gotoWithRetry(page, url) {
   for (let attempt = 1; attempt <= 8; attempt += 1) {
     try {
       const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 30_000 });
-      if (!response || response.status() >= 400) throw new Error(`HTTP ${response?.status() ?? 'no-response'}`);
+      if (!response || response.status() >= 400) throw new Error(`HTTP ${response?.status() ?? 'no-response'} ${url}`);
       return response;
     } catch (error) {
       last = error;
@@ -56,6 +56,22 @@ async function gotoWithRetry(page, url) {
     }
   }
   throw last;
+}
+
+function captureRuntimeErrors(page, runtimeErrors) {
+  page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`));
+  page.on('response', response => {
+    if (response.status() >= 400) runtimeErrors.push(`http ${response.status()}: ${response.url()}`);
+  });
+  page.on('requestfailed', request => {
+    runtimeErrors.push(`requestfailed: ${request.url()} · ${request.failure()?.errorText || 'unknown error'}`);
+  });
+  page.on('console', message => {
+    if (message.type() !== 'error') return;
+    const location = message.location();
+    const suffix = location?.url ? ` @ ${location.url}:${location.lineNumber ?? 0}:${location.columnNumber ?? 0}` : '';
+    runtimeErrors.push(`console: ${message.text()}${suffix}`);
+  });
 }
 
 async function assertNoHorizontalOverflow(page, label) {
@@ -74,8 +90,7 @@ for (const surface of surfaces) {
     const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
     const page = await context.newPage();
     const runtimeErrors = [];
-    page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`));
-    page.on('console', message => { if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`); });
+    captureRuntimeErrors(page, runtimeErrors);
     try {
       await gotoWithRetry(page, surface.url);
       await page.locator(surface.selector).first().waitFor({ state: 'attached', timeout: 15_000 });
@@ -99,6 +114,8 @@ for (const surface of surfaces) {
 {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
   const page = await context.newPage();
+  const runtimeErrors = [];
+  captureRuntimeErrors(page, runtimeErrors);
   try {
     await gotoWithRetry(page, `${root}/nexa-service-domain/`);
     await page.locator('#secure-send').waitFor({ state: 'visible', timeout: 15_000 });
@@ -112,6 +129,7 @@ for (const surface of surfaces) {
     const text = await page.locator('body').innerText();
     if (!text.includes('작업 보고서')) throw new Error('customer demo: work report missing after OTP verification');
     await page.screenshot({ path: `${output}/customer-service-otp-verified.png`, fullPage: true });
+    if (runtimeErrors.length) throw new Error(`customer interaction: ${runtimeErrors.join(' | ')}`);
     console.log('PASS interaction customer OTP -> request -> report');
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
@@ -124,6 +142,8 @@ for (const surface of surfaces) {
 {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'ko-KR', timezoneId: 'Asia/Seoul' });
   const page = await context.newPage();
+  const runtimeErrors = [];
+  captureRuntimeErrors(page, runtimeErrors);
   try {
     await gotoWithRetry(page, `${root}/field-service-ops/`);
     await page.locator('.commercial-workspace-toolbar').waitFor({ state: 'visible', timeout: 20_000 });
@@ -133,6 +153,7 @@ for (const surface of surfaces) {
       await assertNoHorizontalOverflow(page, `operations/${view}`);
       await page.screenshot({ path: `${output}/operations-${view}.png`, fullPage: true });
     }
+    if (runtimeErrors.length) throw new Error(`operations interaction: ${runtimeErrors.join(' | ')}`);
     console.log('PASS interaction operations day/week/map/field');
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
