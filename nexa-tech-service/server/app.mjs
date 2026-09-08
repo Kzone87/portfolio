@@ -207,6 +207,11 @@ export function createFieldOpsClient({ baseUrl, token, fetchImpl = fetch }) {
       const job = await jobResponse.json().catch(() => ({}));
       const auditPayload = await auditResponse.json().catch(() => ({ items: [] }));
       if (!jobResponse.ok) throw new InquiryError(502, 'FIELD_OPS_REJECTED', job?.error?.message || '현장 방문 상태를 확인하지 못했습니다.');
+      let fieldReport = null;
+      try {
+        const reportResponse = await fetchImpl(`${root}/api/jobs/${Number(jobId)}/report`, { headers: headers() });
+        if (reportResponse.ok) fieldReport = await reportResponse.json().catch(() => null);
+      } catch {}
       return {
         id: Number(job.id),
         status: job.status,
@@ -216,6 +221,7 @@ export function createFieldOpsClient({ baseUrl, token, fetchImpl = fetch }) {
         address: job.address || '',
         summary: job.summary || '',
         agentAssigned: Number.isInteger(Number(job.agentId)) && Number(job.agentId) > 0,
+        fieldReport,
         updates: (auditPayload.items || []).slice(0, 10)
       };
     }
@@ -250,7 +256,8 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
     rateMax: Number(options.rateMax || DEFAULT_RATE_MAX),
     rateBuckets: new Map(),
     trustProxy: Boolean(options.trustProxy),
-    fieldOpsClient: options.fieldOpsClient || null
+    fieldOpsClient: options.fieldOpsClient || null,
+    allowLegacyCustomerAccess: options.allowLegacyCustomerAccess !== false
   };
   if (config.requireAdminConfig && config.admins.size === 0) throw new Error('production inquiry API requires at least one admin principal');
   if (!Number.isFinite(config.rateWindowMs) || config.rateWindowMs < 1000) throw new Error('rateWindowMs must be at least 1000 milliseconds');
@@ -260,6 +267,10 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
     try {
       const url = new URL(req.url ?? '/', 'http://localhost');
       const path = url.pathname;
+      if (req.method !== 'OPTIONS') {
+        const origin = String(req.headers.origin || '').trim();
+        if (origin && !config.allowedOrigins.has('*') && !config.allowedOrigins.has(origin)) throw new InquiryError(403, 'ORIGIN_NOT_ALLOWED', '요청할 수 없는 출처입니다.');
+      }
 
       if (req.method === 'OPTIONS') {
         const origin = String(req.headers.origin || '').trim();
@@ -277,7 +288,7 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
       }
 
       if (req.method === 'GET' && path === '/api/health') {
-        send(req, res, config, 200, { ok: true, service: 'nexa-inquiry-api', fieldOpsHandoff: Boolean(config.fieldOpsClient), customerLookup: true, customerActions: true });
+        send(req, res, config, 200, { ok: true, service: 'nexa-inquiry-api', fieldOpsHandoff: Boolean(config.fieldOpsClient), legacyCustomerAccess: config.allowLegacyCustomerAccess });
         return;
       }
 
@@ -289,6 +300,7 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
       }
 
       if (req.method === 'POST' && path === '/api/customer/requests/lookup') {
+        if (!config.allowLegacyCustomerAccess) throw new InquiryError(404, 'NOT_FOUND', '요청 경로를 찾을 수 없습니다.');
         consumeRateLimit(req, config);
         const inquiry = lookupIdentity(store, await readBody(req));
         const view = publicInquiry(store, inquiry);
@@ -300,6 +312,7 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
       }
 
       if (req.method === 'POST' && path === '/api/customer/requests/action') {
+        if (!config.allowLegacyCustomerAccess) throw new InquiryError(404, 'NOT_FOUND', '요청 경로를 찾을 수 없습니다.');
         consumeRateLimit(req, config);
         const input = await readBody(req);
         const inquiry = lookupIdentity(store, input);
@@ -384,7 +397,8 @@ export function runtimeInquiryOptions(env = process.env) {
     requireAdminConfig: production,
     trustProxy: env.NEXA_INQUIRY_TRUST_PROXY === '1',
     rateWindowMs,
-    rateMax
+    rateMax,
+    allowLegacyCustomerAccess: !production || env.NEXA_ALLOW_LEGACY_CUSTOMER_ACCESS === '1'
   };
 }
 

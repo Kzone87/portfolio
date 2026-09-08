@@ -19,6 +19,7 @@ export function mountTeamAdmin({ adapter, currentUserId }) {
     title: $('team-user-title'),
     name: $('team-name'),
     team: $('team-team'),
+    agent: $('team-agent'),
     role: $('team-role'),
     active: $('team-active'),
     save: $('team-save'),
@@ -30,13 +31,14 @@ export function mountTeamAdmin({ adapter, currentUserId }) {
     newUsername: $('new-user-username'),
     newName: $('new-user-name'),
     newTeam: $('new-user-team'),
+    newAgent: $('new-user-agent'),
     newRole: $('new-user-role'),
     newPassword: $('new-user-password'),
     audits: $('team-auth-audits')
   };
   if (!el.list) return { refresh: async () => {} };
 
-  const state = { items: [], selectedId: null, audits: [] };
+  const state = { items: [], selectedId: null, audits: [], agents: [] };
 
   function message(copy, error = false) {
     if (!el.message) return;
@@ -57,7 +59,7 @@ export function mountTeamAdmin({ adapter, currentUserId }) {
       head.append(node('strong', '', user.name), node('span', `team-role-badge ${user.role}`, user.role === 'ADMIN' ? '운영 관리자' : '배차 담당자'));
       button.append(
         head,
-        node('p', '', `${user.username} · ${user.team || '운영팀'}`),
+        node('p', '', `${user.username} · ${user.team || '운영팀'}${user.agentId ? ` · ${state.agents.find(agent => Number(agent.id) === Number(user.agentId))?.name || `기사 #${user.agentId}`}` : ''}`),
         node('small', '', user.active ? (user.id === currentUserId ? '현재 로그인 계정' : '사용 중') : '비활성화')
       );
       button.addEventListener('click', () => {
@@ -70,6 +72,17 @@ export function mountTeamAdmin({ adapter, currentUserId }) {
     if (!state.items.length) el.list.append(node('div', 'empty compact', '등록된 직원 계정이 없습니다.'));
   }
 
+  function fillAgentSelect(select, selectedValue = '') {
+    if (!select) return;
+    const current = String(selectedValue || '');
+    select.replaceChildren();
+    const none = document.createElement('option'); none.value = ''; none.textContent = '운영/배차 전용'; select.append(none);
+    for (const agent of state.agents.filter(item => item.active !== false)) {
+      const option = document.createElement('option'); option.value = String(agent.id); option.textContent = `${agent.name}${agent.region ? ` · ${agent.region}` : ''}`; select.append(option);
+    }
+    if ([...select.options].some(option => option.value === current)) select.value = current;
+  }
+
   function renderDetail() {
     const user = selected();
     if (el.empty) el.empty.hidden = Boolean(user);
@@ -78,6 +91,7 @@ export function mountTeamAdmin({ adapter, currentUserId }) {
     if (el.title) el.title.textContent = `${user.name} · ${user.username}`;
     if (el.name) el.name.value = user.name;
     if (el.team) el.team.value = user.team || '';
+    fillAgentSelect(el.agent, user.agentId || '');
     if (el.role) el.role.value = user.role;
     if (el.active) {
       el.active.checked = Boolean(user.active);
@@ -104,9 +118,11 @@ export function mountTeamAdmin({ adapter, currentUserId }) {
 
   async function refresh({ preserveSelection = true } = {}) {
     try {
-      const [users, audits] = await Promise.all([adapter.listUsers(), adapter.authAudits()]);
+      const [users, audits, agents] = await Promise.all([adapter.listUsers(), adapter.authAudits(), adapter.listAgents ? adapter.listAgents() : Promise.resolve({ items: [] })]);
       state.items = users.items || [];
       state.audits = audits.items || [];
+      state.agents = agents.items || [];
+      fillAgentSelect(el.newAgent, el.newAgent?.value || '');
       if (!preserveSelection || !state.items.some(user => user.id === state.selectedId)) {
         state.selectedId = state.items.find(user => user.id === currentUserId)?.id || state.items[0]?.id || null;
       }
@@ -127,6 +143,7 @@ export function mountTeamAdmin({ adapter, currentUserId }) {
       await adapter.updateUser(user.id, {
         name: String(el.name?.value || '').trim(),
         team: String(el.team?.value || '').trim(),
+        agentId: el.agent?.value ? Number(el.agent.value) : null,
         role: String(el.role?.value || 'STAFF'),
         active: Boolean(el.active?.checked)
       });
@@ -164,6 +181,7 @@ export function mountTeamAdmin({ adapter, currentUserId }) {
       username: String(el.newUsername?.value || '').trim(),
       name: String(el.newName?.value || '').trim(),
       team: String(el.newTeam?.value || '').trim(),
+      agentId: el.newAgent?.value ? Number(el.newAgent.value) : null,
       role: String(el.newRole?.value || 'STAFF'),
       password: String(el.newPassword?.value || '')
     };

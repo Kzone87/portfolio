@@ -367,6 +367,7 @@ function inquiryAdapter() {
 function teamAdapter() {
   return {
     listUsers: () => api('/api/admin/users'),
+    listAgents: () => api('/api/agents'),
     authAudits: () => api('/api/admin/auth-audits'),
     createUser: input => api('/api/admin/users', { method: 'POST', body: input }),
     updateUser: (id, input) => api(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'POST', body: input }),
@@ -468,3 +469,15 @@ api('/api/me').then(principal => {
   if (error?.status === 401) showLogin('');
   else showLogin('운영 서버에 연결하지 못했습니다.');
 });
+
+window.NEXA_OPS_COMMERCIAL_BRIDGE = {
+  mode: 'remote',
+  get principal(){ return state.principal; },
+  getState: () => structuredClone({ agents: state.agents, jobs: state.jobs, principal: state.principal, workDate }),
+  refresh: async () => { await refresh({ quiet: true }); return structuredClone({ agents: state.agents, jobs: state.jobs, principal: state.principal, workDate }); },
+  schedule: async (id, input) => { const current = state.jobs.find(job => job.id === Number(id)); if (!current) throw new Error('작업을 찾을 수 없습니다.'); const suffix = current.status === 'REQUESTED' ? 'schedule' : 'reschedule'; const result = await api(`/api/jobs/${current.id}/${suffix}`, { method:'POST', body:{ expectedVersion:current.version, agentId:Number(input.agentId), startAt:input.startAt, endAt:input.endAt, overrideReason:input.overrideReason||'' } }); await refresh({ quiet:true }); return result; },
+  action: async (id, action) => { const current = state.jobs.find(job => job.id === Number(id)); if (!current) throw new Error('작업을 찾을 수 없습니다.'); const suffix = {DISPATCH:'dispatch',ON_SITE:'on-site',COMPLETE:'complete',CANCEL:'cancel',NO_SHOW:'no-show'}[action]; if (!suffix) throw new Error('지원하지 않는 현장 작업입니다.'); const result = await api(`/api/jobs/${current.id}/${suffix}`, {method:'POST',body:{expectedVersion:current.version}}); await refresh({quiet:true}); return result; },
+  getReport: async id => api(`/api/jobs/${Number(id)}/report`),
+  saveReport: async (id, input) => api(`/api/jobs/${Number(id)}/report`, {method:'POST',body:input})
+};
+document.dispatchEvent(new CustomEvent('nexa-ops-ready'));

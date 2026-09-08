@@ -45,6 +45,7 @@ function rowToUser(row) {
     username: row.username,
     name: row.name,
     team: row.team || '',
+    agentId: row.agent_id == null ? null : Number(row.agent_id),
     role: row.role,
     active: Boolean(row.active),
     createdAt: row.created_at,
@@ -69,6 +70,7 @@ export function createAuthStore(path = ':memory:', options = {}) {
       username TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
       team TEXT NOT NULL DEFAULT '',
+      agent_id INTEGER,
       role TEXT NOT NULL CHECK(role IN ('STAFF','ADMIN')),
       password_salt TEXT NOT NULL,
       password_hash TEXT NOT NULL,
@@ -99,6 +101,8 @@ export function createAuthStore(path = ':memory:', options = {}) {
     );
     CREATE INDEX IF NOT EXISTS idx_ops_auth_audits_created ON ops_auth_audits(id DESC);
   `);
+  const userColumns = new Set(db.prepare('PRAGMA table_info(ops_users)').all().map(row => row.name));
+  if (!userColumns.has('agent_id')) db.exec('ALTER TABLE ops_users ADD COLUMN agent_id INTEGER');
 
   const audit = (userId, actor, action, detail = '') => {
     db.prepare('INSERT INTO ops_auth_audits(user_id,actor,action,detail,created_at) VALUES(?,?,?,?,?)')
@@ -124,17 +128,20 @@ export function createAuthStore(path = ':memory:', options = {}) {
     const username = normalizeUsername(input?.username);
     const name = text(input?.name, 80);
     const team = text(input?.team, 80);
+    const rawAgentId = input?.agentId;
+    const agentId = rawAgentId === undefined || rawAgentId === null || rawAgentId === '' ? null : Number(rawAgentId);
     const role = validRole(input?.role);
     const password = assertPassword(input?.password);
     if (!/^[a-zA-Z0-9._-]{2,80}$/.test(id)) throw new AuthError(400, 'INVALID_USER_ID', '직원 계정 ID를 확인해 주세요.');
     if (!/^[a-z0-9._-]{3,80}$/.test(username)) throw new AuthError(400, 'INVALID_USERNAME', '로그인 ID를 확인해 주세요.');
     if (name.length < 2) throw new AuthError(400, 'INVALID_USER_NAME', '직원 이름을 확인해 주세요.');
+    if (agentId !== null && (!Number.isInteger(agentId) || agentId < 1)) throw new AuthError(400, 'INVALID_AGENT_ID', '연결할 기사 프로필을 확인해 주세요.');
     const salt = randomBytes(16).toString('hex');
     const hash = passwordDigest(password, salt);
     const timestamp = nowIso();
     try {
-      db.prepare('INSERT INTO ops_users(id,username,name,team,role,password_salt,password_hash,active,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)')
-        .run(id, username, name, team, role, salt, hash, 1, timestamp, timestamp);
+      db.prepare('INSERT INTO ops_users(id,username,name,team,agent_id,role,password_salt,password_hash,active,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)')
+        .run(id, username, name, team, agentId, role, salt, hash, 1, timestamp, timestamp);
     } catch (error) {
       if (String(error?.message || '').includes('UNIQUE')) throw new AuthError(409, 'USER_ALREADY_EXISTS', '이미 사용 중인 직원 ID 또는 로그인 ID입니다.');
       throw error;
@@ -171,7 +178,7 @@ export function createAuthStore(path = ':memory:', options = {}) {
   function resolveSession(token) {
     const hash = tokenHash(token);
     const row = db.prepare(`
-      SELECT s.*,u.username,u.name,u.team,u.role,u.active,u.created_at AS user_created_at,u.updated_at AS user_updated_at
+      SELECT s.*,u.username,u.name,u.team,u.agent_id,u.role,u.active,u.created_at AS user_created_at,u.updated_at AS user_updated_at
       FROM ops_sessions s JOIN ops_users u ON u.id=s.user_id
       WHERE s.token_hash=?
     `).get(hash);
@@ -195,6 +202,7 @@ export function createAuthStore(path = ':memory:', options = {}) {
         username: row.username,
         name: row.name,
         team: row.team || '',
+        agentId: row.agent_id == null ? null : Number(row.agent_id),
         role: row.role,
         active: true,
         createdAt: row.user_created_at,
@@ -226,15 +234,18 @@ export function createAuthStore(path = ':memory:', options = {}) {
       const row = requireUser(id);
       const name = input?.name === undefined ? row.name : text(input.name, 80);
       const team = input?.team === undefined ? row.team : text(input.team, 80);
+      const rawAgentId = input?.agentId === undefined ? row.agent_id : input.agentId;
+      const agentId = rawAgentId === undefined || rawAgentId === null || rawAgentId === '' ? null : Number(rawAgentId);
       const role = input?.role === undefined ? row.role : validRole(input.role);
       const active = input?.active === undefined ? Boolean(row.active) : Boolean(input.active);
       if (name.length < 2) throw new AuthError(400, 'INVALID_USER_NAME', '직원 이름을 확인해 주세요.');
+      if (agentId !== null && (!Number.isInteger(agentId) || agentId < 1)) throw new AuthError(400, 'INVALID_AGENT_ID', '연결할 기사 프로필을 확인해 주세요.');
       if (row.active && row.role === 'ADMIN' && (!active || role !== 'ADMIN') && countActiveAdmins(row.id) === 0) {
         throw new AuthError(409, 'LAST_ADMIN_REQUIRED', '마지막 운영 관리자 계정은 비활성화하거나 권한을 낮출 수 없습니다.');
       }
       const timestamp = nowIso();
-      db.prepare('UPDATE ops_users SET name=?,team=?,role=?,active=?,updated_at=? WHERE id=?')
-        .run(name, team, role, active ? 1 : 0, timestamp, row.id);
+      db.prepare('UPDATE ops_users SET name=?,team=?,agent_id=?,role=?,active=?,updated_at=? WHERE id=?')
+        .run(name, team, agentId, role, active ? 1 : 0, timestamp, row.id);
       if (!active) db.prepare('DELETE FROM ops_sessions WHERE user_id=?').run(row.id);
       audit(row.id, actor, 'USER_UPDATE', `${role} · ${active ? 'active' : 'disabled'}`);
       db.exec('COMMIT');

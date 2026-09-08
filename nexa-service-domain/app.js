@@ -48,6 +48,8 @@ const demoRequest = {
 };
 
 const ACTION_LABELS = Object.freeze({ MESSAGE: '추가 문의', RESCHEDULE: '일정 변경 요청', CANCEL: '방문 취소 요청' });
+const actionDisplayLabel = item => item?.type === 'MESSAGE' && String(item?.note || '').startsWith('[재방문 요청]') ? '재방문 요청' : (ACTION_LABELS[item?.type] || '고객 요청');
+const actionDisplayNote = item => String(item?.note || '').replace(/^\[재방문 요청\]\s*/, '');
 const ACTION_STATES = Object.freeze({ OPEN: '처리 대기', RESOLVED: '처리 완료', REJECTED: '안내 완료' });
 
 function text(id, value) {
@@ -164,12 +166,12 @@ function renderCustomerActions(data) {
       const article = document.createElement('article');
       article.className = 'customer-action-item';
       const strong = document.createElement('strong');
-      strong.textContent = ACTION_LABELS[item.type] || '고객 요청';
+      strong.textContent = actionDisplayLabel(item);
       const state = document.createElement('span');
       state.className = `customer-action-state ${item.state || 'OPEN'}`;
       state.textContent = ACTION_STATES[item.state] || item.state || '처리 대기';
       const detail = document.createElement('p');
-      detail.textContent = `${item.preferredAt ? `희망시간 ${item.preferredAt} · ` : ''}${item.note || ''}`;
+      detail.textContent = `${item.preferredAt ? `희망시간 ${item.preferredAt} · ` : ''}${actionDisplayNote(item)}`;
       const time = document.createElement('small');
       time.textContent = `요청 ${shortDateTime(item.createdAt)}`;
       article.append(strong, state, detail, time);
@@ -408,3 +410,7 @@ syncActionForm();
 if (linkedRequestId && remembered?.requestId === linkedRequestId && remembered.phone) {
   queueMicrotask(() => form?.requestSubmit());
 }
+
+window.NEXA_PORTAL_RENDER = render;
+window.NEXA_PORTAL_DEMO_REQUEST = demoRequest;
+window.NEXA_PORTAL_LOOKUP = lookup;

@@ -7,6 +7,10 @@ service.example.invalid {
   @privateOps path /field-service-ops/* /customer-ui.js
   respond @privateOps 404
 
+  handle /api/customer/access/* {
+    reverse_proxy 127.0.0.1:8797
+  }
+
   handle /api/* {
     reverse_proxy 127.0.0.1:8796
   }
