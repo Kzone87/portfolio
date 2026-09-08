@@ -36,6 +36,7 @@ rmSync(output, { recursive: true, force: true });
 mkdirSync(output, { recursive: true });
 
 copy('customer-ui.js');
+copy('nexa-family.css');
 
 const corporate = [
   'index.html', 'about.html', 'services.html', 'industries.html', 'cases.html', 'playbook.html', 'contact.html',
@@ -59,6 +60,7 @@ const manifest = {
   customerApi,
   operationsApi,
   surfaces: ['nexa-tech-service', 'nexa-service-domain', 'field-service-ops'],
+  sharedAssets: ['nexa-family.css'],
   excluded: ['server source', 'tests', 'demo-delivery-app.mjs', 'demo-app.mjs', 'credentials']
 };
 writeFileSync(join(output, 'delivery-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
