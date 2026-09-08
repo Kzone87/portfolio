@@ -14,15 +14,12 @@
 @media(max-width:420px){.nexa-showcase .flagship-copy{padding:24px 20px}.nexa-showcase .project-kicker{align-items:flex-start;flex-wrap:wrap}.nexa-showcase .project-kicker em{margin-left:0}.nexa-journey-line{padding:10px}.nexa-surface-link{padding:15px}.nexa-suite-visual{padding:22px 18px}.nexa-suite-visual>strong{font-size:2rem}}
 
 /* Visual QA overrides: preserve contrast and stack the flagship suite before its content becomes cramped. */
-.nexa-showcase h3{color:#f7fbff}
+.nexa-showcase h3{color:#f7fbff;white-space:normal;max-width:100%;word-break:keep-all}
 .nexa-surface-link b{word-break:keep-all;overflow-wrap:normal}
 @media(max-width:1020px){
   .nexa-showcase{grid-template-columns:1fr}
   .nexa-showcase .browser-preview{margin:0 30px 30px;min-height:430px}
 }
 @media(max-width:760px){
-  .nexa-showcase .browser-preview{margin:0 20px 20px;min-height:360px}
-}
-@media(max-width:420px){
-  .nexa-showcase .browser-preview{margin:0 14px 14px;min-height:330px}
+  .nexa-showcase .browser-preview{display:none}
 }
