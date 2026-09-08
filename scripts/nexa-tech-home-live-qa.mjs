@@ -58,7 +58,8 @@ for (const viewport of [{ name: 'desktop', width: 1440, height: 1000 }, { name: 
   try {
     await goto(page, `${root}/nexa-tech-service/`);
     await page.locator('nav a[data-service-status]').waitFor({ state: 'attached', timeout: 10_000 });
-    await page.locator('.hero-actions a[data-service-status]').waitFor({ state: 'attached', timeout: 10_000 });
+    await page.locator('noscript a[data-service-status]').waitFor({ state: 'visible', timeout: 10_000 });
+    await page.locator('main .hero-actions a[data-service-status]').waitFor({ state: 'visible', timeout: 10_000 });
     await page.locator('[data-commercial-scope-static]').waitFor({ state: 'visible', timeout: 10_000 });
     await page.locator('.console-consult-link').waitFor({ state: 'visible', timeout: 10_000 });
     const text = await page.locator('body').innerText();
