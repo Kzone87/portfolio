@@ -3,7 +3,7 @@ import { mountInquiryDesk } from './inquiry-desk.mjs';
 import { mountTeamAdmin } from './team-admin.mjs';
 
 const $ = id => document.getElementById(id);
-const CURRENT_USER = Object.freeze({ id: 'ops-admin', username: 'kim.hyunsu', name: '김현수', role: 'ADMIN', team: '서울 운영팀' });
+const CURRENT_USER = Object.freeze({ id: 'ops-admin', username: 'kim.hyunsu', name: '김현수', role: 'ADMIN', team: '서울 운영팀', agentId: 1 });
 const inquiryBadge = $('inquiry-badge');
 const teamTab = $('team-tab');
 if (teamTab) teamTab.hidden = false;
@@ -152,9 +152,9 @@ const demoInquiryAdapter = {
 };
 
 const demoUsers = [
-  { id: 'ops-admin', username: 'kim.hyunsu', name: '김현수', team: '서울 운영팀', role: 'ADMIN', active: true, createdAt: '2026-08-01T00:00:00.000Z', updatedAt: '2026-08-01T00:00:00.000Z' },
-  { id: 'dispatcher-2', username: 'lee.soyeon', name: '이소연', team: '서울 운영팀', role: 'STAFF', active: true, createdAt: '2026-08-14T00:00:00.000Z', updatedAt: '2026-08-14T00:00:00.000Z' },
-  { id: 'dispatcher-3', username: 'park.jun', name: '박준', team: '경기 운영팀', role: 'STAFF', active: false, createdAt: '2026-08-20T00:00:00.000Z', updatedAt: '2026-09-03T00:00:00.000Z' }
+  { id: 'ops-admin', username: 'kim.hyunsu', name: '김현수', team: '서울 운영팀', agentId: 1, role: 'ADMIN', active: true, createdAt: '2026-08-01T00:00:00.000Z', updatedAt: '2026-08-01T00:00:00.000Z' },
+  { id: 'dispatcher-2', username: 'lee.soyeon', name: '이소연', team: '서울 운영팀', agentId: 2, role: 'STAFF', active: true, createdAt: '2026-08-14T00:00:00.000Z', updatedAt: '2026-08-14T00:00:00.000Z' },
+  { id: 'dispatcher-3', username: 'park.jun', name: '박준', team: '경기 운영팀', agentId: 3, role: 'STAFF', active: false, createdAt: '2026-08-20T00:00:00.000Z', updatedAt: '2026-09-03T00:00:00.000Z' }
 ];
 const demoAuthAudits = [
   { id: 3, userId: 'dispatcher-3', actor: 'ops-admin', action: 'USER_UPDATE', detail: 'STAFF · disabled', createdAt: '2026-09-03T03:12:00.000Z' },
@@ -162,19 +162,20 @@ const demoAuthAudits = [
   { id: 1, userId: 'ops-admin', actor: 'bootstrap', action: 'USER_CREATE', detail: 'kim.hyunsu · ADMIN', createdAt: '2026-08-01T00:00:00.000Z' }
 ];
 const demoTeamAdapter = {
+  async listAgents() { return { items: clone(window.NEXA_OPS_COMMERCIAL_BRIDGE?.getState?.().agents || []) }; },
   async listUsers() { return { items: clone(demoUsers) }; },
   async authAudits() { return { items: clone(demoAuthAudits) }; },
   async createUser(input) {
     if (demoUsers.some(user => user.id === input.id || user.username === String(input.username).toLowerCase())) throw new Error('이미 사용 중인 계정입니다.');
     if (String(input.password || '').length < 10) throw new Error('비밀번호는 10자 이상이어야 합니다.');
-    const item = { id: input.id, username: String(input.username).toLowerCase(), name: input.name, team: input.team, role: input.role, active: true, createdAt: now(), updatedAt: now() };
+    const item = { id: input.id, username: String(input.username).toLowerCase(), name: input.name, team: input.team, agentId: input.agentId || null, role: input.role, active: true, createdAt: now(), updatedAt: now() };
     demoUsers.push(item); demoAuthAudits.unshift({ id: Date.now(), userId: item.id, actor: CURRENT_USER.id, action: 'USER_CREATE', detail: `${item.username} · ${item.role}`, createdAt: now() });
     return clone(item);
   },
   async updateUser(id, input) {
     const item = demoUsers.find(user => user.id === id); if (!item) throw new Error('직원 계정을 찾을 수 없습니다.');
     if (item.id === CURRENT_USER.id && input.active === false) throw new Error('현재 로그인 계정은 비활성화할 수 없습니다.');
-    Object.assign(item, { name: input.name, team: input.team, role: input.role, active: input.active, updatedAt: now() });
+    Object.assign(item, { name: input.name, team: input.team, agentId: input.agentId || null, role: input.role, active: input.active, updatedAt: now() });
     demoAuthAudits.unshift({ id: Date.now(), userId: item.id, actor: CURRENT_USER.id, action: 'USER_UPDATE', detail: `${item.role} · ${item.active ? 'active' : 'disabled'}`, createdAt: now() });
     return clone(item);
   },

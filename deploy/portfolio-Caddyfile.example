@@ -1,0 +1,23 @@
+portfolio.example.invalid {
+  encode zstd gzip
+
+  handle /api/project-inquiries* {
+    reverse_proxy 127.0.0.1:8798
+  }
+
+  handle /api/admin/project-inquiries* {
+    reverse_proxy 127.0.0.1:8798
+  }
+
+  handle {
+    root * /srv/kzone/web
+    file_server
+  }
+
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    X-Frame-Options DENY
+    Content-Security-Policy "default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+  }
+}

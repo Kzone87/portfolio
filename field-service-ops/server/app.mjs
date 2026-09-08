@@ -22,12 +22,15 @@ export function parsePrincipals(raw = '') {
     const id = String(item?.id || '').trim();
     if (token.length < 16) throw new Error(`principal ${index} token must be at least 16 characters`);
     if (!/^[a-zA-Z0-9._-]{2,80}$/.test(id)) throw new Error(`principal ${index} id is invalid`);
+    const agentId = item?.agentId == null || item?.agentId === '' ? null : Number(item.agentId);
+    if (agentId !== null && (!Number.isInteger(agentId) || agentId < 1)) throw new Error(`principal ${index} agentId is invalid`);
     return {
       token,
       id,
       name: String(item?.name || id).slice(0, 80),
       role: normalizeRole(item?.role),
-      team: String(item?.team || '').trim().slice(0, 80)
+      team: String(item?.team || '').trim().slice(0, 80),
+      agentId
     };
   });
 }
@@ -37,7 +40,8 @@ function principalRegistry(principals = []) {
     id: principal.id,
     name: principal.name,
     role: normalizeRole(principal.role),
-    team: principal.team || ''
+    team: principal.team || '',
+    agentId: principal.agentId == null ? null : Number(principal.agentId)
   }]));
 }
 
@@ -104,6 +108,25 @@ function requireAdmin(identity) {
   if (identity.principal.role !== 'ADMIN') throw new DomainError(403, 'ADMIN_REQUIRED', '운영 관리자 권한이 필요합니다.');
 }
 
+function requireAssignedFieldAgent(identity, store, jobId) {
+  if (identity.principal.role === 'ADMIN' || identity.authType !== 'session') return;
+  const agentId = identity.principal.agentId == null ? null : Number(identity.principal.agentId);
+  if (!Number.isInteger(agentId) || agentId < 1) throw new DomainError(403, 'FIELD_AGENT_PROFILE_REQUIRED', '현장 작업을 처리하려면 직원 계정에 기사 프로필이 연결되어야 합니다.');
+  const job = store.getJob(jobId);
+  if (Number(job.agentId) !== agentId) throw new DomainError(403, 'FIELD_JOB_NOT_ASSIGNED', '본인에게 배정된 현장 작업만 처리할 수 있습니다.');
+}
+
+function requireCompletionReport(identity, store, jobId) {
+  if (identity.authType !== 'session') return;
+  const report = store.getFieldReport(jobId);
+  const checks = report?.checks || {};
+  const complete = Boolean(checks.customer && checks.access && checks.result);
+  const note = String(report?.note || '').trim();
+  if (!complete || note.length < 5) {
+    throw new DomainError(409, 'FIELD_REPORT_REQUIRED', '작업 완료 전에 고객 요청·현장 환경·정상 여부를 확인하고 작업 메모를 남겨 주세요.');
+  }
+}
+
 function requestIdempotencyKey(req) {
   const key = String(req.headers['idempotency-key'] || '').trim();
   if (!key) return '';
@@ -143,12 +166,12 @@ function send(req, res, config, status, body, extraHeaders = {}) {
   res.end(payload);
 }
 
-async function body(req) {
+async function body(req, maxBytes = LIMIT) {
   let size = 0;
   const chunks = [];
   for await (const chunk of req) {
     size += chunk.length;
-    if (size > LIMIT) throw new DomainError(413, 'BODY_TOO_LARGE', 'request body too large');
+    if (size > maxBytes) throw new DomainError(413, 'BODY_TOO_LARGE', 'request body too large');
     chunks.push(chunk);
   }
   if (!chunks.length) return {};
@@ -234,6 +257,7 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
     try {
       const url = new URL(req.url ?? '/', 'http://localhost');
       const path = url.pathname;
+      if (req.method !== 'OPTIONS') originHeaders(req, config);
 
       if (req.method === 'OPTIONS') {
         const cors = originHeaders(req, config);
@@ -303,6 +327,7 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
           name: identity.principal.name,
           role: identity.principal.role,
           team: identity.principal.team || '',
+          agentId: identity.principal.agentId == null ? null : Number(identity.principal.agentId),
           csrfToken: identity.authType === 'session' ? identity.csrfToken : null,
           expiresAt: identity.expiresAt || null
         });
@@ -325,6 +350,12 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
         const id = raw ? Number(raw) : null;
         if (id !== null && !Number.isInteger(id)) throw new DomainError(400, 'INVALID_JOB_ID', 'jobId must be an integer');
         send(req, res, config, 200, { items: store.listAudits(id) });
+        return;
+      }
+
+      const fieldReportMatch = path.match(/^\/api\/jobs\/(\d+)\/report$/);
+      if (req.method === 'GET' && fieldReportMatch) {
+        send(req, res, config, 200, store.getFieldReport(Number(fieldReportMatch[1])));
         return;
       }
 
@@ -366,6 +397,14 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
       }
 
       if (req.method !== 'GET') requireCsrf(req, identity);
+
+      if (req.method === 'POST' && fieldReportMatch) {
+        const jobId = Number(fieldReportMatch[1]);
+        requireAssignedFieldAgent(identity, store, jobId);
+        const input = await body(req, 1_200_000);
+        send(req, res, config, 200, store.saveFieldReport(jobId, input, identity.principal.id));
+        return;
+      }
 
       if (req.method === 'POST' && path === '/api/admin/users') {
         requireAdmin(identity);
@@ -476,6 +515,8 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
       for (const [suffix, method] of actions) {
         const id = route(path, suffix);
         if (req.method === 'POST' && id !== null) {
+          if (method === 'onSite' || method === 'complete') requireAssignedFieldAgent(identity, store, id);
+          if (method === 'complete') requireCompletionReport(identity, store, id);
           const input = securedInput(await body(req), identity.principal);
           send(req, res, config, 200, store[method](id, input));
           return;
@@ -534,6 +575,7 @@ function parseBootstrapAdmin(raw = '') {
     username: String(value?.username || '').trim(),
     name: String(value?.name || '').trim(),
     team: String(value?.team || '').trim(),
+    agentId: value?.agentId == null || value?.agentId === '' ? null : Number(value.agentId),
     password: String(value?.password || ''),
     role: 'ADMIN'
   };

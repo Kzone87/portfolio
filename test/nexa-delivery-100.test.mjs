@@ -200,7 +200,7 @@ test('employee inquiry desk can process inquiry to field job and cannot close wh
     assert.equal(schedule.status, 200);
 
     let current = scheduled;
-    for (const suffix of ['dispatch', 'on-site', 'complete']) {
+    for (const suffix of ['dispatch', 'on-site']) {
       const response = await fetch(`${runtime.root}/api/jobs/${job.id}/${suffix}`, {
         method: 'POST',
         headers: sessionHeaders(session, { 'content-type': 'application/json' }),
@@ -209,6 +209,19 @@ test('employee inquiry desk can process inquiry to field job and cannot close wh
       assert.equal(response.status, 200);
       current = await response.json();
     }
+    const report = await fetch(`${runtime.root}/api/jobs/${job.id}/report`, {
+      method: 'POST',
+      headers: sessionHeaders(session, { 'content-type': 'application/json' }),
+      body: JSON.stringify({ checks: { customer: true, access: true, result: true }, note: '현장 점검과 테스트 출력을 완료했습니다.' })
+    });
+    assert.equal(report.status, 200);
+    const complete = await fetch(`${runtime.root}/api/jobs/${job.id}/complete`, {
+      method: 'POST',
+      headers: sessionHeaders(session, { 'content-type': 'application/json' }),
+      body: JSON.stringify({ expectedVersion: current.version })
+    });
+    assert.equal(complete.status, 200);
+    current = await complete.json();
     assert.equal(current.status, 'COMPLETED');
 
     const latestInquiry = runtime.inquiryStore.get(createdInquiry.id);

@@ -203,7 +203,7 @@ reverse proxy의 readiness 또는 배포 후 smoke check에는 `/api/ready`를 �
 GET /api/health
 ```
 
-Inquiry API는 production 시작 시 영속 Inquiry DB, origin allowlist와 Field Ops 연결 설정을 검증합니다. health 응답의 `fieldOpsHandoff`, `customerLookup`, `customerActions`를 함께 확인합니다.
+Inquiry API는 production 시작 시 영속 Inquiry DB, origin allowlist와 Field Ops 연결 설정을 검증합니다. health 응답의 `fieldOpsHandoff`와 `legacyCustomerAccess`를 확인합니다. Production 기본값은 `legacyCustomerAccess: false`이며 고객 조회·추가요청은 Secure Customer Access API를 통해 처리합니다.
 
 ## 11. Backup
 
@@ -296,7 +296,7 @@ Customer Service는 회원계정 없이 다음 두 정보를 일치시켜 요청
 
 고객은 기사 일정이나 Field Job 상태를 직접 변경할 수 없습니다. `일정 변경 요청`, `방문 취소 요청`, `추가 문의`를 Queue에 남기고 직원이 확인한 뒤 처리결과를 기록합니다.
 
-이 인증 방식은 일반적인 저위험 유지보수 요청 Portal 범위입니다. 의료·금융·신원정보 등 고위험 데이터를 추가하는 경우 OTP/SSO 등 별도의 강한 고객 인증을 도입해야 합니다.
+Production 고객 Portal은 접수번호 확인 후 등록 연락처 또는 이메일로 일회용 인증번호를 보내고, 검증 성공 시 HttpOnly 고객 세션을 생성합니다. 의료·금융·신원정보 등 고위험 데이터를 추가하는 경우 현재 OTP webhook을 고객사의 승인된 IAM/MFA 또는 SSO 정책으로 교체해야 합니다.
 
 ## 15. Daily operator checklist
 
@@ -382,3 +382,35 @@ Customer Service는 회원계정 없이 다음 두 정보를 일치시켜 요청
 - 알려진 범위와 확장 필요조건
 
 이 기준을 충족해야 NEXA를 단순 공개 데모가 아니라 **소규모 기업에 배포 가능한 서비스 운영시스템 패키지**로 판정합니다.
+
+## Commercial customer access
+
+The production customer portal uses a separate secure-access process on port `8797`.
+
+- `POST /api/customer/access/challenge` creates a short-lived OTP challenge without revealing whether the request number exists.
+- Production keeps the old full-phone lookup/action endpoints disabled by default (`NEXA_ALLOW_LEGACY_CUSTOMER_ACCESS=0`) so OTP cannot be bypassed.
+- The OTP is stored only as a hash. A challenge expires, has a bounded attempt count, and is single-use.
+- Production startup requires `NEXA_CUSTOMER_OTP_WEBHOOK_URL`; the server does not claim an SMS/email was sent when no provider is configured.
+- A verified OTP creates an `HttpOnly`, `SameSite=Lax`, `Secure` customer session in production.
+- Customer mutations require the session plus `x-csrf-token`.
+- Service history is limited to the same company plus the verified phone/email identity. A customer cannot enumerate another company's requests.
+- Work reports expose service-safe fields only. Employee credentials, customer email/phone, internal auth/audit data and server secrets are not returned.
+
+Required production values are documented in `deploy/nexa.env.example`. Route `/api/customer/access/*` to the secure-access process before the generic Inquiry API route.
+
+## Commercial field workflow
+
+The employee workspace provides four views over the same server-side jobs and state machine:
+
+- **Day** — the existing dispatcher timeline and queue.
+- **Week** — seven-day agent scheduling. Eligible jobs can be dragged to another agent/day; the operation still uses `expectedVersion`, server RBAC and slot-conflict validation.
+- **Map** — an address/location board with a direct external map-search link for each customer site. No client-side geocoding secret is embedded in the public bundle.
+- **Field View** — technician-oriented mobile cards for dispatch, arrival, completion, persisted checklist, work note and one compressed field photo (JPEG/PNG/WebP, <=800KB).
+
+Field reports are stored in the Operations SQLite database and are included in the NEXA backup/restore lifecycle. Customer secure reports can show the service-safe work note/photo after authentication.
+
+For a production technician account, use the same employee name as the configured agent profile or add an organization-specific account-to-agent mapping during deployment. Never silently map an unmatched production employee to another technician.
+
+## Commercial acceptance boundary
+
+This delivery profile is intended for a small service company on a single managed VM/server. It includes session auth, CSRF, SQLite persistence, audit history, customer OTP access, backup/restore, HTTPS reverse-proxy boundaries and responsive customer/employee surfaces. It is not represented as a multi-region enterprise SaaS, regulated medical/financial identity platform, or guaranteed SLA product. If the customer stores higher-risk personal data, replace the OTP webhook/provider and identity policy with the customer's approved IAM/MFA requirements.

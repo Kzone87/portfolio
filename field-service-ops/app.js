@@ -13,7 +13,7 @@ const config = window.NEXA_OPS_CONFIG && typeof window.NEXA_OPS_CONFIG === 'obje
 const endpoint = String(config.endpoint || '').trim();
 
 const target = endpoint ? './remote-app.mjs' : './demo-delivery-app.mjs';
-import(target).catch((error) => {
+import(target).then(() => import('./commercial-workspace.mjs')).catch((error) => {
   console.error(error);
   const message = document.getElementById('message');
   if (message) {

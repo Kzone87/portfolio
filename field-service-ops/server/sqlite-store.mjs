@@ -127,6 +127,16 @@ export function createSqliteStore(path = ':memory:', options = {}) {
       created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_audits_job_id ON audits(job_id, id DESC);
+    CREATE TABLE IF NOT EXISTS field_reports (
+      job_id INTEGER PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,
+      checks_json TEXT NOT NULL DEFAULT '{}',
+      note TEXT NOT NULL DEFAULT '',
+      photo_name TEXT,
+      photo_type TEXT,
+      photo_data TEXT,
+      updated_by TEXT NOT NULL DEFAULT '',
+      updated_at TEXT
+    );
   `);
 
   const bootstrapAgents = Array.isArray(options.agents) ? options.agents : (options.seedDemo ? DEMO_AGENTS : []);
@@ -265,6 +275,24 @@ export function createSqliteStore(path = ':memory:', options = {}) {
     complete(id, input = {}) { return mutate(id, input, 'COMPLETE', completeJob); },
     cancel(id, input = {}) { return mutate(id, input, 'CANCEL', cancelJob); },
     noShow(id, input = {}) { return mutate(id, input, 'NO_SHOW', markNoShow); },
+    getFieldReport(id) {
+      const job = requireJob(id);
+      const row = db.prepare('SELECT * FROM field_reports WHERE job_id=?').get(job.id);
+      if (!row) return { jobId: job.id, checks: { customer: false, access: false, result: false }, note: '', photo: null, updatedBy: '', updatedAt: null };
+      let checks = { customer: false, access: false, result: false };
+      try { checks = { ...checks, ...JSON.parse(row.checks_json || '{}') }; } catch {}
+      return { jobId: job.id, checks, note: row.note || '', photo: row.photo_data ? { name: row.photo_name || 'photo', type: row.photo_type || '', data: row.photo_data } : null, updatedBy: row.updated_by || '', updatedAt: row.updated_at || null };
+    },
+    saveFieldReport(id, input = {}, actor = 'ops-user') {
+      return transaction(() => {
+        const job = requireJob(id); const existing = db.prepare('SELECT * FROM field_reports WHERE job_id=?').get(job.id);
+        const checks = { customer: Boolean(input?.checks?.customer), access: Boolean(input?.checks?.access), result: Boolean(input?.checks?.result) }; const note=String(input?.note||'').trim().slice(0,2000);
+        let photoName=existing?.photo_name||null, photoType=existing?.photo_type||null, photoData=existing?.photo_data||null; if(input?.clearPhoto)photoName=photoType=photoData=null;
+        if(input?.photo){const type=String(input.photo.type||'');const name=String(input.photo.name||'photo').slice(0,120);const data=String(input.photo.data||'');if(!['image/jpeg','image/png','image/webp'].includes(type))throw new DomainError(400,'INVALID_FIELD_PHOTO','supported field photo types are JPEG, PNG, WebP');if(!/^data:image\/(jpeg|png|webp);base64,/.test(data)||data.length>1100000)throw new DomainError(413,'FIELD_PHOTO_TOO_LARGE','field photo must be a supported image under 800KB');photoName=name;photoType=type;photoData=data;}
+        const at=nowIso(); db.prepare(`INSERT INTO field_reports(job_id,checks_json,note,photo_name,photo_type,photo_data,updated_by,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(job_id) DO UPDATE SET checks_json=excluded.checks_json,note=excluded.note,photo_name=excluded.photo_name,photo_type=excluded.photo_type,photo_data=excluded.photo_data,updated_by=excluded.updated_by,updated_at=excluded.updated_at`).run(job.id,JSON.stringify(checks),note,photoName,photoType,photoData,String(actor||'ops-user').slice(0,80),at);
+        audit(job,'FIELD_REPORT',actor,`checks ${Object.values(checks).filter(Boolean).length}/3${photoData?' · photo':''}`); return {jobId:job.id,checks,note,photo:photoData?{name:photoName,type:photoType,data:photoData}:null,updatedBy:String(actor||'ops-user').slice(0,80),updatedAt:at};
+      });
+    },
     close() { db.close(); }
   };
 }

@@ -256,3 +256,15 @@ el.schedule.addEventListener('click', () => {
 });
 
 render();
+
+window.NEXA_OPS_COMMERCIAL_BRIDGE = {
+  mode: 'demo',
+  principal: CURRENT_USER,
+  getState: () => ({ agents: store.listAgents(), jobs: store.listJobs(), principal: CURRENT_USER, workDate: '2026-09-07' }),
+  refresh: async () => { render(); return { agents: store.listAgents(), jobs: store.listJobs(), principal: CURRENT_USER, workDate: '2026-09-07' }; },
+  schedule: async (id, input) => { const current = store.getJob(id); const payload = { expectedVersion: current.version, agentId: Number(input.agentId), startAt: input.startAt, endAt: input.endAt, role: CURRENT_USER.role, actor: CURRENT_USER.id, overrideReason: input.overrideReason || '' }; if (current.status === 'REQUESTED') store.schedule(id, payload); else store.reschedule(id, payload); render(); return store.getJob(id); },
+  action: async (id, action) => { const current = store.getJob(id); const input = { expectedVersion: current.version, actor: CURRENT_USER.id, role: CURRENT_USER.role }; const map = { DISPATCH:'dispatch', ON_SITE:'onSite', COMPLETE:'complete', CANCEL:'cancel', NO_SHOW:'noShow' }; if (!map[action]) throw new Error('지원하지 않는 현장 작업입니다.'); const result = store[map[action]](id, input); render(); return result; },
+  getReport: async id => store.getFieldReport(id),
+  saveReport: async (id, input) => store.saveFieldReport(id, input, CURRENT_USER.id)
+};
+document.dispatchEvent(new CustomEvent('nexa-ops-ready'));

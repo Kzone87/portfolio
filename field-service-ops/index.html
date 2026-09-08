@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./responsive-100.css">
   <link rel="stylesheet" href="./delivery-100.css">
   <link rel="stylesheet" href="./customer-actions.css">
+  <link rel="stylesheet" href="./commercial-workspace.css">
 </head>
 <body>
 <header class="topbar">
@@ -176,6 +177,7 @@
           <div class="form team-edit-form">
             <label>이름<input id="team-name"></label>
             <label>팀<input id="team-team"></label>
+            <label>연결 기사<select id="team-agent"><option value="">운영/배차 전용</option></select></label>
             <label>역할<select id="team-role"><option value="STAFF">배차 담당자</option><option value="ADMIN">운영 관리자</option></select></label>
             <label class="toggle-label"><input id="team-active" type="checkbox"><span>계정 활성화</span></label>
             <button id="team-save" type="button">계정 저장</button>
@@ -197,6 +199,7 @@
           <label>로그인 ID<input id="new-user-username" placeholder="dispatcher2" required></label>
           <label>이름<input id="new-user-name" placeholder="홍길동" required></label>
           <label>팀<input id="new-user-team" placeholder="서울 운영팀"></label>
+          <label>연결 기사<select id="new-user-agent"><option value="">운영/배차 전용</option></select></label>
           <label>역할<select id="new-user-role"><option value="STAFF">배차 담당자</option><option value="ADMIN">운영 관리자</option></select></label>
           <label>초기 비밀번호<input id="new-user-password" type="password" autocomplete="new-password" placeholder="10자 이상" required></label>
           <button type="submit">계정 만들기</button>

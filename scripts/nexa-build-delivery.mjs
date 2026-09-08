@@ -32,6 +32,7 @@ function injectConfig(relativePath, marker) {
 
 const customerApi = endpoint('NEXA_PUBLIC_API_ORIGIN');
 const operationsApi = endpoint('NEXA_OPS_API_ORIGIN');
+const customerSecureApi = endpoint('NEXA_CUSTOMER_SECURE_ORIGIN');
 rmSync(output, { recursive: true, force: true });
 mkdirSync(output, { recursive: true });
 
@@ -40,17 +41,17 @@ copy('nexa-family.css');
 
 const corporate = [
   'index.html', 'about.html', 'services.html', 'industries.html', 'cases.html', 'playbook.html', 'contact.html',
-  'styles.css', 'styles-100.css', 'clarity.css', 'app.js'
+  'styles.css', 'styles-100.css', 'clarity.css', 'commercial-scope.css', 'commercial-scope.js', 'app.js'
 ];
 for (const file of corporate) copy(`nexa-tech-service/${file}`);
 writeFileSync(join(output, 'nexa-tech-service', 'runtime-config.js'), `window.NEXA_INQUIRY_ENDPOINT=${JSON.stringify(customerApi)};\n`);
 for (const page of ['index.html','about.html','services.html','industries.html','cases.html','playbook.html','contact.html']) injectConfig(`nexa-tech-service/${page}`, '<script src="./app.js"></script>');
 
-for (const file of ['index.html','styles.css','portal-actions.css','app.js']) copy(`nexa-service-domain/${file}`);
-writeFileSync(join(output, 'nexa-service-domain', 'runtime-config.js'), `window.NEXA_CUSTOMER_PORTAL_ENDPOINT=${JSON.stringify(customerApi)};\n`);
+for (const file of ['index.html','styles.css','portal-actions.css','secure-access.css','app.js','secure-access.js']) copy(`nexa-service-domain/${file}`);
+writeFileSync(join(output, 'nexa-service-domain', 'runtime-config.js'), `window.NEXA_CUSTOMER_PORTAL_ENDPOINT=${JSON.stringify(customerApi)};\nwindow.NEXA_CUSTOMER_SECURE_ENDPOINT=${JSON.stringify(customerSecureApi)};\n`);
 injectConfig('nexa-service-domain/index.html', '<script src="./app.js"></script>');
 
-for (const file of ['index.html','styles.css','responsive-100.css','delivery-100.css','customer-actions.css','app.js','remote-app.mjs','inquiry-desk.mjs','team-admin.mjs']) copy(`field-service-ops/${file}`);
+for (const file of ['index.html','styles.css','responsive-100.css','delivery-100.css','customer-actions.css','commercial-workspace.css','app.js','remote-app.mjs','inquiry-desk.mjs','team-admin.mjs','commercial-workspace.mjs']) copy(`field-service-ops/${file}`);
 writeFileSync(join(output, 'field-service-ops', 'runtime-config.js'), `window.NEXA_OPS_CONFIG=Object.freeze({endpoint:${JSON.stringify(operationsApi)}});\n`);
 injectConfig('field-service-ops/index.html', '<script type="module" src="./app.js"></script>');
 
@@ -59,6 +60,7 @@ const manifest = {
   generatedAt: new Date().toISOString(),
   customerApi,
   operationsApi,
+  customerSecureApi,
   surfaces: ['nexa-tech-service', 'nexa-service-domain', 'field-service-ops'],
   sharedAssets: ['nexa-family.css'],
   excluded: ['server source', 'tests', 'demo-delivery-app.mjs', 'demo-app.mjs', 'credentials']

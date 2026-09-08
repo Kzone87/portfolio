@@ -6,7 +6,7 @@ function mapError(error){const m=error instanceof Error?error.message:String(err
 
 export function createStore(){
  const seeded='2026-09-06T00:00:00.000Z';
- const state={jobSeq:5,auditSeq:8,idempotency:new Map(),agents:[
+ const state={jobSeq:5,auditSeq:8,idempotency:new Map(),reports:new Map(),agents:[
   {id:1,name:'Agent A',region:'Central',active:true},{id:2,name:'Agent B',region:'East',active:true},{id:3,name:'Agent C',region:'West',active:true}
  ],jobs:[
   {id:1,customerName:'Alpha Office',address:'10 Central Ave',summary:'Routine equipment inspection',priority:PRIORITY.NORMAL,status:JOB_STATUS.SCHEDULED,agentId:1,startAt:'2026-09-07T00:00:00.000Z',endAt:'2026-09-07T01:00:00.000Z',version:2,overrideReason:null,createdAt:seeded,updatedAt:seeded},
@@ -61,6 +61,13 @@ export function createStore(){
   onSite(id,input={}){return mutate(id,input,'ON_SITE',arriveOnSite);},
   complete(id,input={}){return mutate(id,input,'COMPLETE',completeJob);},
   cancel(id,input={}){return mutate(id,input,'CANCEL',cancelJob);},
-  noShow(id,input={}){return mutate(id,input,'NO_SHOW',markNoShow);}
+  noShow(id,input={}){return mutate(id,input,'NO_SHOW',markNoShow);},
+  getFieldReport(id){requireJob(id);return clone(state.reports.get(Number(id))||{jobId:Number(id),checks:{customer:false,access:false,result:false},note:'',photo:null,updatedBy:'',updatedAt:null});},
+  saveFieldReport(id,input={},actor='ops-user'){
+   const job=requireJob(id);const checks={customer:Boolean(input?.checks?.customer),access:Boolean(input?.checks?.access),result:Boolean(input?.checks?.result)};const note=String(input?.note||'').trim().slice(0,2000);let photo=state.reports.get(job.id)?.photo||null;
+   if(input?.clearPhoto)photo=null;
+   if(input?.photo){const type=String(input.photo.type||'');const name=String(input.photo.name||'photo').slice(0,120);const data=String(input.photo.data||'');if(!['image/jpeg','image/png','image/webp'].includes(type))throw new DomainError(400,'INVALID_FIELD_PHOTO','supported field photo types are JPEG, PNG, WebP');if(!/^data:image\/(jpeg|png|webp);base64,/.test(data)||data.length>1100000)throw new DomainError(413,'FIELD_PHOTO_TOO_LARGE','field photo must be a supported image under 800KB');photo={name,type,data};}
+   const report={jobId:job.id,checks,note,photo,updatedBy:String(actor||'ops-user').slice(0,80),updatedAt:nowIso()};state.reports.set(job.id,report);audit(job,'FIELD_REPORT',actor,`checks ${Object.values(checks).filter(Boolean).length}/3${photo?' · photo':''}`);return clone(report);
+  }
  };
 }

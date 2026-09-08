@@ -276,7 +276,7 @@ test('NEXA delivery acceptance: customer to staff to field service and back', as
     assert.ok(customerViewAfter.body.customerActions.some(action => action.id === customerActionId && action.state === 'RESOLVED' && action.resolution.includes('일정을 변경')));
 
     let currentJob = rescheduled.body;
-    for (const suffix of ['dispatch', 'on-site', 'complete']) {
+    for (const suffix of ['dispatch', 'on-site']) {
       const next = await json(opsRoot, `/api/jobs/${jobId}/${suffix}`, {
         method: 'POST',
         origin: OPS_ORIGIN,
@@ -287,6 +287,23 @@ test('NEXA delivery acceptance: customer to staff to field service and back', as
       assert.equal(next.response.status, 200);
       currentJob = next.body;
     }
+    const report = await json(opsRoot, `/api/jobs/${jobId}/report`, {
+      method: 'POST',
+      origin: OPS_ORIGIN,
+      cookie: session.cookie,
+      csrf: session.csrf,
+      body: { checks: { customer: true, access: true, result: true }, note: '급지와 출력 품질을 확인하고 테스트 출력까지 완료했습니다.' }
+    });
+    assert.equal(report.response.status, 200);
+    const completed = await json(opsRoot, `/api/jobs/${jobId}/complete`, {
+      method: 'POST',
+      origin: OPS_ORIGIN,
+      cookie: session.cookie,
+      csrf: session.csrf,
+      body: { expectedVersion: currentJob.version }
+    });
+    assert.equal(completed.response.status, 200);
+    currentJob = completed.body;
     assert.equal(currentJob.status, 'COMPLETED');
 
     const latestInquiry = await json(opsRoot, `/api/inquiries/${inquiryId}`, {
