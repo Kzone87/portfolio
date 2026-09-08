@@ -7,6 +7,7 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 const family = read('nexa-family.css');
 const portfolio = read('home-domain.css');
 const corporate = read('nexa-tech-service/styles-100.css');
+const clarity = read('nexa-tech-service/clarity.css');
 const portal = read('nexa-service-domain/portal-actions.css');
 const operations = read('field-service-ops/delivery-100.css');
 const customerActions = read('field-service-ops/customer-actions.css');
@@ -21,6 +22,11 @@ test('NEXA family uses one canonical brand palette while preserving surface-spec
 
   assert.match(corporate, /--nexa-blue:#1565e8/);
   assert.match(corporate, /--nexa-navy:#102a43/);
+  assert.match(clarity, /@import url\("\.\.\/nexa-family\.css"\)/);
+  assert.match(clarity, /--nexa-blue:var\(--nexa-brand\)/);
+  assert.match(clarity, /content:"NEXA TECH SERVICE"/);
+  assert.doesNotMatch(clarity, /--nexa-(navy|cyan|sky|line|muted):var\(--nexa-\1\)/);
+
   assert.match(portfolio, /--portfolio-nexa-brand:#1565e8/);
   assert.match(portfolio, /linear-gradient\(145deg,#102a43/);
   assert.match(portfolio, /\.nexa-preview \.nexa-page\{background:linear-gradient\(145deg,#174b78,#0b2741\)/);
