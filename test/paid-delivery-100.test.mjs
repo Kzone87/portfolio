@@ -31,8 +31,11 @@ test('portfolio home communicates delivery scope while keeping every product dir
   const html = await load('index.html');
   assert.match(html, /대표 작업/);
   assert.match(html, /NEXA TECH SERVICE/);
-  assert.match(html, /고객 상담부터 현장 배차까지 이어지는 유지보수 서비스/);
-  assert.match(html, /서비스 운영 흐름 보기/);
+  assert.match(html, /고객 상담부터 현장 완료까지, 하나로 이어지는 서비스 운영 시스템/);
+  assert.match(html, /NEXA SERVICE SUITE/);
+  assert.match(html, /서비스 홈페이지 열기/);
+  assert.match(html, /고객 서비스 열기/);
+  assert.match(html, /운영 Workspace 열기/);
   assert.match(html, /MONO OPERATIONS/);
   assert.match(html, /Excel 정리 작업실/);
   assert.match(html, /OPS KIT/);
