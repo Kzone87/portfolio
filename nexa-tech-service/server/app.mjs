@@ -119,6 +119,11 @@ function inquiryUpdates(store, inquiry) {
   const updates = store.audits(inquiry.id).map(item => {
     if (item.action === 'VISIT_REQUEST_CREATED') return { at: item.createdAt, title: '현장 방문 요청 전달', copy: '현장 운영팀에 방문 요청이 전달되었습니다.' };
     if (item.action === 'VISIT_REQUEST_PREPARED') return { at: item.createdAt, title: '방문 준비 확인', copy: '방문 장소와 요청 내용을 확인했습니다.' };
+    if (item.action === 'CUSTOMER_RESCHEDULE_REQUESTED') return { at: item.createdAt, title: '일정 변경 요청 접수', copy: '희망 방문시간 변경 요청을 담당자가 확인합니다.' };
+    if (item.action === 'CUSTOMER_CANCEL_REQUESTED') return { at: item.createdAt, title: '방문 취소 요청 접수', copy: '방문 취소 요청을 담당자가 확인합니다.' };
+    if (item.action === 'CUSTOMER_MESSAGE_REQUESTED') return { at: item.createdAt, title: '추가 문의 접수', copy: '추가로 남긴 내용을 담당자가 확인합니다.' };
+    if (item.action === 'CUSTOMER_ACTION_RESOLVED') return { at: item.createdAt, title: '고객 요청 처리 완료', copy: '담당자가 고객 요청을 확인하고 처리했습니다.' };
+    if (item.action === 'CUSTOMER_ACTION_REJECTED') return { at: item.createdAt, title: '고객 요청 확인 완료', copy: '담당자가 요청을 확인하고 처리 결과를 남겼습니다.' };
     if (item.toStatus === INQUIRY_STATUS.CLOSED) return { at: item.createdAt, title: '상담 처리 완료', copy: '상담 요청의 처리가 완료되었습니다.' };
     if (item.toStatus === INQUIRY_STATUS.CONTACTED) return { at: item.createdAt, title: '상담 내용 확인', copy: '담당자가 상담 내용을 확인했습니다.' };
     return { at: item.createdAt, title: '요청 상태 변경', copy: '서비스 요청 상태가 변경되었습니다.' };
@@ -142,6 +147,16 @@ function publicInquiry(store, inquiry) {
       summary: inquiry.handoff.summary,
       priority: inquiry.handoff.priority
     } : null,
+    customerActions: (inquiry.customerActions || []).map(action => ({
+      id: action.id,
+      type: action.type,
+      state: action.state,
+      note: action.note,
+      preferredAt: action.preferredAt,
+      resolution: action.resolution,
+      createdAt: action.createdAt,
+      resolvedAt: action.resolvedAt
+    })),
     updates: inquiryUpdates(store, inquiry)
   };
 }
@@ -262,7 +277,7 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
       }
 
       if (req.method === 'GET' && path === '/api/health') {
-        send(req, res, config, 200, { ok: true, service: 'nexa-inquiry-api', fieldOpsHandoff: Boolean(config.fieldOpsClient), customerLookup: true });
+        send(req, res, config, 200, { ok: true, service: 'nexa-inquiry-api', fieldOpsHandoff: Boolean(config.fieldOpsClient), customerLookup: true, customerActions: true });
         return;
       }
 
@@ -281,6 +296,15 @@ export function createInquiryServer(store = createInquiryStore(), options = {}) 
         if (view.handoff?.fieldJobId && config.fieldOpsClient) visit = await config.fieldOpsClient.getVisitRequest(view.handoff.fieldJobId);
         const updates = [...fieldUpdates(visit), ...view.updates].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 10);
         send(req, res, config, 200, { ...view, visit: visit ? { id: visit.id, status: visit.status, priority: visit.priority, startAt: visit.startAt, endAt: visit.endAt, address: visit.address, summary: visit.summary, agentAssigned: visit.agentAssigned } : null, updates });
+        return;
+      }
+
+      if (req.method === 'POST' && path === '/api/customer/requests/action') {
+        consumeRateLimit(req, config);
+        const input = await readBody(req);
+        const inquiry = lookupIdentity(store, input);
+        const action = store.createCustomerAction(inquiry.id, input, 'customer');
+        send(req, res, config, 201, { action });
         return;
       }
 

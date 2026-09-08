@@ -53,7 +53,7 @@ test('new jobs start requested and metrics separate field states', () => {
 test('HTTP API exposes agents, queue and operational metrics in local mode', async () => withServer(async base => {
   const health = await request(base, '/api/health');
   assert.equal(health.response.status, 200);
-  assert.equal(health.body.service, 'field-service-ops');
+  assert.equal(health.body.service, 'nexa-service-operations');
   assert.equal(health.body.auth, 'local');
   const agents = await request(base, '/api/agents');
   assert.equal(agents.body.items.length, 3);

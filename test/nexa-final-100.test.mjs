@@ -40,22 +40,24 @@ test('customer portal keeps request detail hidden until lookup and accepts only 
   assert.doesNotMatch(app, /if \(!endpoint[^\n]*render\(demoRequest\)/);
 });
 
-test('staff workspace selects public demo or authenticated remote API mode without trusting actor or role from the browser', async () => {
+test('staff workspace selects public demo or session-authenticated remote API mode without trusting actor or role from the browser', async () => {
   const bootstrap = await load('field-service-ops/app.js');
-  const demo = await load('field-service-ops/demo-app.mjs');
+  const demo = await load('field-service-ops/demo-delivery-app.mjs');
   const remote = await load('field-service-ops/remote-app.mjs');
   assert.match(bootstrap, /NEXA_OPS_CONFIG/);
   assert.match(bootstrap, /remote-app\.mjs/);
-  assert.match(bootstrap, /demo-app\.mjs/);
-  assert.match(demo, /createStore/);
-  for (const route of ['/api/me','/api/agents','/api/jobs','/api/metrics','/api/audits']) assert.ok(remote.includes(route), `remote client missing ${route}`);
-  assert.match(remote, /Bearer \$\{token\}/);
+  assert.match(bootstrap, /demo-delivery-app\.mjs/);
+  assert.match(demo, /mountInquiryDesk/);
+  for (const route of ['/api/me','/api/agents','/api/jobs','/api/metrics','/api/audits','/api/inquiries']) assert.ok(remote.includes(route), `remote client missing ${route}`);
+  assert.match(remote, /credentials:\s*'include'/);
+  assert.match(remote, /x-csrf-token/);
   assert.match(remote, /expectedVersion/);
+  assert.doesNotMatch(remote, /config\.token/);
   assert.doesNotMatch(remote, /body:\s*\{[^}]*actor\s*:/s);
   assert.doesNotMatch(remote, /body:\s*\{[^}]*role\s*:/s);
 });
 
-test('Field Ops /api/me returns the server-authenticated staff identity', async () => {
+test('Field Ops /api/me returns the server-authenticated service identity for trusted machine-to-machine callers', async () => {
   const token = 'final-ops-token-123456789';
   const server = createFieldServiceServer(createStore(), {
     requireAuth: true,
@@ -68,7 +70,11 @@ test('Field Ops /api/me returns the server-authenticated staff identity', async 
   try {
     const response = await fetch(`http://127.0.0.1:${address.port}/api/me`, { headers: { authorization: `Bearer ${token}` } });
     assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), { id: 'dispatcher-final', name: '김현수', role: 'ADMIN', team: '서울 운영팀' });
+    const principal = await response.json();
+    assert.equal(principal.id, 'dispatcher-final');
+    assert.equal(principal.name, '김현수');
+    assert.equal(principal.role, 'ADMIN');
+    assert.equal(principal.team, '서울 운영팀');
   } finally {
     server.close();
     await once(server, 'close');

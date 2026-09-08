@@ -1,0 +1,48 @@
+# Replace example.invalid hosts with the customer's real domains.
+# Caddy obtains/renews TLS certificates automatically when DNS is configured.
+
+service.example.invalid {
+  encode zstd gzip
+
+  @privateOps path /field-service-ops/* /customer-ui.js
+  respond @privateOps 404
+
+  handle /api/* {
+    reverse_proxy 127.0.0.1:8796
+  }
+
+  handle {
+    root * /srv/nexa/web
+    file_server
+  }
+
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    X-Frame-Options DENY
+    Content-Security-Policy "default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+  }
+}
+
+ops.example.invalid {
+  encode zstd gzip
+
+  @customerSurfaces path /nexa-tech-service/* /nexa-service-domain/*
+  respond @customerSurfaces 404
+
+  handle /api/* {
+    reverse_proxy 127.0.0.1:8792
+  }
+
+  handle {
+    root * /srv/nexa/web
+    file_server
+  }
+
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    X-Frame-Options DENY
+    Content-Security-Policy "default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+  }
+}

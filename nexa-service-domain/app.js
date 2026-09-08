@@ -4,9 +4,17 @@ const form = $('lookup-form');
 const requestView = $('request-view');
 const emptyView = $('lookup-empty');
 const message = $('lookup-message');
+const actionForm = $('customer-action-form');
+const actionType = $('customer-action-type');
+const actionPreferredWrap = $('customer-action-preferred-wrap');
+const actionPreferred = $('customer-action-preferred');
+const actionNote = $('customer-action-note');
+const actionMessage = $('customer-action-message');
 const linkedRequestId = String(new URLSearchParams(window.location.search).get('request') || '').trim().toUpperCase();
 const portalSessionKey = 'nexa:customer-request';
 const portalSessionMaxAge = 30 * 60 * 1000;
+let currentAccess = null;
+let currentRequest = null;
 
 requestView.hidden = true;
 emptyView.hidden = true;
@@ -19,7 +27,10 @@ const demoRequest = {
   currentTitle: '방문 일정이 확정되었습니다.',
   currentCopy: '기사 방문 전 장비 주변 작업공간과 테스트 출력이 가능한 환경을 준비해 주세요.',
   nextSchedule: '9월 9일 14:00–15:00',
+  status: 'CONTACTED',
+  handoff: { state: 'COMPLETED', fieldJobId: 18, address: '서울 중구 세종대로 10', summary: '디지털 인쇄장비 출력 품질 점검', priority: 'NORMAL' },
   visit: {
+    id: 18,
     status: 'SCHEDULED',
     priority: 'NORMAL',
     startAt: '2026-09-09T05:00:00.000Z',
@@ -28,12 +39,16 @@ const demoRequest = {
     summary: '디지털 인쇄장비 출력 품질 점검',
     agentAssigned: true
   },
+  customerActions: [],
   updates: [
     { at: '2026-09-08T07:42:00.000Z', title: '방문 일정 확정', copy: '9월 9일 14:00 방문으로 일정이 확정되었습니다.' },
     { at: '2026-09-08T02:20:00.000Z', title: '현장 방문 필요 확인', copy: '상담 내용을 확인하고 현장 점검이 필요한 요청으로 분류했습니다.' },
     { at: '2026-09-07T08:03:00.000Z', title: '상담 접수', copy: '유지보수 상담 요청이 접수되었습니다.' }
   ]
 };
+
+const ACTION_LABELS = Object.freeze({ MESSAGE: '추가 문의', RESCHEDULE: '일정 변경 요청', CANCEL: '방문 취소 요청' });
+const ACTION_STATES = Object.freeze({ OPEN: '처리 대기', RESOLVED: '처리 완료', REJECTED: '안내 완료' });
 
 function text(id, value) {
   const node = $(id);
@@ -135,7 +150,58 @@ function renderUpdates(items = []) {
   }));
 }
 
+function renderCustomerActions(data) {
+  const list = $('customer-action-list');
+  if (!list) return;
+  const items = Array.isArray(data?.customerActions) ? data.customerActions : [];
+  if (!items.length) {
+    const empty = document.createElement('div');
+    empty.className = 'customer-action-empty';
+    empty.textContent = '아직 추가로 남긴 요청이 없습니다.';
+    list.replaceChildren(empty);
+  } else {
+    list.replaceChildren(...items.map(item => {
+      const article = document.createElement('article');
+      article.className = 'customer-action-item';
+      const strong = document.createElement('strong');
+      strong.textContent = ACTION_LABELS[item.type] || '고객 요청';
+      const state = document.createElement('span');
+      state.className = `customer-action-state ${item.state || 'OPEN'}`;
+      state.textContent = ACTION_STATES[item.state] || item.state || '처리 대기';
+      const detail = document.createElement('p');
+      detail.textContent = `${item.preferredAt ? `희망시간 ${item.preferredAt} · ` : ''}${item.note || ''}`;
+      const time = document.createElement('small');
+      time.textContent = `요청 ${shortDateTime(item.createdAt)}`;
+      article.append(strong, state, detail, time);
+      if (item.resolution) {
+        const resolution = document.createElement('p');
+        resolution.className = 'customer-action-resolution';
+        resolution.textContent = `담당자 안내: ${item.resolution}`;
+        article.append(resolution);
+      }
+      return article;
+    }));
+  }
+
+  const visitReady = Boolean(data?.handoff?.fieldJobId || data?.visit?.id);
+  const terminalVisit = ['DISPATCHED','ON_SITE','COMPLETED','CANCELLED','NO_SHOW'].includes(String(data?.visit?.status || ''));
+  const closed = data?.status === 'CLOSED';
+  if (actionType) {
+    for (const option of actionType.options) {
+      if (['RESCHEDULE','CANCEL'].includes(option.value)) option.disabled = closed || !visitReady || terminalVisit;
+    }
+    if (actionType.selectedOptions[0]?.disabled) actionType.value = 'MESSAGE';
+  }
+  if (actionForm) {
+    const submit = $('customer-action-submit');
+    if (submit) submit.disabled = closed;
+    actionForm.setAttribute('aria-disabled', closed ? 'true' : 'false');
+  }
+  syncActionForm();
+}
+
 function render(data) {
+  currentRequest = data;
   requestView.hidden = false;
   emptyView.hidden = true;
   const [title, copy, label] = stateCopy(data);
@@ -152,6 +218,7 @@ function render(data) {
   text('visit-summary', data.visit?.summary || data.handoff?.summary || data.service || '요청 내용 확인 중');
   renderTimeline(data);
   renderUpdates(data.updates || []);
+  renderCustomerActions(data);
 
   const completed = String(data.visit?.status || '') === 'COMPLETED' || data.status === 'CLOSED';
   if (completed) {
@@ -166,6 +233,8 @@ function render(data) {
 }
 
 function showNotFound(copy = '접수번호와 상담 연락처를 다시 확인해 주세요.') {
+  currentAccess = null;
+  currentRequest = null;
   requestView.hidden = true;
   emptyView.hidden = false;
   const p = emptyView.querySelector('p');
@@ -203,7 +272,7 @@ function clearRememberedAccess(requestId) {
 
 async function lookup(requestId, phone) {
   if (!endpoint) {
-    if (requestId.toUpperCase() === demoRequest.id && normalizedPhone(phone) === normalizedPhone(demoRequest.phone)) return demoRequest;
+    if (requestId.toUpperCase() === demoRequest.id && normalizedPhone(phone) === normalizedPhone(demoRequest.phone)) return structuredClone(demoRequest);
     const error = new Error('접수정보를 확인할 수 없습니다.');
     error.code = 'NOT_FOUND';
     throw error;
@@ -221,6 +290,40 @@ async function lookup(requestId, phone) {
   }
   return payload;
 }
+
+async function createCustomerAction(access, input) {
+  if (!endpoint) {
+    if (access.requestId !== demoRequest.id || normalizedPhone(access.phone) !== normalizedPhone(demoRequest.phone)) throw new Error('접수정보를 확인할 수 없습니다.');
+    const duplicate = demoRequest.customerActions.find(item => item.type === input.type && item.state === 'OPEN' && input.type !== 'MESSAGE');
+    if (duplicate) throw new Error('같은 유형의 요청이 이미 처리 대기 중입니다.');
+    const action = {
+      id: Date.now(), type: input.type, state: 'OPEN', note: input.note, preferredAt: input.preferredAt || '', resolution: '', createdAt: new Date().toISOString(), resolvedAt: null
+    };
+    demoRequest.customerActions.unshift(action);
+    demoRequest.updates.unshift({ at: action.createdAt, title: `${ACTION_LABELS[action.type]} 접수`, copy: '담당자가 요청 내용을 확인합니다.' });
+    return { action };
+  }
+  const response = await fetch(`${endpoint}/api/customer/requests/action`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ id: access.requestId, phone: access.phone, ...input })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(payload?.error?.message || '추가 요청을 접수하지 못했습니다.');
+    error.code = payload?.error?.code || 'CUSTOMER_ACTION_FAILED';
+    throw error;
+  }
+  return payload;
+}
+
+function syncActionForm() {
+  if (!actionType || !actionPreferredWrap) return;
+  const isReschedule = actionType.value === 'RESCHEDULE';
+  actionPreferredWrap.hidden = !isReschedule;
+  if (actionPreferred) actionPreferred.required = isReschedule;
+}
+actionType?.addEventListener('change', syncActionForm);
 
 form?.addEventListener('submit', async event => {
   event.preventDefault();
@@ -241,6 +344,7 @@ form?.addEventListener('submit', async event => {
   message.textContent = '요청 정보를 확인하고 있습니다.';
   try {
     const data = await lookup(requestId, phone);
+    currentAccess = { requestId, phone };
     render(data);
     history.replaceState(null, '', `${location.pathname}?request=${encodeURIComponent(requestId)}`);
     message.textContent = '최신 요청 상태를 불러왔습니다.';
@@ -255,6 +359,44 @@ form?.addEventListener('submit', async event => {
   }
 });
 
+actionForm?.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!currentAccess || !currentRequest) return;
+  actionMessage.className = 'lookup-message';
+  actionMessage.textContent = '';
+  const type = String(actionType?.value || 'MESSAGE');
+  const note = String(actionNote?.value || '').trim();
+  const preferredAt = type === 'RESCHEDULE' ? String(actionPreferred?.value || '').trim() : '';
+  if (note.length < 3) {
+    actionMessage.textContent = '요청 내용을 3자 이상 입력해 주세요.';
+    actionMessage.classList.add('error');
+    return;
+  }
+  if (type === 'RESCHEDULE' && !preferredAt) {
+    actionMessage.textContent = '희망 방문시간을 입력해 주세요.';
+    actionMessage.classList.add('error');
+    return;
+  }
+  const button = $('customer-action-submit');
+  if (button) button.disabled = true;
+  actionForm.setAttribute('aria-busy', 'true');
+  actionMessage.textContent = '요청을 접수하고 있습니다.';
+  try {
+    await createCustomerAction(currentAccess, { type, note, preferredAt });
+    if (actionNote) actionNote.value = '';
+    if (actionPreferred) actionPreferred.value = '';
+    const latest = await lookup(currentAccess.requestId, currentAccess.phone);
+    render(latest);
+    actionMessage.textContent = '요청이 접수되었습니다. 담당자 처리 결과는 이 화면에서 확인할 수 있습니다.';
+  } catch (error) {
+    actionMessage.textContent = error instanceof Error ? error.message : '요청을 접수하지 못했습니다.';
+    actionMessage.classList.add('error');
+  } finally {
+    actionForm.removeAttribute('aria-busy');
+    if (button && currentRequest?.status !== 'CLOSED') button.disabled = false;
+  }
+});
+
 const remembered = readRememberedAccess();
 if (linkedRequestId && /^NX-[A-Z0-9-]{6,24}$/.test(linkedRequestId)) {
   $('request-id').value = linkedRequestId;
@@ -262,6 +404,7 @@ if (linkedRequestId && /^NX-[A-Z0-9-]{6,24}$/.test(linkedRequestId)) {
   else if (!endpoint && linkedRequestId === demoRequest.id) $('request-phone').value = demoRequest.phone;
 }
 
+syncActionForm();
 if (linkedRequestId && remembered?.requestId === linkedRequestId && remembered.phone) {
   queueMicrotask(() => form?.requestSubmit());
 }

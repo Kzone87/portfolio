@@ -17,6 +17,8 @@ const IMPACTS = new Set(['생산·영업 등 핵심 업무가 멈춤', '처리�
 const SERVICES = new Set(['정기점검·예방관리', '고장·장애 현장지원', '신규 설치·장비 이전', '여러 사업장 장비관리', '장비 이력·교체 검토', '무엇이 필요한지 상담부터']);
 const STATUSES = Object.freeze({ PENDING: 'PENDING', CONTACTED: 'CONTACTED', CLOSED: 'CLOSED' });
 const HANDOFF_STATES = Object.freeze({ PENDING: 'PENDING', COMPLETED: 'COMPLETED' });
+const CUSTOMER_ACTION_TYPES = Object.freeze({ MESSAGE: 'MESSAGE', RESCHEDULE: 'RESCHEDULE', CANCEL: 'CANCEL' });
+const CUSTOMER_ACTION_STATES = Object.freeze({ OPEN: 'OPEN', RESOLVED: 'RESOLVED', REJECTED: 'REJECTED' });
 const txt = (value, max) => String(value ?? '').trim().slice(0, max);
 const nowIso = () => new Date().toISOString();
 
@@ -82,6 +84,21 @@ function rowToHandoff(row) {
   };
 }
 
+function rowToCustomerAction(row) {
+  if (!row) return null;
+  return {
+    id: Number(row.id),
+    type: row.type,
+    state: row.state,
+    note: row.note,
+    preferredAt: row.preferred_at || '',
+    resolution: row.resolution || '',
+    createdAt: row.created_at,
+    resolvedAt: row.resolved_at || null,
+    resolvedBy: row.resolved_by || ''
+  };
+}
+
 export function createInquiryStore(path = ':memory:') {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const db = new DatabaseSync(path);
@@ -131,6 +148,20 @@ export function createInquiryStore(path = ':memory:') {
       created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_inquiry_audits_inquiry ON inquiry_audits(inquiry_id, id DESC);
+    CREATE TABLE IF NOT EXISTS customer_actions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      inquiry_id INTEGER NOT NULL REFERENCES inquiries(id),
+      type TEXT NOT NULL CHECK(type IN ('MESSAGE','RESCHEDULE','CANCEL')),
+      state TEXT NOT NULL CHECK(state IN ('OPEN','RESOLVED','REJECTED')),
+      note TEXT NOT NULL,
+      preferred_at TEXT NOT NULL DEFAULT '',
+      resolution TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      resolved_at TEXT,
+      resolved_by TEXT NOT NULL DEFAULT ''
+    );
+    CREATE INDEX IF NOT EXISTS idx_customer_actions_inquiry ON customer_actions(inquiry_id, id DESC);
+    CREATE INDEX IF NOT EXISTS idx_customer_actions_state ON customer_actions(state, id DESC);
   `);
 
   const findRow = publicId => db.prepare('SELECT * FROM inquiries WHERE public_id=?').get(String(publicId));
@@ -140,12 +171,16 @@ export function createInquiryStore(path = ':memory:') {
     return row;
   };
   const findHandoff = inquiryId => db.prepare('SELECT * FROM inquiry_handoffs WHERE inquiry_id=?').get(Number(inquiryId));
-  const output = row => ({ ...rowToInquiry(row), handoff: rowToHandoff(findHandoff(row.id)) });
+  const customerActions = inquiryId => db.prepare('SELECT * FROM customer_actions WHERE inquiry_id=? ORDER BY id DESC').all(Number(inquiryId)).map(rowToCustomerAction);
+  const output = row => ({ ...rowToInquiry(row), handoff: rowToHandoff(findHandoff(row.id)), customerActions: customerActions(row.id) });
   const validVersion = expectedVersion => {
     const version = Number(expectedVersion);
     if (!Number.isInteger(version) || version < 1) throw new InquiryError(400, 'EXPECTED_VERSION_REQUIRED', 'expectedVersion이 필요합니다.');
     return version;
   };
+  const writeAudit = (row, actor, action, at = nowIso()) => db.prepare('INSERT INTO inquiry_audits(inquiry_id,actor,action,from_status,to_status,version,created_at) VALUES(?,?,?,?,?,?,?)').run(
+    row.id, String(actor || 'system').slice(0, 80), action, row.status, row.status, Number(row.version), at
+  );
 
   return {
     create(input) {
@@ -173,6 +208,7 @@ export function createInquiryStore(path = ':memory:') {
         if (Number(row.version) !== version) throw new InquiryError(409, 'STALE_INQUIRY', '상담 상태가 이미 변경되었습니다.');
         const handoff = findHandoff(row.id);
         if (nextStatus === STATUSES.CLOSED && handoff?.state === HANDOFF_STATES.PENDING) throw new InquiryError(409, 'VISIT_HANDOFF_PENDING', '방문 요청 생성이 진행 중입니다.');
+        if (nextStatus === STATUSES.CLOSED && customerActions(row.id).some(action => action.state === CUSTOMER_ACTION_STATES.OPEN)) throw new InquiryError(409, 'CUSTOMER_ACTION_PENDING', '처리되지 않은 고객 요청이 남아 있습니다.');
         const allowed = row.status === STATUSES.PENDING ? [STATUSES.CONTACTED, STATUSES.CLOSED] : row.status === STATUSES.CONTACTED ? [STATUSES.CLOSED] : [];
         if (!allowed.includes(nextStatus)) throw new InquiryError(409, 'INVALID_INQUIRY_ACTION', '현재 상태에서는 처리할 수 없습니다.');
         const updatedAt = nowIso();
@@ -186,6 +222,66 @@ export function createInquiryStore(path = ':memory:') {
         db.exec('ROLLBACK');
         throw error;
       }
+    },
+    createCustomerAction(publicId, input, actor = 'customer') {
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const row = requireInquiry(publicId);
+        if (row.status === STATUSES.CLOSED) throw new InquiryError(409, 'CUSTOMER_REQUEST_CLOSED', '이미 종료된 요청에는 새 요청을 남길 수 없습니다.');
+        const type = String(input?.type || '').trim().toUpperCase();
+        const note = txt(input?.note, 1000);
+        const preferredAt = txt(input?.preferredAt, 80);
+        if (!Object.values(CUSTOMER_ACTION_TYPES).includes(type)) throw new InquiryError(400, 'INVALID_CUSTOMER_ACTION', '요청 유형을 확인해 주세요.');
+        if (note.length < 3) throw new InquiryError(400, 'CUSTOMER_ACTION_NOTE_REQUIRED', '요청 내용을 3자 이상 입력해 주세요.');
+        const handoff = findHandoff(row.id);
+        if ([CUSTOMER_ACTION_TYPES.RESCHEDULE, CUSTOMER_ACTION_TYPES.CANCEL].includes(type) && (!handoff || handoff.state !== HANDOFF_STATES.COMPLETED || !handoff.field_job_id)) {
+          throw new InquiryError(409, 'VISIT_NOT_READY', '방문 요청이 생성된 뒤 일정 변경이나 취소를 요청할 수 있습니다.');
+        }
+        if (type === CUSTOMER_ACTION_TYPES.RESCHEDULE && preferredAt.length < 4) throw new InquiryError(400, 'PREFERRED_AT_REQUIRED', '희망 방문 시간을 입력해 주세요.');
+        if (type !== CUSTOMER_ACTION_TYPES.MESSAGE) {
+          const existing = db.prepare('SELECT id FROM customer_actions WHERE inquiry_id=? AND type=? AND state=? LIMIT 1').get(row.id, type, CUSTOMER_ACTION_STATES.OPEN);
+          if (existing) throw new InquiryError(409, 'CUSTOMER_ACTION_ALREADY_OPEN', '같은 유형의 요청이 이미 처리 대기 중입니다.');
+        }
+        const createdAt = nowIso();
+        const result = db.prepare('INSERT INTO customer_actions(inquiry_id,type,state,note,preferred_at,created_at) VALUES(?,?,?,?,?,?)').run(
+          row.id, type, CUSTOMER_ACTION_STATES.OPEN, note, preferredAt, createdAt
+        );
+        writeAudit(row, actor, `CUSTOMER_${type}_REQUESTED`, createdAt);
+        db.exec('COMMIT');
+        return rowToCustomerAction(db.prepare('SELECT * FROM customer_actions WHERE id=?').get(Number(result.lastInsertRowid)));
+      } catch (error) {
+        db.exec('ROLLBACK');
+        throw error;
+      }
+    },
+    resolveCustomerAction(publicId, actionId, decision, resolution, actor) {
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const row = requireInquiry(publicId);
+        const id = Number(actionId);
+        if (!Number.isInteger(id) || id < 1) throw new InquiryError(400, 'INVALID_CUSTOMER_ACTION_ID', '고객 요청 번호를 확인해 주세요.');
+        const nextState = String(decision || '').trim().toUpperCase();
+        if (![CUSTOMER_ACTION_STATES.RESOLVED, CUSTOMER_ACTION_STATES.REJECTED].includes(nextState)) throw new InquiryError(400, 'INVALID_CUSTOMER_ACTION_STATE', '처리 결과를 확인해 주세요.');
+        const action = db.prepare('SELECT * FROM customer_actions WHERE id=? AND inquiry_id=?').get(id, row.id);
+        if (!action) throw new InquiryError(404, 'CUSTOMER_ACTION_NOT_FOUND', '고객 요청을 찾을 수 없습니다.');
+        if (action.state !== CUSTOMER_ACTION_STATES.OPEN) throw new InquiryError(409, 'CUSTOMER_ACTION_ALREADY_DECIDED', '이미 처리된 고객 요청입니다.');
+        const copy = txt(resolution, 1000);
+        if (copy.length < 2) throw new InquiryError(400, 'CUSTOMER_ACTION_RESOLUTION_REQUIRED', '고객에게 안내할 처리 내용을 입력해 주세요.');
+        const resolvedAt = nowIso();
+        db.prepare('UPDATE customer_actions SET state=?,resolution=?,resolved_at=?,resolved_by=? WHERE id=? AND state=?').run(
+          nextState, copy, resolvedAt, String(actor || 'staff').slice(0, 80), id, CUSTOMER_ACTION_STATES.OPEN
+        );
+        writeAudit(row, actor, nextState === CUSTOMER_ACTION_STATES.RESOLVED ? 'CUSTOMER_ACTION_RESOLVED' : 'CUSTOMER_ACTION_REJECTED', resolvedAt);
+        db.exec('COMMIT');
+        return rowToCustomerAction(db.prepare('SELECT * FROM customer_actions WHERE id=?').get(id));
+      } catch (error) {
+        db.exec('ROLLBACK');
+        throw error;
+      }
+    },
+    listCustomerActions(publicId) {
+      const row = requireInquiry(publicId);
+      return customerActions(row.id);
     },
     prepareVisitRequest(publicId, expectedVersion, input, actor) {
       db.exec('BEGIN IMMEDIATE');
@@ -255,4 +351,4 @@ export function createInquiryStore(path = ':memory:') {
   };
 }
 
-export { STATUSES as INQUIRY_STATUS, HANDOFF_STATES as INQUIRY_HANDOFF_STATE };
+export { STATUSES as INQUIRY_STATUS, HANDOFF_STATES as INQUIRY_HANDOFF_STATE, CUSTOMER_ACTION_TYPES, CUSTOMER_ACTION_STATES };
