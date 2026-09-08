@@ -3,7 +3,8 @@ export const PUBLIC_DEMO_WIRING = Object.freeze([
   'scheduleWindowError', 'window.confirm', 'friendlyError',
   'BOARD_HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]',
   "event.key === 'Escape'",
-  'inputLocal(currentJob.startAt)'
+  'inputLocal(currentJob.startAt)',
+  '상담 접수', '직원 계정', '방문 요청 생성'
 ]);
 
 const config = window.NEXA_OPS_CONFIG && typeof window.NEXA_OPS_CONFIG === 'object'
@@ -11,7 +12,7 @@ const config = window.NEXA_OPS_CONFIG && typeof window.NEXA_OPS_CONFIG === 'obje
   : {};
 const endpoint = String(config.endpoint || '').trim();
 
-const target = endpoint ? './remote-app.mjs' : './demo-app.mjs';
+const target = endpoint ? './remote-app.mjs' : './demo-delivery-app.mjs';
 import(target).catch((error) => {
   console.error(error);
   const message = document.getElementById('message');

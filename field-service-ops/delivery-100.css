@@ -1,0 +1,75 @@
+.workspace-tabs{display:flex;gap:8px;align-items:center;margin:20px 0 18px;padding:6px;background:#e9eef5;border:1px solid #d9e0e9;border-radius:14px;width:max-content;max-width:100%}
+.workspace-tabs button{border:0;background:transparent;color:#526173;font:inherit;font-weight:800;padding:10px 14px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.workspace-tabs button.active{background:#fff;color:#102033;box-shadow:0 1px 2px rgba(15,23,42,.08)}
+.workspace-tabs button span{display:inline-flex;min-width:22px;height:20px;padding:0 6px;align-items:center;justify-content:center;margin-left:6px;border-radius:999px;background:#dbe6f5;color:#1e4d82;font-size:11px}
+.workspace-view[hidden],.login-screen[hidden]{display:none!important}
+.inquiry-page-head{margin-top:0}
+.inquiry-layout,.team-layout{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(0,1.55fr);gap:18px;align-items:start}
+.inquiry-list-panel,.inquiry-detail-panel,.team-list-panel,.team-detail-panel{min-width:0}
+.inquiry-list,.team-list{display:grid;gap:8px}
+.inquiry-card,.team-user-card{width:100%;text-align:left;border:1px solid #dfe5ec;background:#fff;border-radius:12px;padding:13px 14px;cursor:pointer;color:#1a2735;min-width:0}
+.inquiry-card:hover,.team-user-card:hover{border-color:#b7c6d7;background:#f9fbfd}
+.inquiry-card.active,.team-user-card.active{border-color:#5682b2;box-shadow:0 0 0 2px rgba(58,111,164,.12)}
+.inquiry-card p,.team-user-card p{margin:7px 0;color:#526173;line-height:1.45;overflow-wrap:anywhere}
+.inquiry-card small,.team-user-card small{color:#7b8794;overflow-wrap:anywhere}
+.inquiry-card-head,.team-user-card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;min-width:0}
+.inquiry-card-head strong,.team-user-card-head strong{min-width:0;overflow-wrap:anywhere}
+.inquiry-state,.team-role-badge{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:-.02em}
+.inquiry-state.PENDING{background:#fff3d9;color:#8a5a00}.inquiry-state.CONTACTED{background:#e9f1ff;color:#215c9b}.inquiry-state.CLOSED{background:#edf0f3;color:#59636f}
+.team-role-badge.ADMIN{background:#e9f1ff;color:#215c9b}.team-role-badge.STAFF{background:#edf5ef;color:#29633b}
+.team-user-card.disabled{opacity:.6}
+.inquiry-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+.inquiry-detail-grid>section,.inquiry-copy-box,.inquiry-handoff-box,.visit-create-box,.inquiry-audit-box,.password-reset-box{border:1px solid #e1e6ec;border-radius:12px;background:#f9fbfd;padding:15px;min-width:0}
+.inquiry-detail-grid h3,.visit-create-box h3,.inquiry-audit-box h3,.password-reset-box h3{margin:0 0 10px;font-size:14px}
+.inquiry-kv{display:grid;gap:8px;margin:0}
+.inquiry-kv div{display:grid;grid-template-columns:80px minmax(0,1fr);gap:10px}
+.inquiry-kv dt{color:#788491;font-size:12px}.inquiry-kv dd{margin:0;color:#1b2938;font-weight:700;overflow-wrap:anywhere}
+.inquiry-copy-box{margin-top:12px}.inquiry-copy-box>span,.inquiry-handoff-box>div>span{display:block;color:#74808d;font-size:12px;font-weight:800;margin-bottom:7px}
+.inquiry-copy-box p{margin:0;white-space:pre-wrap;line-height:1.6;overflow-wrap:anywhere}
+.inquiry-handoff-box{margin-top:12px}.inquiry-handoff-box #inquiry-handoff{display:grid;gap:3px;min-width:0}.inquiry-handoff-box strong,.inquiry-handoff-box span,.inquiry-handoff-box small{overflow-wrap:anywhere}
+.inquiry-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.inquiry-actions button,.visit-create-box button,.team-edit-form button,.team-create-form button,.inline-form button{border:0;border-radius:9px;background:#1f5f9f;color:#fff;font-weight:900;padding:10px 14px;cursor:pointer}
+.inquiry-actions .secondary-action{background:#edf1f5;color:#283746}
+.inquiry-actions button:disabled,.visit-create-box button:disabled{opacity:.45;cursor:not-allowed}
+.visit-create-box .form{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,.35fr);gap:10px}.visit-create-box .wide{grid-column:1/-1}
+.visit-create-box textarea{resize:vertical}
+.inquiry-audits,.team-auth-audits{display:grid;gap:8px}
+.inquiry-audit-row,.team-audit-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;border-top:1px solid #e4e9ef;padding-top:8px;min-width:0}
+.inquiry-audit-row:first-child,.team-audit-row:first-child{border-top:0;padding-top:0}
+.inquiry-audit-row strong,.team-audit-row strong,.inquiry-audit-row span,.team-audit-row span,.team-audit-row p{overflow-wrap:anywhere}
+.inquiry-audit-row span,.team-audit-row span{color:#7a8794;font-size:12px}
+.team-audit-row p{grid-column:1/-1;margin:0;color:#617080}
+.team-lower{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.team-edit-form,.team-create-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.team-edit-form button,.team-create-form button{align-self:end}
+.toggle-label{display:flex!important;align-items:center;gap:8px;border:1px solid #dfe5ec;border-radius:9px;padding:10px;background:#fff}
+.toggle-label input{width:auto!important}
+.password-reset-box{margin-top:14px}
+.inline-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.logout-button{border:1px solid #cfd7e1;background:#fff;color:#344354;border-radius:8px;padding:7px 10px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;margin-left:8px}
+.login-screen{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:rgba(12,22,34,.72);padding:20px}
+.login-card{width:min(430px,100%);background:#fff;border-radius:18px;padding:26px;box-shadow:0 28px 80px rgba(0,0,0,.28)}
+.login-brand{display:block;color:#47739f;font-size:12px;font-weight:900;letter-spacing:.08em}.login-card h1{margin:8px 0 8px}.login-card>p{color:#65717e;line-height:1.55}
+.login-card form{display:grid;gap:12px;margin-top:18px}.login-card label{display:grid;gap:6px;font-size:13px;font-weight:800}.login-card input{width:100%;box-sizing:border-box;border:1px solid #cfd7e1;border-radius:9px;padding:11px 12px;font:inherit}
+.login-card button{border:0;border-radius:9px;background:#1d5f9f;color:#fff;padding:11px 14px;font:inherit;font-weight:900;cursor:pointer}
+body.auth-required>main,body.auth-required>.detail-backdrop,body.auth-required>.job-detail-panel{visibility:hidden}
+.ops-global-status{margin:0 0 12px}
+@media(max-width:900px){
+  .workspace-tabs{width:100%;overflow-x:auto;justify-content:flex-start}
+  .inquiry-layout,.team-layout,.team-lower{grid-template-columns:1fr}
+  .inquiry-detail-grid{grid-template-columns:1fr}
+  .team-edit-form,.team-create-form{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .workspace-tabs{margin:12px 0}.workspace-tabs button{padding:9px 11px;font-size:13px}
+  .signed-user{gap:6px}.user-team{display:none}.logout-button{margin-left:0;padding:6px 8px}
+  .inquiry-kv div{grid-template-columns:70px minmax(0,1fr)}
+  .visit-create-box .form{grid-template-columns:1fr}.visit-create-box .wide{grid-column:auto}
+  .inline-form{grid-template-columns:1fr}
+  .inquiry-audit-row,.team-audit-row{grid-template-columns:1fr}.inquiry-audit-row span,.team-audit-row span{justify-self:start}
+}
+@media(max-width:420px){
+  .inquiry-card,.team-user-card,.inquiry-detail-grid>section,.inquiry-copy-box,.inquiry-handoff-box,.visit-create-box,.inquiry-audit-box,.password-reset-box{padding:12px}
+  .inquiry-card-head,.team-user-card-head{align-items:flex-start;flex-direction:column}
+  .inquiry-actions{display:grid;grid-template-columns:1fr}
+}
