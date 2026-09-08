@@ -359,6 +359,7 @@ function inquiryAdapter() {
     audits: id => api(`/api/inquiries/${encodeURIComponent(id)}/audits`),
     contacted: (id, expectedVersion) => api(`/api/inquiries/${encodeURIComponent(id)}/contacted`, { method: 'POST', body: { expectedVersion } }),
     visit: (id, expectedVersion, input) => api(`/api/inquiries/${encodeURIComponent(id)}/visit-request`, { method: 'POST', body: { expectedVersion, ...input } }),
+    resolveCustomerAction: (id, actionId, decision, resolution) => api(`/api/inquiries/${encodeURIComponent(id)}/customer-actions/${Number(actionId)}/decision`, { method: 'POST', body: { decision, resolution } }),
     close: (id, expectedVersion) => api(`/api/inquiries/${encodeURIComponent(id)}/close`, { method: 'POST', body: { expectedVersion } })
   };
 }
