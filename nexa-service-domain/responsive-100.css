@@ -1,8 +1,85 @@
-/* NEXA Service Domain — responsive/overflow hardening */
-.hero-layout>*,.section-head>*,.surface-grid>*,.surface,.domain-summary,.domain-flow>*,.proof-grid>*,.final-box>*{min-width:0}
-.hero-copy h1,.lead,.domain-summary strong,.domain-summary p,.surface h3,.surface p,.surface li,.domain-flow strong,.domain-flow p,.domain-flow em,.boundary-note p,.proof-grid h3,.proof-grid p,.final-box h2,.final-box p{overflow-wrap:anywhere}
-.primary,.secondary,.surface a,.boundary-note a{max-width:100%;white-space:normal;text-align:center;line-height:1.35;overflow-wrap:anywhere}
-.portfolio-brand{flex:0 0 auto;white-space:nowrap}.header-inner nav{min-width:0}.header-inner nav a{white-space:nowrap}
-@media(max-width:860px) and (min-width:701px){.header-inner{gap:16px}.header-inner nav{gap:14px;font-size:.82rem}.header-inner nav a:first-child{display:none}}
-@media(max-width:700px){.header-inner{gap:12px}.portfolio-brand{font-size:.9rem}.domain-summary strong{font-size:1.08rem}.surface h3{font-size:1.7rem}.proof-grid h3{font-size:1.02rem}.final-actions{width:100%}.final-actions a{width:100%}}
-@media(max-width:380px){.shell{width:min(100% - 22px,1180px)}.hero-copy h1{font-size:clamp(2.2rem,11.5vw,2.8rem)}.section-head h2{font-size:2.05rem}.surface{padding:22px}.final-box{padding:26px 20px}.final-box h2{font-size:1.95rem}}
+/* NEXA customer service portal — final responsive, trust and overflow hardening */
+.portal-main>*,.portal-intro>*,.portal-journey>*,.journey-steps>*,.lookup-card>*,.lookup-form>*,.portal-assurance>*,.portal-assurance article,.request-view>*,.overview-grid>*,.detail-grid>*,.customer-action-card>*,.secure-history>*{min-width:0}
+
+button,input,select,textarea{font:inherit}
+button,a,input,select,textarea{touch-action:manipulation}
+
+.portal-journey{display:grid;grid-template-columns:minmax(250px,.85fr) minmax(0,1.15fr);gap:30px;align-items:start;margin-bottom:18px;padding:24px 26px;border:1px solid #dbe6f1;border-radius:16px;background:linear-gradient(135deg,#f8fbff,#f2f7fd)}
+.journey-heading h2{margin:6px 0 8px;color:#173b5c;font-size:21px;line-height:1.3;letter-spacing:-.035em}
+.journey-heading p{margin:0;color:#627487;font-size:12px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
+.journey-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0}
+.journey-steps li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:start;padding:15px;border:1px solid #dce7f2;border-radius:13px;background:#fff}
+.journey-steps i{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#eaf3ff;color:#0f5ec7;font-size:11px;font-style:normal;font-weight:900}
+.journey-steps strong,.journey-steps span{display:block;overflow-wrap:anywhere}
+.journey-steps strong{color:#1e3349;font-size:12px}
+.journey-steps span{margin-top:4px;color:#738193;font-size:10px;line-height:1.55}
+
+.noscript-note{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:0 0 18px;padding:15px 18px;border:1px solid #f0d8a8;border-radius:12px;background:#fff8e9;color:#6e5018;font-size:12px;line-height:1.6}
+.noscript-note strong{flex:0 0 auto}
+.noscript-note span{min-width:0}
+.noscript-note a{text-decoration:underline;text-underline-offset:2px}
+
+.lookup-form>label:first-of-type{grid-column:1/-1;max-width:560px}
+.lookup-form label,.lookup-form input,.lookup-form button,.secure-challenge,.secure-code{min-width:0}
+.lookup-form input,.lookup-form button,.secure-challenge select,.secure-challenge button,.secure-code input,.secure-code button{min-height:44px}
+.lookup-form button,.secure-challenge button,.secure-code button{white-space:normal;line-height:1.3}
+.lookup-copy h2,.lookup-copy p,.lookup-help,.lookup-message{overflow-wrap:anywhere}
+
+.portal-assurance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 2px}
+.portal-assurance article{padding:18px;border:1px solid #e0e7ef;border-radius:14px;background:#fff}
+.portal-assurance span{display:block;color:#4b78ad;font-size:9px;font-weight:900;letter-spacing:.12em}
+.portal-assurance strong{display:block;margin-top:8px;color:#24384d;font-size:13px;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}
+.portal-assurance p{margin:7px 0 0;color:#758293;font-size:11px;line-height:1.65;word-break:keep-all;overflow-wrap:anywhere}
+
+.portal-intro h1,.portal-intro p,.current-card h2,.current-card p,.visit-card dd,.timeline strong,.timeline span,.customer-action-copy h2,.customer-action-copy p,.result-card h2,.result-card p,.portal-footer span{overflow-wrap:anywhere}
+.request-toolbar,.request-toolbar-actions,.card-head,.section-title-row,.result-card{min-width:0}
+
+@media(max-width:920px){
+  .portal-journey{grid-template-columns:1fr;gap:18px}
+  .portal-assurance{grid-template-columns:1fr 1fr}
+}
+
+@media(max-width:680px){
+  .header-inner{gap:14px}
+  .portal-header nav{gap:12px}
+  .portal-header nav a{white-space:nowrap}
+  .portal-journey{padding:20px}
+  .journey-steps{grid-template-columns:1fr}
+  .journey-steps li{grid-template-columns:28px minmax(0,1fr)}
+  .portal-assurance{grid-template-columns:1fr}
+  .noscript-note{flex-direction:column;gap:6px}
+  .lookup-form>label:first-of-type{max-width:none}
+  .section-title-row{align-items:flex-start;flex-direction:column;gap:5px}
+  .section-title-row small{max-width:none;text-align:left}
+}
+
+@media(max-width:420px){
+  .shell{width:min(100% - 22px,1180px)}
+  .portal-header nav a:first-child{display:block}
+  .portal-header nav a:nth-child(2){display:none}
+  .portal-header nav{gap:10px}
+  .portal-header nav a{font-size:10px}
+  .brand{gap:8px}
+  .brand strong{font-size:11px}
+  .brand small{font-size:8px}
+  .portal-main{padding-top:22px}
+  .portal-intro h1{font-size:25px}
+  .portal-journey{padding:18px;border-radius:14px}
+  .journey-heading h2{font-size:19px}
+  .journey-steps li{padding:13px}
+  .lookup-card{padding:18px}
+  .portal-assurance article{padding:16px}
+  .request-toolbar,.current-card,.visit-card,.timeline-card,.panel-card,.result-card{border-radius:14px}
+  .customer-action-card{margin-top:18px}
+  .portal-footer .shell{gap:10px}
+}
+
+@media(max-width:350px){
+  .portal-header nav a:first-child{display:none}
+  .portal-intro h1{font-size:23px}
+  .portal-journey,.lookup-card{padding:16px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
