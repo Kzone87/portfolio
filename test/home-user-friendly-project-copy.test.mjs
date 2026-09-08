@@ -5,19 +5,15 @@ import { readFile } from 'node:fs/promises';
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 
 test('project titles explain the customer outcome before the implementation detail', () => {
-  assert.match(html, /<b>NEXA TECH SERVICE<\/b><em>신규 고객 · 기존 고객 · 직원<\/em>[\s\S]*<h3>고객 상담부터 현장 배차까지 이어지는 유지보수 서비스<\/h3>/);
+  assert.match(html, /<b>NEXA SERVICE SUITE<\/b><em>3 USER SURFACES<\/em>[\s\S]*<h3>고객 상담부터 현장 완료까지, 하나로 이어지는 서비스 운영 시스템<\/h3>/);
   assert.match(html, /<b>MONO OPERATIONS<\/b>[\s\S]*<h3>회사 운영 업무 시스템<\/h3>/);
   assert.match(html, /<b>Excel Workbench<\/b>[\s\S]*<h3>엑셀 데이터 정리·비교<\/h3>/);
   assert.match(html, /08 · OPS KIT<\/span><h2>반복 업무 자동화 도구<\/h2>/);
 });
 
 test('all eight products keep a consistent visible sequence while NEXA exposes all three user surfaces', () => {
-  assert.match(html, /신규 고객/);
-  assert.match(html, /기존 고객/);
-  assert.match(html, /NEXA Customer Service/);
-  assert.match(html, /01 · 고객 서비스 화면/);
-  assert.match(html, /기존 고객 · 진행 조회/);
-  assert.match(html, /02 · 직원 배차 화면/);
+  for (const phrase of ['신규 고객','기존 고객','직원','NEXA TECH SERVICE','NEXA CUSTOMER SERVICE','NEXA SERVICE OPERATIONS']) assert.match(html, new RegExp(phrase));
+  for (const href of ['./nexa-tech-service/','./nexa-service-domain/','./field-service-ops/']) assert.ok(html.includes(`href="${href}"`), `missing NEXA surface ${href}`);
   assert.match(html, /<span>03<\/span><strong>주문·배송 운영 관리<\/strong><small>MONO MARKET<\/small>/);
   assert.match(html, /<span>04<\/span><strong>문서 접수·검수 시스템<\/strong><small>MONO OFFICE<\/small>/);
   assert.match(html, /<span>05<\/span><strong>고객 문의 AI 업무지원<\/strong><small>MONO SUPPORT<\/small>/);
@@ -28,12 +24,9 @@ test('all eight products keep a consistent visible sequence while NEXA exposes a
 
 test('NEXA portfolio copy speaks in customer and operating outcomes rather than design narration', () => {
   for (const phrase of [
-    '신규 고객은 서비스를 확인하고 상담을 접수합니다',
-    '접수 후에는 고객 서비스에서 방문 일정과 진행상태를 확인하고',
-    '문의가 끊기지 않게',
-    '현장 운영을 한눈에',
-    '완료 이후까지',
-    '상담 접수 → 고객 진행 조회 → 방문 요청 → 기사 배정 → 현장 처리 → 작업 결과·후속관리'
+    '신규 고객의 상담 접수, 기존 고객의 진행 확인과 변경 요청',
+    '직원의 상담 처리·배차·현장 운영',
+    '상담 접수', '지원 확인', '방문 요청', '기사 배정', '현장 작업', '완료·후속관리'
   ]) assert.match(html, new RegExp(phrase));
   assert.doesNotMatch(html, /왜 두 화면인가|역할 분리|구현 근거|ONE DOMAIN · TWO SURFACES/);
   assert.match(html, /주문 처리부터 문서 검수, 고객 상담, 데이터 연동까지/);

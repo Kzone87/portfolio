@@ -35,8 +35,11 @@ test('homepage stays directly runnable while putting work before explanation', (
   assert.match(home, /정상 흐름뿐 아니라/);
   assert.match(home, /같이 일하고 싶다면/);
   assert.match(home, /NEXA TECH SERVICE/);
-  assert.match(home, /고객 상담부터 현장 배차까지 이어지는 유지보수 서비스/);
-  assert.match(home, /서비스 운영 흐름 보기/);
+  assert.match(home, /고객 상담부터 현장 완료까지, 하나로 이어지는 서비스 운영 시스템/);
+  assert.match(home, /NEXA SERVICE SUITE/);
+  assert.match(home, /서비스 홈페이지 열기/);
+  assert.match(home, /고객 서비스 열기/);
+  assert.match(home, /운영 Workspace 열기/);
   assert.match(home, /MONO OPERATIONS/);
   assert.ok(home.includes('./nexa-service-domain/'), 'missing NEXA service flow page');
   assert.ok(home.includes('./nexa-tech-service/'), 'missing corporate website demo');

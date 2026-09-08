@@ -17,7 +17,8 @@ const visibleText = html => html
   .replace(/\s+/g, ' ');
 
 test('each NEXA surface addresses the person who would actually use it', () => {
-  assert.match(home, /고객 상담부터 현장 배차까지 이어지는 유지보수 서비스/);
+  assert.match(home, /고객 상담부터 현장 완료까지, 하나로 이어지는 서비스 운영 시스템/);
+  assert.match(home, /NEXA SERVICE SUITE/);
   assert.match(portal, /접수번호와 상담 시 등록한 연락처/);
   assert.match(portal, /현재 진행상태/);
   assert.match(customerApp, /진행 조회/);

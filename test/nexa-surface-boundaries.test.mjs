@@ -22,8 +22,9 @@ test('customer-facing NEXA contains customer actions, not portfolio narration', 
 });
 
 test('portfolio summary speaks in customer outcomes while routing to the NEXA bundle', () => {
-  for (const phrase of ['고객 상담부터 현장 배차까지 이어지는 유지보수 서비스','서비스 운영 흐름 보기','01 · 고객 서비스 화면','02 · 직원 배차 화면']) assert.ok(portfolio.includes(phrase));
-  for (const forbidden of ['왜 두 화면인가','역할 분리','구현 근거','ONE DOMAIN · TWO SURFACES']) assert.ok(!portfolio.includes(forbidden), `portfolio leaks design narration ${forbidden}`);
+  for (const phrase of ['NEXA SERVICE SUITE','고객 상담부터 현장 완료까지, 하나로 이어지는 서비스 운영 시스템','서비스 홈페이지 열기','고객 서비스 열기','운영 Workspace 열기']) assert.ok(portfolio.includes(phrase));
+  for (const href of ['./nexa-tech-service/','./nexa-service-domain/','./field-service-ops/']) assert.ok(portfolio.includes(`href="${href}"`), `portfolio missing ${href}`);
+  for (const forbidden of ['왜 두 화면인가','역할 분리','구현 근거','ONE DOMAIN · TWO SURFACES','01 · 고객 서비스 화면','02 · 직원 배차 화면']) assert.ok(!portfolio.includes(forbidden), `portfolio leaks design narration ${forbidden}`);
 });
 
 test('NEXA customer service is a request portal, not an explanatory case-study page', () => {
