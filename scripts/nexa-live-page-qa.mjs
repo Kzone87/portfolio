@@ -10,7 +10,7 @@ await mkdir(output, { recursive: true });
 const surfaces = [
   { key: 'portfolio', url: `${root}/`, required: ['요구사항', '범위·견적', '개발·검수', '배포·인수인계'], selector: 'a[href*="project-inquiry"]' },
   { key: 'tech-service', url: `${root}/nexa-tech-service/`, required: ['NEXA TECH SERVICE', '정기점검', '현장지원'], selector: 'a[href="./contact.html"]' },
-  { key: 'customer-service', url: `${root}/nexa-service-domain/`, required: ['서비스 요청 조회', '접수번호'], selector: '#lookup-form' },
+  { key: 'customer-service', url: `${root}/nexa-service-domain/`, required: ['서비스 요청 조회', '접수번호', '일회용 인증', '접수번호만으로 상세정보를 열지 않습니다.'], selector: '#lookup-form' },
   { key: 'service-operations', url: `${root}/field-service-ops/`, required: ['NEXA SERVICE OPERATIONS', '배차'], selector: '#dispatch-workspace' }
 ];
 const viewports = [
@@ -71,6 +71,10 @@ for (const surface of surfaces) {
     try {
       await gotoWithRetry(page, surface.url);
       await page.locator(surface.selector).first().waitFor({ state: 'attached', timeout: 15_000 });
+      if (surface.key === 'customer-service') {
+        await page.locator('.portal-journey').waitFor({ state: 'visible', timeout: 15_000 });
+        await page.locator('.portal-assurance').waitFor({ state: 'visible', timeout: 15_000 });
+      }
       const text = await page.locator('body').innerText();
       for (const required of surface.required) if (!text.includes(required)) throw new Error(`${surface.key}/${viewport.name}: missing copy ${required}`);
       await assertNoHorizontalOverflow(page, `${surface.key}/${viewport.name}`);
@@ -102,6 +106,7 @@ for (const surface of surfaces) {
     await page.locator('.secure-history').waitFor({ state: 'attached', timeout: 10_000 });
     const text = await page.locator('body').innerText();
     if (!text.includes('작업 보고서')) throw new Error('customer demo: work report missing after OTP verification');
+    await assertNoHorizontalOverflow(page, 'customer-service/otp-verified');
     await page.screenshot({ path: `${output}/customer-service-otp-verified.png`, fullPage: true });
     if (runtimeErrors.length) throw new Error(`customer interaction: ${runtimeErrors.join(' | ')}`);
     console.log('PASS interaction customer OTP -> request -> report');
