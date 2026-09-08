@@ -92,7 +92,14 @@ test('delivery build exports only public web assets and injects real customer id
     assert.match(home, /<meta property="og:image" content="https:\/\/a1\.example\/og\.png">/);
     assert.match(home, /application\/ld\+json/);
     assert.match(home, /company-profile-section/);
-    assert.doesNotMatch(home, /포트폴리오 시연을 위해 구성한 가상 브랜드/);
+
+    for (const page of ['index.html','about.html','services.html','industries.html','cases.html','playbook.html','contact.html']) {
+      const html = readFileSync(join(output, 'nexa-tech-service', page), 'utf8');
+      assert.doesNotMatch(html, /포트폴리오 시연을 위해 구성한 가상 브랜드/, `demo disclaimer leaked into ${page}`);
+      assert.match(html, /에이원프린트케어 주식회사/, `legal company identity missing in ${page}`);
+      assert.match(html, /개인정보 처리방침/, `privacy link missing in ${page}`);
+      assert.match(html, /A1 PRINT CARE/, `customer brand missing in ${page}`);
+    }
 
     const contact = readFileSync(join(output, 'nexa-tech-service/contact.html'), 'utf8');
     const portal = readFileSync(join(output, 'nexa-service-domain/index.html'), 'utf8');
