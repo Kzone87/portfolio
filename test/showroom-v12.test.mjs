@@ -68,9 +68,10 @@ test('every internal showroom page exposes real controls and visible results', a
     for (const id of demo.results) assert.ok(html.includes(`id="${id}"`), `${demo.route} missing result area ${id}`);
     if (demo.internalWorkspace) {
       assert.match(html, /NEXA SERVICE OPERATIONS/);
-      assert.match(html, /직원 전용 · 배차 \/ 현장 운영/);
+      assert.match(html, /직원 전용 · 상담 \/ 배차 \/ 현장 운영/);
+      assert.match(html, /상담 접수함/);
       assert.match(html, /배차 현황/);
-      assert.match(html, /배차 기준일/);
+      assert.match(html, /운영 기준일/);
       assert.doesNotMatch(html, /← (?:체험센터|포트폴리오|프로젝트)/);
     } else {
       assert.match(html, /<a href="\.\.\/"[^>]*>← (?:체험센터|포트폴리오|프로젝트)<\/a>/);
