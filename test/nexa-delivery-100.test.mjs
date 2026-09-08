@@ -234,7 +234,7 @@ test('operations UI exposes a real employee inbox, login, account administration
     load('field-service-ops/team-admin.mjs'),
     load('field-service-ops/delivery-100.css')
   ]);
-  for (const phrase of ['직원 로그인', '상담 접수함', '방문 요청 생성', '배차 운영', '직원 계정 관리']) assert.match(html, new RegExp(phrase));
+  for (const phrase of ['직원 로그인', '상담 접수함', '방문 요청 생성', '배차 운영', '직원 계정 관리', '비밀번호 재설정']) assert.match(html, new RegExp(phrase));
   assert.match(bootstrap, /demo-delivery-app\.mjs/);
   assert.match(remote, /credentials:\s*'include'/);
   assert.match(remote, /x-csrf-token/);
@@ -245,7 +245,7 @@ test('operations UI exposes a real employee inbox, login, account administration
   assert.doesNotMatch(remote, /Bearer \$\{token\}/);
   assert.match(demo, /mountInquiryDesk/);
   assert.match(inquiryDesk, /VISIT_REQUEST_CREATED/);
-  assert.match(teamAdmin, /비밀번호 재설정/);
+  assert.match(teamAdmin, /adapter\.resetPassword/);
   assert.match(css, /\.login-screen/);
   assert.match(css, /overflow-wrap:anywhere/);
 });
