@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="NEXA TECH SERVICE 직원이 상담 접수부터 방문 요청, 기사 배차, 출동, 현장 완료까지 처리하는 서비스 운영시스템">
+  <meta name="description" content="NEXA TECH SERVICE 직원이 상담 접수부터 고객 추가 요청, 방문 요청, 기사 배차, 출동, 현장 완료까지 처리하는 서비스 운영시스템">
   <title>NEXA Service Operations | 상담·배차·현장 운영</title>
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./responsive-100.css">
   <link rel="stylesheet" href="./delivery-100.css">
+  <link rel="stylesheet" href="./customer-actions.css">
 </head>
 <body>
 <header class="topbar">
@@ -43,13 +44,13 @@
 
   <section id="inquiry-workspace" class="workspace-view" hidden>
     <section class="page-head inquiry-page-head">
-      <div><p class="breadcrumb">NEXA / 고객 상담 / 접수함</p><h1>상담 접수함</h1><p>고객 상담을 확인하고, 현장 방문이 필요하면 주소·요청내용·우선순위를 확정해 방문 작업으로 전환합니다.</p></div>
-      <div class="date-card"><span>업무 흐름</span><strong>상담 → 방문 요청 → 배차</strong></div>
+      <div><p class="breadcrumb">NEXA / 고객 상담 / 접수함</p><h1>상담 접수함</h1><p>고객 상담과 추가 요청을 확인하고, 현장 방문이 필요하면 주소·요청내용·우선순위를 확정해 방문 작업으로 전환합니다.</p></div>
+      <div class="date-card"><span>업무 흐름</span><strong>상담 → 고객 요청 → 방문 → 배차</strong></div>
     </section>
 
     <section class="inquiry-layout">
       <aside class="panel inquiry-list-panel">
-        <div class="head"><div><h2>상담 요청</h2><p class="muted">미처리 요청부터 확인하세요.</p></div></div>
+        <div class="head"><div><h2>상담 요청</h2><p class="muted">미처리 상담과 고객 추가 요청부터 확인하세요.</p></div></div>
         <div class="filters inquiry-filters">
           <input id="inquiry-search" type="search" aria-label="상담 요청 검색" placeholder="회사·담당자·접수번호 검색">
           <select id="inquiry-status-filter" aria-label="상담 상태">
@@ -90,6 +91,11 @@
             <div><span>현장 운영 연결</span><div id="inquiry-handoff">아직 현장 방문 요청이 만들어지지 않았습니다.</div></div>
           </section>
 
+          <section class="inquiry-customer-action-box" aria-labelledby="inquiry-customer-action-title">
+            <div class="section-title"><div><h3 id="inquiry-customer-action-title">고객 추가 요청</h3><p class="muted">일정 변경·방문 취소·추가 문의 요청을 확인하고 고객에게 처리 결과를 남깁니다.</p></div></div>
+            <div id="inquiry-customer-actions" class="inquiry-customer-actions"></div>
+          </section>
+
           <div class="inquiry-actions">
             <button id="inquiry-contacted" type="button">고객 연락 확인</button>
             <button id="inquiry-close" class="secondary-action" type="button">상담 종료</button>
@@ -108,7 +114,7 @@
           <p id="inquiry-message" class="message" role="status" aria-live="polite"></p>
 
           <section class="inquiry-audit-box">
-            <div class="section-title"><div><h3>상담 변경 이력</h3><p class="muted">누가 상담을 확인하고 현장 요청으로 전환했는지 기록합니다.</p></div></div>
+            <div class="section-title"><div><h3>상담 변경 이력</h3><p class="muted">누가 상담과 고객 추가 요청을 확인하고 현장 요청으로 전환했는지 기록합니다.</p></div></div>
             <div id="inquiry-audits" class="inquiry-audits"></div>
           </section>
         </div>
