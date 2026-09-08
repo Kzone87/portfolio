@@ -168,6 +168,12 @@ function inquiryRoute(path, suffix = '') {
   return match ? match[1] : null;
 }
 
+function customerActionDecisionRoute(path) {
+  const match = path.match(/^\/api\/inquiries\/([A-Z0-9-]+)\/customer-actions\/(\d+)\/decision$/);
+  if (!match) return null;
+  return { inquiryId: match[1], actionId: Number(match[2]) };
+}
+
 function userRoute(path, suffix = '') {
   const escaped = suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const match = path.match(new RegExp(`^/api/admin/users/([a-zA-Z0-9._-]+)${escaped}$`));
@@ -249,6 +255,19 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
           auth: config.authStore ? 'session' : (config.requireAuth ? 'bearer' : 'local'),
           inquiryDesk: Boolean(config.inquiryStore)
         });
+        return;
+      }
+
+      if (req.method === 'GET' && path === '/api/ready') {
+        try {
+          const metrics = store.metrics();
+          const users = config.authStore ? config.authStore.countUsers() : null;
+          const inquiries = config.inquiryStore ? config.inquiryStore.list().length : null;
+          if (config.requireAuth && config.authStore && users < 1) throw new Error('no active employee account store');
+          send(req, res, config, 200, { ready: true, service: 'nexa-service-operations', checks: { jobs: metrics.active + metrics.completed, users, inquiries } });
+        } catch {
+          send(req, res, config, 503, { ready: false, service: 'nexa-service-operations' });
+        }
         return;
       }
 
@@ -372,6 +391,22 @@ export function createFieldServiceServer(store = createStore(), options = {}) {
         const input = await body(req);
         try { send(req, res, config, 200, config.authStore.resetPassword(passwordUserId, input.password, identity.principal.id)); }
         catch (error) { throw mapAuthError(error); }
+        return;
+      }
+
+      const customerDecision = customerActionDecisionRoute(path);
+      if (req.method === 'POST' && customerDecision) {
+        if (!config.inquiryStore) throw new DomainError(503, 'INQUIRY_DESK_NOT_CONFIGURED', '상담 접수함이 설정되지 않았습니다.');
+        const input = await body(req);
+        try {
+          send(req, res, config, 200, config.inquiryStore.resolveCustomerAction(
+            customerDecision.inquiryId,
+            customerDecision.actionId,
+            input.decision,
+            input.resolution,
+            identity.principal.id
+          ));
+        } catch (error) { throw mapInquiryError(error); }
         return;
       }
 
