@@ -24,6 +24,7 @@ test('delivery build exports only public web assets and injects endpoint config 
     });
     assert.equal(result.status, 0, result.stderr);
     for (const path of [
+      'nexa-family.css',
       'nexa-tech-service/index.html', 'nexa-tech-service/runtime-config.js',
       'nexa-service-domain/index.html', 'nexa-service-domain/runtime-config.js',
       'field-service-ops/index.html', 'field-service-ops/runtime-config.js',
@@ -34,6 +35,10 @@ test('delivery build exports only public web assets and injects endpoint config 
       'field-service-ops/server/app.mjs', 'field-service-ops/demo-app.mjs', 'field-service-ops/demo-delivery-app.mjs',
       'nexa-tech-service/server/app.mjs', 'test', 'scripts'
     ]) assert.equal(existsSync(join(output, path)), false, `private/development asset leaked: ${path}`);
+
+    const familyCss = readFileSync(join(output, 'nexa-family.css'), 'utf8');
+    assert.match(familyCss, /--nexa-brand:#1565e8/);
+    assert.match(familyCss, /--nexa-navy:#102a43/);
 
     const customerConfig = readFileSync(join(output, 'nexa-tech-service/runtime-config.js'), 'utf8');
     const portalConfig = readFileSync(join(output, 'nexa-service-domain/runtime-config.js'), 'utf8');

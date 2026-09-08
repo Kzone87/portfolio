@@ -1,0 +1,17 @@
+:root{
+  --nexa-brand:#1565e8;
+  --nexa-brand-dark:#0b4db8;
+  --nexa-navy:#102a43;
+  --nexa-navy-deep:#081e33;
+  --nexa-cyan:#0ea5c6;
+  --nexa-sky:#eaf4ff;
+  --nexa-ice:#f7fbff;
+  --nexa-line:#d7e3ef;
+  --nexa-muted:#5d6f80;
+  --nexa-success:#16794b;
+  --nexa-warning:#a15c08;
+  --nexa-danger:#b42318;
+  --nexa-font:Inter,Pretendard,"Noto Sans KR",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --nexa-brand-shadow:0 10px 26px rgba(21,101,232,.18);
+  --nexa-focus:0 0 0 3px rgba(21,101,232,.14);
+}
