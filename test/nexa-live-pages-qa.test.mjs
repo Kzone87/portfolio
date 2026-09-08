@@ -12,8 +12,9 @@ test('portfolio declares a project-local favicon so GitHub Pages does not fall b
 });
 
 test('live Pages QA opens the deployed site in three viewports and exercises customer and operations flows', async () => {
-  const [script, workflow] = await Promise.all([
+  const [script, techHomeScript, workflow] = await Promise.all([
     load('scripts/nexa-live-page-qa.mjs'),
+    load('scripts/nexa-tech-home-live-qa.mjs'),
     load('.github/workflows/nexa-live-pages-qa.yml')
   ]);
   for (const size of ['1440', '768', '390']) assert.match(script, new RegExp(`width: ${size}`));
@@ -23,6 +24,9 @@ test('live Pages QA opens the deployed site in three viewports and exercises cus
   assert.match(script, /operations day\/week\/map\/field/);
   assert.match(script, /response\.status\(\) >= 400/);
   assert.match(script, /requestfailed/);
+  assert.match(techHomeScript, /noscript a\[data-service-status\]/);
+  assert.match(techHomeScript, /main \.hero-actions a\[data-service-status\]/);
+  assert.doesNotMatch(techHomeScript, /page\.locator\('\.hero-actions a\[data-service-status\]'\)/);
   assert.match(workflow, /Wait for same-SHA GitHub Pages deployment/);
   assert.match(workflow, /head_sha=\$\{GITHUB_SHA\}/);
   assert.match(workflow, /pages build and deployment/);
