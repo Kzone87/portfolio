@@ -1,7 +1,7 @@
 @import url("../nexa-family.css");
 @import url("./responsive-100.css");
 /* NEXA TECH SERVICE — customer clarity layer */
-:root{--nexa-blue:var(--nexa-brand);--nexa-blue-dark:var(--nexa-brand-dark);--nexa-navy:var(--nexa-navy);--nexa-cyan:var(--nexa-cyan);--nexa-sky:var(--nexa-sky);--nexa-line:var(--nexa-line);--nexa-muted:var(--nexa-muted)}
+:root{--nexa-blue:var(--nexa-brand);--nexa-blue-dark:var(--nexa-brand-dark)}
 body{word-break:keep-all;font-family:var(--nexa-font)}
 .brand>span:last-child{font-size:0;line-height:1.02}.brand>span:last-child:before{content:"NEXA TECH SERVICE";font-size:15px;font-weight:850;letter-spacing:-.035em}.brand small{max-width:220px;margin-top:4px;color:#688096;font-size:9px;line-height:1.25;letter-spacing:.04em;white-space:normal}
 .site-nav a{white-space:nowrap}.contact-link{white-space:nowrap}
