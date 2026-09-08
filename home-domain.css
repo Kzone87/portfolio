@@ -12,3 +12,17 @@
 @media(max-width:1100px){.nexa-surface-links{grid-template-columns:repeat(3,minmax(0,1fr))}.nexa-suite-visual{padding:30px}.nexa-preview-surfaces{max-width:760px}}
 @media(max-width:760px){.nexa-showcase .flagship-copy{padding:30px}.nexa-surface-links,.nexa-proof-grid{grid-template-columns:1fr}.nexa-surface-link{min-height:0}.nexa-journey-line{gap:6px}.nexa-journey-line i{display:none}.nexa-journey-line span{padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.055)}.nexa-proof-head{grid-template-columns:1fr}.nexa-suite-visual{padding:26px}.nexa-preview-surfaces{grid-template-columns:1fr}.nexa-preview-surfaces span{min-height:0}.nexa-proof-head span{letter-spacing:.09em}}
 @media(max-width:420px){.nexa-showcase .flagship-copy{padding:24px 20px}.nexa-showcase .project-kicker{align-items:flex-start;flex-wrap:wrap}.nexa-showcase .project-kicker em{margin-left:0}.nexa-journey-line{padding:10px}.nexa-surface-link{padding:15px}.nexa-suite-visual{padding:22px 18px}.nexa-suite-visual>strong{font-size:2rem}}
+
+/* Visual QA overrides: preserve contrast and stack the flagship suite before its content becomes cramped. */
+.nexa-showcase h3{color:#f7fbff}
+.nexa-surface-link b{word-break:keep-all;overflow-wrap:normal}
+@media(max-width:1020px){
+  .nexa-showcase{grid-template-columns:1fr}
+  .nexa-showcase .browser-preview{margin:0 30px 30px;min-height:430px}
+}
+@media(max-width:760px){
+  .nexa-showcase .browser-preview{margin:0 20px 20px;min-height:360px}
+}
+@media(max-width:420px){
+  .nexa-showcase .browser-preview{margin:0 14px 14px;min-height:330px}
+}
