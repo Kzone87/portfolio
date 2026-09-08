@@ -10,13 +10,13 @@ const load = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 test('Portfolio Main presents NEXA as three real user surfaces with end-to-end engineering evidence', async () => {
   const home = await load('index.html');
   const css = await load('home-domain.css');
-  for (const phrase of ['신규 고객','기존 고객','NEXA Customer Service','NEXA Service Operations','Inquiry → Field Job → Customer Portal','E2E Tests']) {
+  for (const phrase of ['NEXA SERVICE SUITE','신규 고객','기존 고객','직원','NEXA CUSTOMER SERVICE','NEXA SERVICE OPERATIONS','Inquiry → Field Job → Customer Portal','E2E Tests']) {
     assert.match(home, new RegExp(phrase));
   }
   assert.match(home, /test\/nexa-bundle-100\.test\.mjs/);
-  assert.match(home, /nexa-domain-map-three/);
-  assert.match(css, /\.nexa-domain-map-three/);
-  assert.match(css, /@media\(max-width:1100px\)/);
+  assert.match(home, /class="nexa-surface-links"/);
+  assert.match(css, /\.nexa-surface-links/);
+  assert.match(css, /@media\(max-width:760px\)/);
   assert.match(css, /overflow-wrap:anywhere/);
 });
 
