@@ -127,11 +127,11 @@ Service Operations API
 - 대표자명
 - 사업자등록번호
 - 사업장 주소
-- 대표 전화와 이뮔일
+- 대표 전화와 이메일
 - 실제 운영시간
 - 실제 서비스 가능 지역
 - 개인정보 처리방침 URL
-- 선택: OG 공유 이뮔지 URL
+- 선택: OG 공유 이미지 URL
 
 ```bash
 NEXA_PUBLIC_API_ORIGIN=https://service.example.com \
