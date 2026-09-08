@@ -62,8 +62,8 @@ jobs:
           pathlib.Path('/tmp/nexa-commercial.patch').write_text(repaired, encoding='utf-8')
           PY
           if ! git apply --check /tmp/nexa-commercial.patch; then
-            echo '--- PATCH CONTEXT 380-520 ---'
-            nl -ba /tmp/nexa-commercial.patch | sed -n '380,520p'
+            echo '--- PATCH CONTEXT 780-890 ---'
+            nl -ba /tmp/nexa-commercial.patch | sed -n '780,890p'
             exit 1
           fi
       - name: Apply verified commercial source
