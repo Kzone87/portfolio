@@ -1,0 +1,110 @@
+t: now() });
+     return clone(item);
+   },
+diff --git a/field-service-ops/index.html b/field-service-ops/index.html
+index 1654d13..bd2c22b 100644
+--- a/field-service-ops/index.html
++++ b/field-service-ops/index.html
+@@ -9,6 +9,7 @@
+   <link rel="stylesheet" href="./responsive-100.css">
+   <link rel="stylesheet" href="./delivery-100.css">
+   <link rel="stylesheet" href="./customer-actions.css">
++  <link rel="stylesheet" href="./commercial-workspace.css">
+ </head>
+ <body>
+ <header class="topbar">
+@@ -176,6 +177,7 @@
+           <div class="form team-edit-form">
+             <label>이름<input id="team-name"></label>
+             <label>팀<input id="team-team"></label>
++            <label>연결 기사<select id="team-agent"><option value="">운영/배차 전용</option></select></label>
+             <label>역할<select id="team-role"><option value="STAFF">배차 담당자</option><option value="ADMIN">운영 관리자</option></select></label>
+             <label class="toggle-label"><input id="team-active" type="checkbox"><span>계정 활성화</span></label>
+             <button id="team-save" type="button">계정 저장</button>
+@@ -197,6 +199,7 @@
+           <label>로그인 ID<input id="new-user-username" placeholder="dispatcher2" required></label>
+           <label>이름<input id="new-user-name" placeholder="홍길동" required></label>
+           <label>팀<input id="new-user-team" placeholder="서울 운영팀"></label>
++          <label>연결 기사<select id="new-user-agent"><option value="">운영/배차 전용</option></select></label>
+           <label>역할<select id="new-user-role"><option value="STAFF">배차 담당자</option><option value="ADMIN">운영 관리자</option></select></label>
+           <label>초기 비밀번호<input id="new-user-password" type="password" autocomplete="new-password" placeholder="10자 이상" required></label>
+           <button type="submit">계정 만들기</button>
+diff --git a/field-service-ops/remote-app.mjs b/field-service-ops/remote-app.mjs
+index dee8c56..e4dfa29 100644
+--- a/field-service-ops/remote-app.mjs
++++ b/field-service-ops/remote-app.mjs
+@@ -367,6 +367,7 @@ function inquiryAdapter() {
+ function teamAdapter() {
+   return {
+     listUsers: () => api('/api/admin/users'),
++    listAgents: () => api('/api/agents'),
+     authAudits: () => api('/api/admin/auth-audits'),
+     createUser: input => api('/api/admin/users', { method: 'POST', body: input }),
+     updateUser: (id, input) => api(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'POST', body: input }),
+@@ -468,3 +469,15 @@ api('/api/me').then(principal => {
+   if (error?.status === 401) showLogin('');
+   else showLogin('운영 서버에 연결하지 못했습니다.');
+ });
++
++window.NEXA_OPS_COMMERCIAL_BRIDGE = {
++  mode: 'remote',
++  get principal(){ return state.principal; },
++  getState: () => structuredClone({ agents: state.agents, jobs: state.jobs, principal: state.principal, workDate }),
++  refresh: async () => { await refresh({ quiet: true }); return structuredClone({ agents: state.agents, jobs: state.jobs, principal: state.principal, workDate }); },
++  schedule: async (id, input) => { const current = state.jobs.find(job => job.id === Number(id)); if (!current) throw new Error('작업을 찾을 수 없습니다.'); const suffix = current.status === 'REQUESTED' ? 'schedule' : 'reschedule'; const result = await api(`/api/jobs/${current.id}/${suffix}`, { method:'POST', body:{ expectedVersion:current.version, agentId:Number(input.agentId), startAt:input.startAt, endAt:input.endAt, overrideReason:input.overrideReason||'' } }); await refresh({ quiet:true }); return result; },
++  action: async (id, action) => { const current = state.jobs.find(job => job.id === Number(id)); if (!current) throw new Error('작업을 찾을 수 없습니다.'); const suffix = {DISPATCH:'dispatch',ON_SITE:'on-site',COMPLETE:'complete',CANCEL:'cancel',NO_SHOW:'no-show'}[action]; if (!suffix) throw new Error('지원하지 않는 현장 작업입니다.'); const result = await api(`/api/jobs/${current.id}/${suffix}`, {method:'POST',body:{expectedVersion:current.version}}); await refresh({quiet:true}); return result; },
++  getReport: async id => api(`/api/jobs/${Number(id)}/report`),
++  saveReport: async (id, input) => api(`/api/jobs/${Number(id)}/report`, {method:'POST',body:input})
++};
++document.dispatchEvent(new CustomEvent('nexa-ops-ready'));
+diff --git a/field-service-ops/server/app.mjs b/field-service-ops/server/app.mjs
+index 8778f3a..4d26908 100644
+--- a/field-service-ops/server/app.mjs
++++ b/field-service-ops/server/app.mjs
+@@ -22,12 +22,15 @@ export function parsePrincipals(raw = '') {
+     const id = String(item?.id || '').trim();
+     if (token.length < 16) throw new Error(`principal ${index} token must be at least 16 characters`);
+     if (!/^[a-zA-Z0-9._-]{2,80}$/.test(id)) throw new Error(`principal ${index} id is invalid`);
++    const agentId = item?.agentId == null || item?.agentId === '' ? null : Number(item.agentId);
++    if (agentId !== null && (!Number.isInteger(agentId) || agentId < 1)) throw new Error(`principal ${index} agentId is invalid`);
+     return {
+       token,
+       id,
+       name: String(item?.name || id).slice(0, 80),
+       role: normalizeRole(item?.role),
+-      team: String(item?.team || '').trim().slice(0, 80)
++      team: String(item?.team || '').trim().slice(0, 80),
++      agentId
+     };
+   });
+ }
+@@ -37,7 +40,8 @@ function principalRegistry(principals = []) {
+     id: principal.id,
+     name: principal.name,
+     role: normalizeRole(principal.role),
+-    team: principal.team || ''
++    team: principal.team || '',
++    agentId: principal.agentId == null ? null : Number(principal.agentId)
+   }]));
+ }
+ 
+@@ -104,6 +108,25 @@ function requireAdmin(identity) {
+   if (identity.principal.role !== 'ADMIN') throw new DomainError(403, 'ADMIN_REQUIRED', '운영 관리자 권한이 필요합니다.');
+ }
+ 
++function requireAssignedFieldAgent(identity, store, jobId) {
++  if (identity.principal.role === 'ADMIN' || identity.authType !== 'session') return;
++  const agentId = identity.principal.agentId == null ? null : Number(identity.principal.agentId);
++  if (!Number.isInteger(agentId) || agentId < 1) throw new DomainError(403, 'FIELD_AGENT_PROFILE_REQUIRED', '현장 작업을 처리하려면 직원 계정에 기사 프로필이 연결되어야 합니다.');
++  const job = store.getJob(jobId);
++  if (Number(job.agentId) !== agentId) throw new DomainError(403, 'FIELD_JOB_NOT_ASSIGNED', '본인에게 배정된 현장 작업만 처리할 수 있습니다.');
++}
++
++function requireCompletionReport(identity, store, jobId) {
++  if (identity.authType !== 'session') return;
++  const report = store.getFieldReport(jobId);
++  const checks = report?.checks || {};
++  const complete = Boolean(checks.customer && checks.access && checks.result);
++  const note = String(report?.note || '').trim();
++  if (!complete || note.length < 5) {
++    throw new Domain

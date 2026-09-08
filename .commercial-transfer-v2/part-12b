@@ -1,0 +1,78 @@
+'NEXA delivery acceptance: customer to staff to field service and back', as
+     assert.ok(customerViewAfter.body.customerActions.some(action => action.id === customerActionId && action.state === 'RESOLVED' && action.resolution.includes('일정을 변경')));
+ 
+     let currentJob = rescheduled.body;
+-    for (const suffix of ['dispatch', 'on-site', 'complete']) {
++    for (const suffix of ['dispatch', 'on-site']) {
+       const next = await json(opsRoot, `/api/jobs/${jobId}/${suffix}`, {
+         method: 'POST',
+         origin: OPS_ORIGIN,
+@@ -287,6 +287,23 @@ test('NEXA delivery acceptance: customer to staff to field service and back', as
+       assert.equal(next.response.status, 200);
+       currentJob = next.body;
+     }
++    const report = await json(opsRoot, `/api/jobs/${jobId}/report`, {
++      method: 'POST',
++      origin: OPS_ORIGIN,
++      cookie: session.cookie,
++      csrf: session.csrf,
++      body: { checks: { customer: true, access: true, result: true }, note: '급지와 출력 품질을 확인하고 테스트 출력까지 완료했습니다.' }
++    });
++    assert.equal(report.response.status, 200);
++    const completed = await json(opsRoot, `/api/jobs/${jobId}/complete`, {
++      method: 'POST',
++      origin: OPS_ORIGIN,
++      cookie: session.cookie,
++      csrf: session.csrf,
++      body: { expectedVersion: currentJob.version }
++    });
++    assert.equal(completed.response.status, 200);
++    currentJob = completed.body;
+     assert.equal(currentJob.status, 'COMPLETED');
+ 
+     const latestInquiry = await json(opsRoot, `/api/inquiries/${inquiryId}`, {
+diff --git a/test/nexa-delivery-build.test.mjs b/test/nexa-delivery-build.test.mjs
+index 05efb7d..6c7d16d 100644
+--- a/test/nexa-delivery-build.test.mjs
++++ b/test/nexa-delivery-build.test.mjs
+@@ -20,13 +20,14 @@ test('delivery build exports only public web assets and injects endpoint config
+     const result = build({
+       NEXA_DELIVERY_DIR: output,
+       NEXA_PUBLIC_API_ORIGIN: 'https://service.example.invalid',
+-      NEXA_OPS_API_ORIGIN: 'https://ops.example.invalid'
++      NEXA_OPS_API_ORIGIN: 'https://ops.example.invalid',
++      NEXA_CUSTOMER_SECURE_ORIGIN: 'https://secure.example.invalid'
+     });
+     assert.equal(result.status, 0, result.stderr);
+     for (const path of [
+       'nexa-family.css',
+       'nexa-tech-service/index.html', 'nexa-tech-service/runtime-config.js',
+-      'nexa-service-domain/index.html', 'nexa-service-domain/runtime-config.js',
++      'nexa-service-domain/index.html', 'nexa-service-domain/runtime-config.js', 'nexa-service-domain/secure-access.css', 'nexa-service-domain/secure-access.js',
+       'field-service-ops/index.html', 'field-service-ops/runtime-config.js',
+       'field-service-ops/remote-app.mjs', 'customer-ui.js', 'delivery-manifest.json'
+     ]) assert.equal(existsSync(join(output, path)), true, `missing delivery asset ${path}`);
+@@ -45,6 +46,7 @@ test('delivery build exports only public web assets and injects endpoint config
+     const opsConfig = readFileSync(join(output, 'field-service-ops/runtime-config.js'), 'utf8');
+     assert.match(customerConfig, /https:\/\/service\.example\.invalid/);
+     assert.match(portalConfig, /https:\/\/service\.example\.invalid/);
++    assert.match(portalConfig, /https:\/\/secure\.example\.invalid/);
+     assert.match(opsConfig, /https:\/\/ops\.example\.invalid/);
+     const allConfig = `${customerConfig}\n${portalConfig}\n${opsConfig}`;
+     assert.doesNotMatch(allConfig, /password|token|secret|authorization/i);
+@@ -63,12 +65,13 @@ test('delivery build exports only public web assets and injects endpoint config
+ test('delivery build refuses missing or insecure remote endpoints', () => {
+   const root = mkdtempSync(join(tmpdir(), 'nexa-delivery-build-invalid-'));
+   try {
+-    const missing = build({ NEXA_DELIVERY_DIR: join(root, 'missing'), NEXA_PUBLIC_API_ORIGIN: '', NEXA_OPS_API_ORIGIN: '' });
++    const missing = build({ NEXA_DELIVERY_DIR: join(root, 'missing'), NEXA_PUBLIC_API_ORIGIN: '', NEXA_OPS_API_ORIGIN: '', NEXA_CUSTOMER_SECURE_ORIGIN: '' });
+     assert.notEqual(missing.status, 0);
+     const insecure = build({
+       NEXA_DELIVERY_DIR: join(root, 'insecure'),
+       NEXA_PUBLIC_API_ORIGIN: 'http://service.example.invalid',
+-      NEXA_OPS_API_ORIGIN: 'https://ops.example.invalid'
++      NEXA_OPS_API_ORIGIN: 'https://ops.example.invalid',
++      NEXA_CUSTOMER_SECURE_ORIGIN: 'https://secure.example.invalid'
+     });
+     assert.notEqual(insecure.status, 0);
+     assert.match(insecure.stderr, /must use HTTPS/);

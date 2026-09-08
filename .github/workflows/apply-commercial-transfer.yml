@@ -1,0 +1,59 @@
+name: Apply NEXA commercial transfer
+
+on:
+  push:
+    branches:
+      - upgrade/nexa-commercial-100
+    paths:
+      - '.commercial-transfer-v2/**'
+      - '.github/workflows/apply-commercial-transfer.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Reconstruct and verify patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          find .commercial-transfer-v2 -type f -name 'part-*' -print0 | sort -z | xargs -0 cat > /tmp/nexa-commercial.patch
+          echo '57ef5b87b2bf105e3487a57d51c46bae06f1296ff31c531e324d040e34e102ad  /tmp/nexa-commercial.patch' | sha256sum -c -
+          git apply --check /tmp/nexa-commercial.patch
+      - name: Apply verified commercial source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply /tmp/nexa-commercial.patch
+          rm -rf .commercial-transfer-v2
+          rm -f .github/workflows/apply-commercial-transfer.yml
+      - name: Verify complete repository
+        run: npm test
+      - name: Verify delivery build
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/nexa-delivery
+          NEXA_PUBLIC_API_ORIGIN=http://127.0.0.1:8796 \
+          NEXA_OPS_API_ORIGIN=http://127.0.0.1:8792 \
+          NEXA_CUSTOMER_SECURE_ORIGIN=http://127.0.0.1:8797 \
+          NEXA_DELIVERY_DIR=/tmp/nexa-delivery \
+          npm run build:nexa-delivery
+      - name: Commit verified source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Make NEXA commercially ready'
+          git push origin HEAD:${GITHUB_REF_NAME}

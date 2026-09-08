@@ -1,0 +1,82 @@
+_PORTAL_ENDPOINT=${JSON.stringify(customerApi)};\n`);
++for (const file of ['index.html','styles.css','portal-actions.css','secure-access.css','app.js','secure-access.js']) copy(`nexa-service-domain/${file}`);
++writeFileSync(join(output, 'nexa-service-domain', 'runtime-config.js'), `window.NEXA_CUSTOMER_PORTAL_ENDPOINT=${JSON.stringify(customerApi)};\nwindow.NEXA_CUSTOMER_SECURE_ENDPOINT=${JSON.stringify(customerSecureApi)};\n`);
+ injectConfig('nexa-service-domain/index.html', '<script src="./app.js"></script>');
+ 
+-for (const file of ['index.html','styles.css','responsive-100.css','delivery-100.css','customer-actions.css','app.js','remote-app.mjs','inquiry-desk.mjs','team-admin.mjs']) copy(`field-service-ops/${file}`);
++for (const file of ['index.html','styles.css','responsive-100.css','delivery-100.css','customer-actions.css','commercial-workspace.css','app.js','remote-app.mjs','inquiry-desk.mjs','team-admin.mjs','commercial-workspace.mjs']) copy(`field-service-ops/${file}`);
+ writeFileSync(join(output, 'field-service-ops', 'runtime-config.js'), `window.NEXA_OPS_CONFIG=Object.freeze({endpoint:${JSON.stringify(operationsApi)}});\n`);
+ injectConfig('field-service-ops/index.html', '<script type="module" src="./app.js"></script>');
+ 
+@@ -59,6 +60,7 @@ const manifest = {
+   generatedAt: new Date().toISOString(),
+   customerApi,
+   operationsApi,
++  customerSecureApi,
+   surfaces: ['nexa-tech-service', 'nexa-service-domain', 'field-service-ops'],
+   sharedAssets: ['nexa-family.css'],
+   excluded: ['server source', 'tests', 'demo-delivery-app.mjs', 'demo-app.mjs', 'credentials']
+diff --git a/test/nexa-commercial-100.test.mjs b/test/nexa-commercial-100.test.mjs
+new file mode 100644
+index 0000000..5df8205
+--- /dev/null
++++ b/test/nexa-commercial-100.test.mjs
+@@ -0,0 +1,155 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { once } from 'node:events';
++import { readFile } from 'node:fs/promises';
++import { createProjectInquiryStore, createProjectInquiryServer, runtimeProjectInquiryOptions } from '../portfolio-inquiry/server.mjs';
++import { createInquiryStore } from '../nexa-tech-service/server/inquiry-store.mjs';
++import { createCustomerAccessStore } from '../nexa-tech-service/server/customer-access-store.mjs';
++import { createCustomerAccessServer, runtimeCustomerAccessOptions } from '../nexa-tech-service/server/customer-access-server.mjs';
++import { createInquiryServer, runtimeInquiryOptions } from '../nexa-tech-service/server/app.mjs';
++import { createStore } from '../field-service-ops/server/store.mjs';
++import { createAuthStore } from '../field-service-ops/server/auth-store.mjs';
++import { createFieldServiceServer } from '../field-service-ops/server/app.mjs';
++
++const PROJECT_ORIGIN='https://portfolio.example';
++const CUSTOMER_ORIGIN='https://service.example';
++const OPS_ORIGIN='https://ops.example';
++const adminToken='commercial-admin-token-000000';
++const staffPassword='commercial-field-staff-123';
++const load=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
++
++async function listen(server){server.listen(0,'127.0.0.1');await once(server,'listening');return `http://127.0.0.1:${server.address().port}`}
++async function stop(server){if(!server.listening)return;server.close();await once(server,'close')}
++async function json(root,path,{method='GET',origin='',cookie='',csrf='',authorization='',body}={}){
++  const response=await fetch(`${root}${path}`,{method,headers:{accept:'application/json',...(origin?{origin}:{}),...(cookie?{cookie}:{}),...(csrf?{'x-csrf-token':csrf}:{}),...(authorization?{authorization}:{}),...(body?{'content-type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});
++  return {response,body:await response.json().catch(()=>({}))};
++}
++const inquiryPayload=(company='상용검수상사')=>({company,name:'고객담당자',phone:'010-2468-1357',email:'customer@example.com',industry:'기업·교육·공공 사무환경',sites:'1개 사업장',assets:'1–5대',impact:'처리량·품질에 큰 영향이 생김',service:'고장·장애 현장지원',engagement:'고장 날 때 현장지원',detail:'출력 품질이 불안정해서 현장 방문 점검이 필요합니다.',consent:true});
++
++async function login(root,username,password){
++  const result=await json(root,'/api/auth/login',{method:'POST',origin:OPS_ORIGIN,body:{username,password}});
++  const cookie=String(result.response.headers.get('set-cookie')||'').split(';')[0];
++  return {...result,cookie,csrf:result.body.csrfToken};
++}
++
++test('commercial portfolio has a private-inquiry capable sales path and delivery process without invented contact data',async()=>{
++  const [home,brief,app,css]=await Promise.all([load('index.html'),load('project-inquiry/index.html'),load('project-inquiry/app.js'),load('commercial-portfolio.css')]);
++  assert.match(home,/project-inquiry\//);
++  for(const copy of ['요구사항','범위·견적','개발·검수','배포·인수인계'])assert.match(home,new RegExp(copy));
++  assert.match(brief,/회사·조직명/);assert.match(brief,/회신 이메일/);assert.match(brief,/현재 업무/);
++  assert.match(app,/KZONE_PROJECT_INQUIRY_ENDPOINT/);assert.match(app,/서버로 전송하지 않습니다|전송되지 않습니다/);
++  assert.match(css,/project-inquiry|delivery/i);
++  assert.doesNotMatch(home,/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/);
++  assert.match(css,/@media\(min-width:1101px\)\{\.contact-shell\{display:grid/);
++});
++
++test('private project inquiry API persists low-risk briefs, rate limits, checks origin and protects admin workflow',async()=>{
++  const store=createProjectInquiryStore();
++  const server=createProjectInquiryServer(store,{allowedOrigins:[PROJECT_ORIGIN],admins:[{id:'owner',token:adminToken}],rateMax:2,rateWindowMs:60_000});
++  const root=await listen(server);
++  try{
++    const payload={company:'의뢰기업',name:'담당자',email:'buyer@example.com',projectType:'관리자·사내 업무 시스템',budgetRange:'범위 협의',desiredStart:'협의 가능',detail:'여러 지점의 수기 업무를 하나의 운영 시스템으로 바꾸고 싶습니다.',consent:true};
++    const created=await json(root,'/api/project-inquiries',{method:'POST',origin:PROJECT_ORIGIN,body:payload});
++    assert.equal(created.response.status,201);assert.match(created.body.id,/^KZ-/);assert.equal(created.body.status,'NEW');
++    const badOrigin=await json(root,'/api/project-inquiries',{method:'POST',origin:'https://attacker.example',body:payload});
++    assert.equal(badOrigin.response.status,403);
++    const noAdmin=await json(root,'/api/admin/project-inquiries',{origin:PROJECT_ORIGIN});assert.equal(noAdmin.response.status,401);
++    const list=await json(root,'/api/admin/project-inquiries',{origin:PROJECT_ORIGIN,authorization:`Bearer ${adminToken}`});assert.equal(list.response.status,200);assert.equal(list.body.items.length,1);assert.equal(list.body.items[0].email,'buyer@example.com');
++    const contacted=await json(root,`

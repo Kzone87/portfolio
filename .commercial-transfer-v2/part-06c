@@ -1,0 +1,26 @@
+현장에서 끝나지 않으면 부품·재방문·추가점검을 후속작업으로 구분합니다.</p></article><article><span>04 · 이력 관리</span><h3>다음 판단에 남는 기록</h3><p>접수·방문·조치·후속 요청을 같은 흐름으로 남겨 반복 장애와 다음 점검에서 이전 기록을 다시 확인할 수 있게 합니다.</p></article></div><div class="engagement-compare"><article><strong>정기 예방관리</strong><ul><li>중요 장비와 점검 주기 협의</li><li>반복 증상·소모품·주의항목 기록</li><li>다음 점검과 후속작업 연결</li></ul></article><article><strong>필요 시 현장지원</strong><ul><li>고장·장애 발생 시 건별 접수</li><li>업무 영향과 방문 가능시간 확인</li><li>현장 작업 후 결과와 남은 일 안내</li></ul></article><article><strong>설치·이전 작업</strong><ul><li>반입동선·전원·네트워크 사전 확인</li><li>설치 순서와 초기 가동 범위 합의</li><li>완료 확인과 남은 작업 정리</li></ul></article></div><div class="commercial-boundary"><strong>계약 전 확인:</strong> 실제 응답시간·방문시간·지원지역·대상 장비·부품비·정기점검 주기 등은 고객 환경을 확인한 뒤 계약 또는 작업 범위에 명시합니다. 확인되지 않은 응답시간이나 지원범위를 임의로 약속하지 않습니다.</div></div>`;
++  const target=[...main.querySelectorAll('.cta')].at(-1);(target||main.lastElementChild)?.before(section);
++})();
+diff --git a/nexa-tech-service/contact.html b/nexa-tech-service/contact.html
+index f975a3f..0011cff 100644
+--- a/nexa-tech-service/contact.html
++++ b/nexa-tech-service/contact.html
+@@ -5,11 +5,11 @@
+   <meta name="description" content="장비 모델을 정확히 몰라도 현재 불편한 문제를 기준으로 NEXA TECH SERVICE 유지보수 상담 내용을 정리할 수 있습니다.">
+   <meta property="og:type" content="website"><meta property="og:title" content="유지보수 상담 | NEXA TECH SERVICE"><meta property="og:description" content="복합기·프린터·디지털 인쇄장비의 고장, 정기점검, 설치·이전과 여러 사업장 관리 상담을 시작하세요."><meta property="og:url" content="https://kzone87.github.io/portfolio/nexa-tech-service/contact.html">
+   <link rel="canonical" href="https://kzone87.github.io/portfolio/nexa-tech-service/contact.html"><title>유지보수 상담 | NEXA TECH SERVICE</title>
+-  <link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./styles-100.css"><link rel="stylesheet" href="./clarity.css">
++  <link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./styles-100.css"><link rel="stylesheet" href="./clarity.css"><link rel="stylesheet" href="./commercial-scope.css">
+ </head>
+ <body>
+ <a class="skip-link" href="#main">본문으로 바로가기</a>
+-<header class="site-header"><div class="header-inner"><a class="brand" href="./" aria-label="NEXA TECH SERVICE 홈"><span class="brand-mark">N</span><span>NEXA TECH<small>기업용 출력·사무장비 유지보수 · 현장지원</small></span></a><nav id="site-nav" class="site-nav" aria-label="주요 메뉴"><a href="./about.html">회사소개</a><a href="./services.html">서비스</a><a href="./industries.html">이용 고객</a><a href="./cases.html">이용 상황</a><a class="active" aria-current="page" href="./contact.html">상담</a></nav><div class="header-actions"><a class="contact-link" href="./contact.html">유지보수 상담</a><button class="menu-button" aria-expanded="false" aria-controls="site-nav" aria-label="메뉴 열기">메뉴</button></div></div></header>
++<header class="site-header"><div class="header-inner"><a class="brand" href="./" aria-label="NEXA TECH SERVICE 홈"><span class="brand-mark">N</span><span>NEXA TECH SERVICE<small>기업용 출력·사무장비 유지보수 · 현장지원</small></span></a><nav id="site-nav" class="site-nav" aria-label="주요 메뉴"><a href="./about.html">회사소개</a><a href="./services.html">서비스</a><a href="./industries.html">이용 고객</a><a href="./cases.html">이용 상황</a><a class="active" aria-current="page" href="./contact.html">상담</a></nav><div class="header-actions"><a class="contact-link" href="./contact.html">유지보수 상담</a><button class="menu-button" aria-expanded="false" aria-controls="site-nav" aria-label="메뉴 열기">메뉴</button></div></div></header>
+ <main id="main">
+ <section class="shell subhero human-heading"><span>유지보수 상담</span><h1>장비 모델을 몰라도 괜찮습니다.<br>지금 불편한 문제부터 알려주세요.</h1><p>고장이 반복되는지, 정기점검이 필요한지, 설치·이전을 준비하는지, 여러 지점의 장비관리가 어려운지만 알려주셔도 상담을 시작할 수 있습니다.</p></section>
+ 
+@@ -46,5 +46,5 @@
+ 
+ <section class="section"><div class="shell"><div class="section-head section-head-100"><div><span class="korean-kicker">상담 후</span><h2>지원 가능 여부와<br>다음 단계를 안내합니다.</h2></div></div><div class="process process-5"><article><span>01</span><h3>현재 문제 확인</h3><p>장비 종류, 사업장 규모와 불편한 점에서 추가로 필요한 정보를 확인합니다.</p></article><article><span>02</span><h3>지원 가능 여부</h3><p>지역, 장비, 기술, 부품과 제조사 정책을 확인합니다.</p></article><article><span>03</span><h3>서비스 방식</h3><p>정기점검, 고장 대응, 설치·이전 등 필요한 지원 범위를 정합니다.</p></article><article><span>04</span><h3>방문 준비</h3><p>장비 위치, 현장 조건과 필요한 준비사항을 확인합니다.</p></article><article><span>05</span><h3>일정 안내</h3><p>가능한 방문 일정과 이후 진행 방법을 안내합니다.</p></article></div></div></section>
+ </main>
+-<footer class="site-footer"><div class="shell footer-inner"><div class="footer-copy"><a class="brand" href="./"><span class="brand-mark">N</span><span>NEXA TECH<small>기업용 출력·사무장비 유지보수 · 현장지원</small></span></a><p>복합기·프린터·디지털 인쇄장비 등 기업용 출력·사무장비의 정기점검, 고장 대응, 설치·이전과 다사업장 관리를 지원합니다.</p></div><div class="footer-col"><strong>회사</strong><a href="./about.html">회사소개</a><a href="./industries.html">이용 고객</a></div><div class="footer-col"><strong>서비스</strong><a href="./services.html#maintenance">정기점검</a><a href="./services.html#support">고장 대응</a><a href="./services.html#install">설치·이전</a></div><div class="footer-col"><strong>안내</strong><a href="./cases.html">이용 상황</a><a href="./playbook.html">서비스 진행 안내</a><a href="./contact.html">유지보수 상담</a></div></div><div class="shell footer-bottom"><span>© 2026 NEXA TECH SERVICE</span><span>NEXA TECH SE

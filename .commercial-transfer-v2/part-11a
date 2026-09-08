@@ -1,0 +1,35 @@
+mplete="organization" required></label><label>담당자명<input name="name" autocomplete="name" required></label><label>회신 이메일<input name="email" type="email" autocomplete="email" required></label><label>프로젝트 유형<select name="projectType" required><option value="">선택</option><option>업무 운영 시스템</option><option>데이터 자동화</option><option>기업 홈페이지 + 업무연결</option><option>기존 시스템 개선</option><option>기타</option></select></label><label>예상 범위<select name="budgetRange"><option>범위부터 상담</option><option>소규모 기능 개선</option><option>독립 업무도구</option><option>통합 업무시스템</option></select></label><label>희망 시작 시점<input name="desiredStart" placeholder="예: 10월 중 / 협의 가능"></label><label class="wide">현재 업무와 해결하고 싶은 문제<textarea name="detail" rows="8" maxlength="3000" required placeholder="예: 고객 요청이 전화·메신저로 들어와 담당자와 처리상태를 추적하기 어렵습니다. 접수→담당자 배정→처리→완료까지 관리하고 싶습니다."></textarea></label><label class="consent wide"><input name="consent" type="checkbox" value="yes" required><span>민감정보를 제외한 프로젝트 상담 내용을 확인했습니다.</span></label><div class="actions wide"><button type="submit">의뢰 내용 확인</button><button id="copy-project-inquiry" type="button" class="secondary">내용 복사</button></div><p id="project-inquiry-message" class="message wide" role="status" aria-live="polite"></p><section id="project-inquiry-summary" class="summary wide" hidden><h2>의뢰 내용</h2><pre></pre><p>공개 포트폴리오에서 비공개 endpoint가 설정되지 않은 경우 서버로 전송하지 않습니다.</p></section></form></section><div class="fallback"><strong>공개 1차 문의가 필요하다면</strong><p>민감한 내용을 제외하고 프로젝트 종류와 대략적인 목적만 GitHub Issue에 남길 수 있습니다.</p><a href="https://github.com/Kzone87/portfolio/issues/new?template=project-inquiry.yml" target="_blank" rel="noreferrer">GitHub 공개 1차 문의 ↗</a></div></main><script src="./app.js"></script></body></html>
+\ No newline at end of file
+diff --git a/project-inquiry/styles.css b/project-inquiry/styles.css
+new file mode 100644
+index 0000000..1dd13e3
+--- /dev/null
++++ b/project-inquiry/styles.css
+@@ -0,0 +1 @@
++*{box-sizing:border-box}body{margin:0;background:#f5f7f6;color:#1e2c26;font-family:Inter,Pretendard,"Noto Sans KR",system-ui,sans-serif}.skip-link{position:fixed;top:-60px;left:16px;background:#15382c;color:#fff;padding:10px 14px;z-index:20}.skip-link:focus{top:12px}.inquiry-header{height:68px;display:flex;align-items:center;justify-content:space-between;width:min(1120px,calc(100% - 40px));margin:auto}.inquiry-header a{font-weight:950;color:#18372d}.inquiry-header span{font-size:12px;font-weight:900;letter-spacing:.12em;color:#728077}.inquiry-shell{width:min(1120px,calc(100% - 40px));margin:auto;padding:60px 0 90px}.inquiry-hero{max-width:780px}.inquiry-hero>p:first-child{font-size:12px;font-weight:900;letter-spacing:.14em;color:#648274}.inquiry-hero h1{font-size:clamp(36px,6vw,66px);line-height:1.04;letter-spacing:-.055em;margin:12px 0 20px}.inquiry-hero>p:last-child{color:#65746c;line-height:1.8}.inquiry-grid{display:grid;grid-template-columns:.7fr 1.3fr;gap:24px;margin-top:42px}.inquiry-grid aside,.inquiry-grid form,.fallback{background:#fff;border:1px solid #dde5e0;border-radius:20px;padding:26px;box-shadow:0 14px 36px rgba(30,55,44,.05)}aside h2{margin-top:0}aside ol{list-style:none;padding:0;margin:20px 0;display:grid;gap:16px}aside li{display:grid;grid-template-columns:34px 1fr;gap:10px}aside li b{color:#6b8b7c}aside li strong,aside li span{display:block}aside li span{color:#6a756f;font-size:13px;line-height:1.55}aside li strong{color:#22372e;font-size:14px;margin-bottom:3px}.privacy-note{padding-top:16px;border-top:1px solid #e5ebe7;font-size:12px;line-height:1.6;color:#78847d}.inquiry-grid form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.inquiry-grid label{display:grid;gap:7px;font-size:13px;font-weight:800}.inquiry-grid input,.inquiry-grid select,.inquiry-grid textarea{width:100%;border:1px solid #cfd9d3;border-radius:11px;padding:12px 13px;font:inherit;background:#fff}.inquiry-grid textarea{resize:vertical;line-height:1.6}.wide{grid-column:1/-1}.consent{display:flex!important;align-items:center;gap:8px;font-weight:600!important}.consent input{width:auto}.actions{display:flex;gap:9px}.actions button{border:0;border-radius:10px;background:#214f3f;color:#fff;padding:12px 16px;font-weight:900;cursor:pointer}.actions .secondary{background:#edf2ef;color:#294238}.message{min-height:22px;color:#52645b}.message.error{color:#a33939}.summary{border-top:1px solid #e0e6e2;padding-top:18px}.summary pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f9f8;padding:16px;border-radius:12px;line-height:1.6}.fallback{margin-top:20px}.fallback p{color:#6c7972}.fallback a{color:#214f3f;font-weight:900}@media(max-width:800px){.inquiry-grid{grid-template-columns:1fr}.inquiry-grid form{grid-template-columns:1fr}.wide{grid-column:auto}}@media(max-width:460px){.inquiry-shell{width:min(100% - 24px,1120px);padding-top:38px}.inquiry-grid aside,.inquiry-grid form,.fallback{padding:20px}.actions{display:grid}.actions button{width:100%}}
+\ No newline at end of file
+diff --git a/scripts/nexa-build-delivery.mjs b/scripts/nexa-build-delivery.mjs
+index 68a1cf1..753457d 100644
+--- a/scripts/nexa-build-delivery.mjs
++++ b/scripts/nexa-build-delivery.mjs
+@@ -32,6 +32,7 @@ function injectConfig(relativePath, marker) {
+ 
+ const customerApi = endpoint('NEXA_PUBLIC_API_ORIGIN');
+ const operationsApi = endpoint('NEXA_OPS_API_ORIGIN');
++const customerSecureApi = endpoint('NEXA_CUSTOMER_SECURE_ORIGIN');
+ rmSync(output, { recursive: true, force: true });
+ mkdirSync(output, { recursive: true });
+ 
+@@ -40,17 +41,17 @@ copy('nexa-family.css');
+ 
+ const corporate = [
+   'index.html', 'about.html', 'services.html', 'industries.html', 'cases.html', 'playbook.html', 'contact.html',
+-  'styles.css', 'styles-100.css', 'clarity.css', 'app.js'
++  'styles.css', 'styles-100.css', 'clarity.css', 'commercial-scope.css', 'commercial-scope.js', 'app.js'
+ ];
+ for (const file of corporate) copy(`nexa-tech-service/${file}`);
+ writeFileSync(join(output, 'nexa-tech-service', 'runtime-config.js'), `window.NEXA_INQUIRY_ENDPOINT=${JSON.stringify(customerApi)};\n`);
+ for (const page of ['index.html','about.html','services.html','industries.html','cases.html','playbook.html','contact.html']) injectConfig(`nexa-tech-service/${page}`, '<script src="./app.js"></script>');
+ 
+-for (const file of ['index.html','styles.css','portal-actions.css','app.js']) copy(`nexa-service-domain/${file}`);
+-writeFileSync(join(output, 'nexa-service-domain', 'runtime-config.js'), `window.NEXA_CUSTOMER

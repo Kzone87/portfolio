@@ -1,0 +1,205 @@
+n:8px 0 5px}.field-job-card>p{margin:0;color:#5d6f80;line-height:1.6;overflow-wrap:anywhere}.field-job-card dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.field-job-card dl div{padding:9px;border-radius:9px;background:#f6f9fc}.field-job-card dt{font-size:11px;color:#7b8794}.field-job-card dd{margin:3px 0 0;font-weight:800;overflow-wrap:anywhere}.field-checks{display:grid;gap:7px;margin:12px 0}.field-checks label{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#536577}.field-note,.field-photo{display:grid;gap:6px;margin-top:12px;color:#45586b;font-size:12px;font-weight:800}.field-note textarea{width:100%;box-sizing:border-box;resize:vertical;border:1px solid #cfdbe7;border-radius:9px;padding:10px 11px;font:inherit;line-height:1.55}.field-photo input{width:100%;box-sizing:border-box;border:1px solid #d8e1ea;border-radius:9px;background:#f8fafc;padding:8px;font:inherit}.field-photo small{color:#84909d;font-weight:500}.field-photo-preview{display:flex;align-items:flex-start;justify-content:flex-start;gap:9px;margin-top:8px}.field-photo-preview img{width:108px;height:82px;object-fit:cover;border:1px solid #d8e1ea;border-radius:9px}.field-photo-preview span{color:#84909d;font-size:11px}.field-photo-preview button{border:1px solid #d6dee7;border-radius:8px;background:#fff;color:#596a7a;padding:7px 9px;cursor:pointer}.field-report-actions{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin:12px 0}.field-report-actions>button{border:0;border-radius:9px;background:#102a43;color:#fff;padding:9px 12px;font-weight:850;cursor:pointer}.field-save-status{color:#617384;font-size:11px;overflow-wrap:anywhere}.field-actions{display:flex;flex-wrap:wrap;gap:7px}.field-actions button{border:0;border-radius:9px;background:#1565e8;color:#fff;padding:9px 11px;font-weight:850;cursor:pointer}.field-actions a.secondary{display:inline-flex;align-items:center;justify-content:center;border-radius:9px;background:#edf2f7;color:#34485c;padding:9px 11px;font-weight:850;text-decoration:none}
++@media(max-width:900px){.map-list{grid-template-columns:1fr}.field-job-card dl{grid-template-columns:1fr}}
++@media(max-width:520px){.commercial-workspace-toolbar{display:grid;grid-template-columns:1fr 1fr}.commercial-workspace-toolbar button{width:100%}.field-actions{display:grid}.field-actions button,.field-actions a.secondary{width:100%;box-sizing:border-box}.field-report-actions{align-items:stretch;flex-direction:column}.field-report-actions>button{width:100%;box-sizing:border-box}}
++.field-checks input[type="checkbox"]{width:18px!important;height:18px!important;min-width:18px;flex:0 0 18px;margin:1px 0 0;padding:0}
+diff --git a/field-service-ops/commercial-workspace.mjs b/field-service-ops/commercial-workspace.mjs
+new file mode 100644
+index 0000000..42c5311
+--- /dev/null
++++ b/field-service-ops/commercial-workspace.mjs
+@@ -0,0 +1,213 @@
++const $ = id => document.getElementById(id);
++const dispatch = $('dispatch-workspace');
++if (!dispatch) throw new Error('dispatch workspace missing');
++
++const toolbar = document.createElement('div');
++toolbar.className = 'commercial-workspace-toolbar';
++for (const [value, label] of [['day','일간'],['week','주간'],['map','주소·지도'],['field','기사 현장']]) {
++  const button = document.createElement('button');
++  button.type = 'button';
++  button.dataset.view = value;
++  button.textContent = label;
++  if (value === 'day') button.className = 'active';
++  toolbar.append(button);
++}
++dispatch.querySelector('.page-head')?.after(toolbar);
++
++const host = document.createElement('section');
++host.className = 'panel commercial-view';
++host.hidden = true;
++toolbar.after(host);
++
++let bridge = null;
++let view = 'day';
++const ACTIVE = new Set(['REQUESTED','SCHEDULED','DISPATCHED','ON_SITE']);
++const FIELD_TERMINAL = new Set(['COMPLETED','CANCELLED','NO_SHOW']);
++const statusLabel = value => ({REQUESTED:'접수됨',SCHEDULED:'예약 완료',DISPATCHED:'출동 중',ON_SITE:'현장 작업 중',COMPLETED:'완료',CANCELLED:'취소',NO_SHOW:'방문 불가'})[value] || String(value || '');
++const fmt = iso => iso ? new Intl.DateTimeFormat('ko-KR', { timeZone:'Asia/Seoul', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false }).format(new Date(iso)) : '-';
++const dateKey = value => {
++  const date = value instanceof Date ? value : new Date(value);
++  const parts = new Intl.DateTimeFormat('en-US', { timeZone:'Asia/Seoul', year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(date);
++  const get = type => parts.find(part => part.type === type)?.value || '';
++  return `${get('year')}-${get('month')}-${get('day')}`;
++};
++const timeParts = iso => {
++  const parts = new Intl.DateTimeFormat('en-US', { timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit', hour12:false }).formatToParts(new Date(iso));
++  const get = type => Number(parts.find(part => part.type === type)?.value || 0);
++  return { hour:get('hour') % 24, minute:get('minute') };
++};
++const state = () => bridge?.getState?.() || { agents:[], jobs:[], principal:null, workDate:dateKey(new Date()) };
++const agentName = (id, current) => current.agents.find(agent => Number(agent.id) === Number(id))?.name || '미배정';
++const dateFromKey = key => new Date(`${key}T12:00:00+09:00`);
++const plusDays = (date, count) => { const next = new Date(date); next.setUTCDate(next.getUTCDate() + count); return next; };
++const weekdayIndex = key => {
++  const label = new Intl.DateTimeFormat('en-US', { timeZone:'Asia/Seoul', weekday:'short' }).format(dateFromKey(key));
++  return ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(label);
++};
++const monday = key => plusDays(dateFromKey(key), -Math.max(0, weekdayIndex(key)));
++
++function isoWindowForDate(key, sourceStart, sourceEnd) {
++  const startParts = timeParts(sourceStart);
++  const durationMs = new Date(sourceEnd) - new Date(sourceStart);
++  if (!Number.isFinite(durationMs) || durationMs <= 0) throw new Error('기존 방문시간을 확인할 수 없습니다.');
++  const startMinutes = startParts.hour * 60 + startParts.minute;
++  const durationMinutes = Math.round(durationMs / 60000);
++  const endMinutes = startMinutes + durationMinutes;
++  if (startMinutes < 8 * 60 || endMinutes > 18 * 60) throw new Error('기존 방문시간을 유지하면 업무시간 08:00–18:00을 벗어납니다. 일간 화면에서 시간을 조정해 주세요.');
++  const hhmm = total => `${String(Math.floor(total / 60)).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`;
++  return [new Date(`${key}T${hhmm(startMinutes)}:00+09:00`).toISOString(), new Date(`${key}T${hhmm(endMinutes)}:00+09:00`).toISOString()];
++}
++
++function hideBase(hidden) {
++  for (const element of dispatch.querySelectorAll('.metrics,.dispatch-layout,.lower')) element.hidden = hidden;
++  host.hidden = !hidden;
++}
++function empty(copy) { const node = document.createElement('div'); node.className = 'empty compact'; node.textContent = copy; return node; }
++function externalMapHref(address) { return `https://map.naver.com/p/search/${encodeURIComponent(String(address || ''))}`; }
++function safePhoto(photo) {
++  if (!photo || !['image/jpeg','image/png','image/webp'].includes(String(photo.type || ''))) return null;
++  const data = String(photo.data || '');
++  if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(data) || data.length > 1_100_000) return null;
++  return { ...photo, data };
++}
++function makeBadge(job) { const badge = document.createElement('span'); badge.className = `badge ${job.status}`; badge.textContent = statusLabel(job.status); return badge; }
++
++async function renderWeek() {
++  const current = state();
++  const start = monday(current.workDate || dateKey(new Date()));
++  const days = Array.from({ length:7 }, (_, index) => plusDays(start, index));
++  host.replaceChildren();
++  const head = document.createElement('div'); head.className = 'head';
++  const copy = document.createElement('div');
++  const title = document.createElement('h2'); title.textContent = '주간 기사 일정';
++  const p = document.createElement('p'); p.className = 'muted'; p.textContent = '작업을 다른 기사·날짜 칸으로 끌어놓으면 기존 시작시각과 작업시간을 그대로 유지해 재배차합니다. 키보드 사용자는 일간 화면의 일정 변경 기능을 이용할 수 있습니다.';
++  copy.append(title,p); head.append(copy); host.append(head);
++  const board = document.createElement('div'); board.className = 'week-board';
++  const grid = document.createElement('div'); grid.className = 'week-grid'; board.append(grid); host.append(board);
++  const corner = document.createElement('div'); corner.className = 'week-head'; corner.textContent = '기사'; grid.append(corner);
++  for (const day of days) {
++    const header = document.createElement('div'); header.className = 'week-head'; header.textContent = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',weekday:'short'}).format(day); grid.append(header);
++  }
++  for (const agent of current.agents.filter(item => item.active !== false)) {
++    const label = document.createElement('div'); label.className = 'week-agent'; label.textContent = agent.name; grid.append(label);
++    for (const day of days) {
++      const cell = document.createElement('div'); cell.className = 'week-cell'; cell.dataset.agent = String(agent.id); cell.dataset.date = dateKey(day);
++      const jobs = current.jobs.filter(job => Number(job.agentId) === Number(agent.id) && job.startAt && dateKey(job.startAt) === cell.dataset.date);
++      for (const job of jobs) {
++        const button = document.createElement('button');
++        const canMove = (job.allowedActions || []).some(action => ['RESCHEDULE','REASSIGN'].includes(action));
++        button.type = 'button'; button.draggable = canMove; button.className = `week-job ${job.status}`; button.dataset.job = String(job.id);
++        const strong = document.createElement('strong'); strong.textContent = `#${job.id} ${job.customerName}`;
++        const span = document.createElement('span'); span.textContent = `${fmt(job.startAt)} · ${statusLabel(job.status)}`;
++        button.append(strong,span);
++        if (canMove) button.addEventListener('dragstart', event => event.dataTransfer?.setData('text/plain', String(job.id)));
++        cell.append(button);
++      }
++      cell.addEventListener('dragover', event => { event.preventDefault(); cell.classList.add('week-drop'); });
++      cell.addEventListener('dragleave', () => cell.classList.remove('week-drop'));
++      cell.addEventListener('drop', async event => {
++        event.preventDefault(); cell.classList.remove('week-drop');
++        const id = Number(event.dataTransfer?.getData('text/plain'));
++        const job = current.jobs.find(item => item.id === id);
++        if (!job?.startAt || !job?.endAt) return;
++        try {
++          const [startAt,endAt] = isoWindowForDate(cell.dataset.date, job.startAt, job.endAt);
++          await bridge.schedule(id,{agentId:Number(cell.dataset.agent),startAt,endAt});
++          await renderWeek();
++        } catch (error) { window.alert(error instanceof Error ? error.message : '일정을 변경하지 못했습니다.'); }
++      });
++      grid.append(cell);
++    }
++  }
++}
++
++async function renderMap() {
++  const current = state();
++  const jobs = current.jobs.filter(job => ACTIVE.has(job.status)).sort((a,b) => String(a.startAt || '9999').localeCompare(String(b.startAt || '9999')));
++  host.replaceChildren();
++  const head = document.createElement('div'); head.className = 'head';
++  const copy = document.createElement('div'); const title = document.createElement('h2'); title.textContent = '현장 주소·지도';
++  const p = document.createElement('p'); p.className = 'muted'; p.textContent = '좌표를 임의로 추정하지 않습니다. 확인된 방문 주소와 기사·일정을 보고, 필요한 현장은 외부 지도 검색으로 정확한 위치를 확인합니다.';
++  copy.append(title,p); head.append(copy); host.append(head);
++  const list = document.createElement('div'); list.className = 'map-list map-list-full'; host.append(list);
++  if (!jobs.length) { list.append(empty('표시할 현장 작업이 없습니다.')); return; }
++  for (const job of jobs) {
++    const row = document.createElement('article');
++    const top = document.createElement('div'); top.className = 'map-row-head';
++    const strong = document.createElement('strong'); strong.textContent = `#${job.id} ${job.customerName}`; top.append(strong,makeBadge(job));
++    const address = document.createElement('span'); address.textContent = job.address;
++    const meta = document.createElement('small'); meta.textContent = `${agentName(job.agentId,current)} · ${job.startAt ? fmt(job.startAt) : '미배정'}`;
++    const actions = document.createElement('div'); actions.className = 'map-row-actions';
++    const map = document.createElement('a'); map.href = externalMapHref(job.address); map.target = '_blank'; map.rel = 'noreferrer'; map.textContent = '지도에서 주소 열기 ↗';
++    const copyButton = document.createElement('button'); copyButton.type = 'button'; copyButton.textContent = '주소 복사';
++    copyButton.addEventListener('click', async () => { try { await navigator.clipboard.writeText(job.address); copyButton.textContent = '복사됨'; } catch { copyButton.textContent = '복사 실패'; } });
++    actions.append(map,copyButton); row.append(top,address,meta,actions); list.append(row);
++  }
++}
++
++function fileAsDataUrl(file) {
++  return new Promise((resolve,reject) => {
++    if (!file) { resolve(null); return; }
++    if (!['image/jpeg','image/png','image/webp'].includes(file.type)) { reject(new Error('현장 사진은 JPEG, PNG, WebP만 첨부할 수 있습니다.')); return; }
++    if (file.size > 800 * 1024) { reject(new Error('현장 사진은 800KB 이하로 첨부해 주세요.')); return; }
++    const reader = new FileReader();
++    reader.onload = () => resolve({name:file.name,type:file.type,data:String(reader.result || '')});
++    reader.onerror = () => reject(new Error('현장 사진을 읽지 못했습니다.'));
++    reader.readAsDataURL(file);
++  });
++}
++
++async function fieldCard(job,current) {
++  const report = await bridge.getReport(job.id).catch(() => ({jobId:job.id,checks:{},note:'',photo:null}));
++  const card = document.createElement('article'); card.className = 'field-job-card';
++  const meta = document.createElement('div'); meta.className = 'field-card-meta'; const small = document.createElement('small'); small.textContent = `#${job.id}`; meta.append(makeBadge(job),small);
++  const h3 = document.createElement('h3'); h3.textContent = job.customerName;
++  const summary = document.createElement('p'); summary.textContent = job.summary;
++  const dl = document.createElement('dl');
++  for (const [label,value] of [['주소',job.address],['일정',job.startAt ? fmt(job.startAt) : '미배정']]) { const div=document.createElement('div');const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;div.append(dt,dd);dl.append(div); }
++  const checks = document.createElement('div'); checks.className = 'field-checks';
++  for (const [key,label] of [['customer','고객 요청·장비 증상 확인'],['access','현장 출입·작업공간 확인'],['result','정상동작·후속사항 확인']]) { const labelNode=document.createElement('label');const input=document.createElement('input');input.type='checkbox';input.dataset.check=key;input.checked=Boolean(report.checks?.[key]);labelNode.append(input,document.createTextNode(` ${label}`));checks.append(labelNode); }
++  const noteLabel = document.createElement('label'); noteLabel.className = 'field-note'; noteLabel.append(document.createTextNode('작업 메모'));
++  const textarea = document.createElement('textarea'); textarea.rows=3; textarea.maxLength=2000; textarea.placeholder='확인한 증상, 조치 내용, 남은 후속작업'; textarea.value=String(report.note || ''); noteLabel.append(textarea);
++  const photoLabel = document.createElement('label'); photoLabel.className='field-photo'; photoLabel.append(document.createTextNode('현장 사진 '));
++  const inputFile=document.createElement('input');inputFile.type='file';inputFile.accept='image/jpeg,image/png,image/webp';const photoHelp=document.createElement('small');photoHelp.textContent='JPEG/PNG/WebP · 최대 800KB';photoLabel.append(inputFile,photoHelp);
++  const preview=document.createElement('div');preview.className='field-photo-preview'; const storedPhoto=safePhoto(report.photo);
++  if (storedPhoto) { const img=document.createElement('img');img.alt='저장된 현장 사진';img.src=storedPhoto.data;const clear=document.createElement('button');clear.type='button';clear.dataset.clearPhoto='true';clear.textContent='사진 제거';preview.append(img,clear);clear.addEventListener('click',()=>{card.dataset.clearPhoto='true';preview.replaceChildren(Object.assign(document.createElement('span'),{textContent:'저장 시 사진을 제거합니다.'}));}); } else preview.append(Object.assign(document.createElement('span'),{textContent:'저장된 사진 없음'}));
++  const reportActions=document.createElement('div');reportActions.className='field-report-actions';const save=document.createElement('button');save.type='button';save.dataset.saveReport='true';save.textContent='작업기록 저장';const saveStatus=document.createElement('span');saveStatus.className='field-save-status';saveStatus.setAttribute('aria-live','polite');reportActions.append(save,saveStatus);
++  const actions=document.createElement('div');actions.className='field-actions';
++  for (const [action,label] of [['DISPATCH','출동'],['ON_SITE','현장 도착'],['COMPLETE','작업 완료']]) { if (!(job.allowedActions || []).includes(action)) continue; const button=document.createElement('button');button.type='button';button.textContent=label;button.addEventListener('click',async()=>{try{await bridge.action(job.id,action);await renderField();}catch(error){window.alert(error instanceof Error?error.message:'작업 상태를 변경하지 못했습니다.');}});actions.append(button); }
++  const map=document.createElement('a');map.className='secondary';map.textContent='지도 열기';map.href=externalMapHref(job.address);map.target='_blank';map.rel='noreferrer';actions.append(map);
++  card.append(meta,h3,summary,dl,checks,noteLabel,photoLabel,preview,reportActions,actions);
++  save.addEventListener('click',async()=>{saveStatus.textContent='저장 중…';try{const photo=await fileAsDataUrl(inputFile.files?.[0]||null);const values=Object.fromEntries([...checks.querySelectorAll('[data-check]')].map(input=>[input.dataset.check,input.checked]));const saved=await bridge.saveReport(job.id,{checks:values,note:textarea.value,...(photo?{photo}:{}),clearPhoto:card.dataset.clearPhoto==='true'});saveStatus.textContent=`저장 완료 · ${saved.updatedAt?fmt(saved.updatedAt):'방금'}`;card.dataset.clearPhoto='false';}catch(error){saveStatus.textContent=error instanceof Error?error.message:'작업기록을 저장하지 못했습니다.';}});
++  return card;
++}
++
++async function renderField() {
++  const current=state(); const principal=current.principal || bridge?.principal || {};
++  let ownAgent=current.agents.find(agent=>principal.agentId!=null && Number(principal.agentId)===Number(agent.id));
++  if (!ownAgent && bridge?.mode==='demo') ownAgent=current.agents[0];
++  host.replaceChildren(); const shell=document.createElement('div');shell.className='field-shell';const fieldHead=document.createElement('div');fieldHead.className='field-head';const copy=document.createElement('div');const title=document.createElement('h2');title.textContent='기사 현장';const subtitle=document.createElement('p');subtitle.className='muted';copy.append(title,subtitle);const tag=document.createElement('span');tag.className='badge';tag.textContent='모바일 현장화면';fieldHead.append(copy,tag);const list=document.createElement('div');list.className='field-job-list';shell.append(fieldHead,list);host.append(shell);
++  if (!ownAgent) { subtitle.textContent='직원 계정과 기사 프로필 연결이 필요합니다.';list.append(empty('현재 로그인 계정에 연결된 기사 프로필이 없습니다. 운영 관리자에게 기사 연결을 요청해 주세요.'));return; }
++  const workDate=current.workDate || dateKey(new Date());
++  const jobs=current.jobs.filter(job=>Number(job.agentId)===Number(ownAgent.id)&&!FIELD_TERMINAL.has(job.status)&&job.startAt&&dateKey(job.startAt)===workDate).sort((a,b)=>String(a.startAt).localeCompare(String(b.startAt)));
++  subtitle.textContent=`${ownAgent.name} · 오늘 방문 ${jobs.length}건`;
++  if (!jobs.length) { list.append(empty('오늘 배정된 작업이 없습니다.'));return; }
++  for (const job of jobs) list.append(await fieldCard(job,current));

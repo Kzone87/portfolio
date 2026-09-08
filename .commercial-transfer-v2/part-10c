@@ -1,0 +1,122 @@
+memory:')) throw new Error('KZONE_PROJECT_INQUIRY_DB_PATH must point to persistent storage in production');
++  return createProjectInquiryStore(path || 'portfolio-inquiry/data/project-inquiries.sqlite');
++}
++
++const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
++if (isMain) {
++  const store = createRuntimeProjectInquiryStore();
++  const server = createProjectInquiryServer(store, runtimeProjectInquiryOptions());
++  const port = Number(process.env.PORT || 8798);
++  const close = () => server.close(() => { store.close(); process.exit(0); });
++  process.on('SIGINT', close); process.on('SIGTERM', close);
++  server.listen(port, '127.0.0.1', () => console.log(`KZONE project inquiry API listening on http://127.0.0.1:${port}`));
++}
+diff --git a/project-inquiry/app.js b/project-inquiry/app.js
+new file mode 100644
+index 0000000..db0676c
+--- /dev/null
++++ b/project-inquiry/app.js
+@@ -0,0 +1,96 @@
++const endpoint = String(window.KZONE_PROJECT_INQUIRY_ENDPOINT || '').trim().replace(/\/+$/, '');
++const form = document.getElementById('project-inquiry-form');
++const message = document.getElementById('project-inquiry-message');
++const summary = document.getElementById('project-inquiry-summary');
++const copyButton = document.getElementById('copy-project-inquiry');
++let currentText = '';
++
++const line = (label, value) => `${label}: ${value || '미입력'}`;
++function readValues() {
++  const data = new FormData(form);
++  return {
++    company: String(data.get('company') || '').trim(),
++    name: String(data.get('name') || '').trim(),
++    email: String(data.get('email') || '').trim(),
++    projectType: String(data.get('projectType') || '').trim(),
++    budgetRange: String(data.get('budgetRange') || '').trim(),
++    desiredStart: String(data.get('desiredStart') || '').trim(),
++    detail: String(data.get('detail') || '').trim(),
++    consent: data.get('consent') === 'yes'
++  };
++}
++function buildText(value) {
++  return [
++    '[KZONE87 프로젝트 의뢰]',
++    line('회사·조직', value.company),
++    line('담당자', value.name),
++    line('회신 이메일', value.email),
++    line('프로젝트 유형', value.projectType),
++    line('예상 범위', value.budgetRange),
++    line('희망 시작', value.desiredStart),
++    `현재 업무/문제:\n${value.detail}`
++  ].join('\n');
++}
++function showSummary(text, id = '') {
++  currentText = text;
++  summary.hidden = false;
++  summary.querySelector('pre').textContent = id ? `${text}\n\n접수번호: ${id}` : text;
++  summary.scrollIntoView({ block:'nearest', behavior:'smooth' });
++}
++
++if (endpoint) {
++  const submit = form?.querySelector('button[type="submit"]');
++  if (submit) submit.textContent = '비공개 의뢰 보내기';
++  const note = summary?.querySelector('p');
++  if (note) note.textContent = '입력한 프로젝트 의뢰는 비공개 상담 API로 전송됩니다.';
++}
++
++form?.addEventListener('submit', async event => {
++  event.preventDefault();
++  message.className = 'message wide';
++  const value = readValues();
++  if (value.company.length < 2 || value.name.length < 2 || !/^\S+@\S+\.\S+$/.test(value.email) || !value.projectType || value.detail.length < 10 || !value.consent) {
++    message.textContent = '필수 항목과 동의 여부를 확인해 주세요.';
++    message.classList.add('error');
++    return;
++  }
++  const text = buildText(value);
++  if (!endpoint) {
++    showSummary(text);
++    message.textContent = '의뢰 내용을 정리했습니다. 공개 포트폴리오에서는 서버로 전송하지 않습니다.';
++    return;
++  }
++  const button = form.querySelector('button[type="submit"]');
++  button.disabled = true;
++  form.setAttribute('aria-busy', 'true');
++  message.textContent = '비공개 프로젝트 문의를 접수하고 있습니다.';
++  try {
++    const response = await fetch(`${endpoint}/api/project-inquiries`, {
++      method:'POST',
++      headers:{ 'content-type':'application/json' },
++      body:JSON.stringify(value)
++    });
++    const payload = await response.json().catch(() => ({}));
++    if (!response.ok) throw new Error(payload?.error?.message || '의뢰를 접수하지 못했습니다.');
++    showSummary(text, payload.id);
++    message.textContent = `비공개 프로젝트 문의가 접수되었습니다. 접수번호 ${payload.id}`;
++  } catch (error) {
++    showSummary(text);
++    message.textContent = error instanceof Error ? error.message : '의뢰를 접수하지 못했습니다.';
++    message.classList.add('error');
++  } finally {
++    button.disabled = false;
++    form.removeAttribute('aria-busy');
++  }
++});
++
++copyButton?.addEventListener('click', async () => {
++  if (!currentText) return;
++  try {
++    await navigator.clipboard.writeText(currentText);
++    message.textContent = '의뢰 내용을 복사했습니다.';
++  } catch {
++    message.textContent = '자동 복사를 사용할 수 없습니다. 내용을 직접 복사해 주세요.';
++    message.classList.add('error');
++  }
++});
+diff --git a/project-inquiry/index.html b/project-inquiry/index.html
+new file mode 100644
+index 0000000..d0ba674
+--- /dev/null
++++ b/project-inquiry/index.html
+@@ -0,0 +1 @@
++<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="KZONE87 프로젝트 구축 의뢰서를 작성하고 범위·예산·일정·인수기준을 정리하는 비공개 상담 준비 화면입니다."><title>프로젝트 의뢰 | KZONE87</title><link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="./styles.css"></head><body><a class="skip-link" href="#main">본문으로 바로가기</a><header class="inquiry-header"><a href="../">KZONE87</a><span>PROJECT INQUIRY</span></header><main id="main" class="inquiry-shell"><section class="inquiry-hero"><p>PROJECT INQUIRY</p><h1>무엇을 만들지보다,<br>어떤 업무를 바꿀지부터 적어주세요.</h1><p>관리자 시스템·업무 자동화·기업 홈페이지·내부 운영도구의 범위와 우선순위를 정리합니다. 서버가 연결된 운영환경에서는 비공개로 전송할 수 있습니다.</p></section><section class="inquiry-grid"><aside><h2>상담 후 진행</h2><ol><li><b>01</b><span><strong>요구사항 확인</strong>현재 업무와 가장 불편한 지점을 확인합니다.</span></li><li><b>02</b><span><strong>범위·견적</strong>기능, 데이터, 권한, 일정과 제외범위를 정합니다.</span></li><li><b>03</b><span><strong>개발·검수</strong>중간 확인과 정상·예외 흐름 테스트를 진행합니다.</span></li><li><b>04</b><span><strong>배포·인수</strong>운영환경, 백업, 계정, 문서를 함께 넘깁니다.</span></li></ol><p class="privacy-note">회사 기밀·고객 개인정보·비밀번호·API Key는 최초 문의에 적지 마세요.</p></aside><form id="project-inquiry-form" novalidate><label>회사·조직명<input name="company" autoco

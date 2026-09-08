@@ -1,0 +1,79 @@
+ listen(server);
++  try{
++    for(const id of ['NX-FAKE000001','NX-FAKE000002']){const result=await json(root,'/api/customer/access/challenge',{method:'POST',origin:CUSTOMER_ORIGIN,body:{id,channel:'sms'}});assert.equal(result.response.status,202)}
++    const limited=await json(root,'/api/customer/access/challenge',{method:'POST',origin:CUSTOMER_ORIGIN,body:{id:'NX-FAKE000003',channel:'email'}});assert.equal(limited.response.status,429);
++  }finally{await stop(server);accessStore.close();inquiryStore.close()}
++});
++
++test('field employee identity is explicitly linked to an agent and cannot operate another agent job',async()=>{
++  const store=createStore();
++  const authStore=createAuthStore(':memory:',{bootstrapAdmin:{id:'admin',username:'admin',name:'운영관리자',team:'서울 운영팀',password:'commercial-admin-123'}});
++  authStore.createUser({id:'field-1',username:'field1',name:'현장기사1',team:'서울 운영팀',agentId:1,role:'STAFF',password:staffPassword},'admin');
++  const server=createFieldServiceServer(store,{requireAuth:true,authStore,allowedOrigins:[OPS_ORIGIN]});const root=await listen(server);
++  try{
++    const session=await login(root,'field1',staffPassword);assert.equal(session.response.status,200);assert.equal(session.body.principal.agentId,1);
++    const me=await json(root,'/api/me',{origin:OPS_ORIGIN,cookie:session.cookie});assert.equal(me.body.agentId,1);
++    const dispatch=await json(root,'/api/jobs/1/dispatch',{method:'POST',origin:OPS_ORIGIN,cookie:session.cookie,csrf:session.csrf,body:{expectedVersion:2}});assert.equal(dispatch.response.status,200);
++    const onsite=await json(root,'/api/jobs/1/on-site',{method:'POST',origin:OPS_ORIGIN,cookie:session.cookie,csrf:session.csrf,body:{expectedVersion:dispatch.body.version}});assert.equal(onsite.response.status,200);
++    const premature=await json(root,'/api/jobs/1/complete',{method:'POST',origin:OPS_ORIGIN,cookie:session.cookie,csrf:session.csrf,body:{expectedVersion:onsite.body.version}});assert.equal(premature.response.status,409);assert.equal(premature.body.error.code,'FIELD_REPORT_REQUIRED');
++    const other=await json(root,'/api/jobs/2/report',{method:'POST',origin:OPS_ORIGIN,cookie:session.cookie,csrf:session.csrf,body:{checks:{customer:true,access:true,result:true},note:'다른 기사 작업'}});assert.equal(other.response.status,403);assert.equal(other.body.error.code,'FIELD_JOB_NOT_ASSIGNED');
++    const report=await json(root,'/api/jobs/1/report',{method:'POST',origin:OPS_ORIGIN,cookie:session.cookie,csrf:session.csrf,body:{checks:{customer:true,access:true,result:true},note:'고객 요청과 현장 환경을 확인하고 테스트 출력으로 정상 상태를 확인했습니다.'}});assert.equal(report.response.status,200);assert.equal(report.body.updatedBy,'field-1');
++    const done=await json(root,'/api/jobs/1/complete',{method:'POST',origin:OPS_ORIGIN,cookie:session.cookie,csrf:session.csrf,body:{expectedVersion:onsite.body.version}});assert.equal(done.response.status,200);assert.equal(done.body.status,'COMPLETED');
++  }finally{await stop(server);authStore.close()}
++});
++
++test('commercial operations UI uses real scheduling contracts and never renders synthetic map pins',async()=>{
++  const [html,bootstrap,workspace,css,team]=await Promise.all([load('field-service-ops/index.html'),load('field-service-ops/app.js'),load('field-service-ops/commercial-workspace.mjs'),load('field-service-ops/commercial-workspace.css'),load('field-service-ops/team-admin.mjs')]);
++  assert.match(bootstrap,/import\('\.\/commercial-workspace\.mjs'\)/);
++  for(const label of ['일간','주간','주소·지도','기사 현장'])assert.match(workspace,new RegExp(label));
++  assert.match(workspace,/draggable/);assert.match(workspace,/dataTransfer/);assert.match(workspace,/08:00–18:00/);assert.match(workspace,/map\.naver\.com/);
++  assert.doesNotMatch(workspace,/pinPos|map-pin|synthetic|가짜 좌표/);assert.doesNotMatch(css,/map-pin|map-canvas/);
++  assert.match(workspace,/principal\.agentId/);assert.match(team,/agentId/);assert.match(html,/team-agent/);assert.match(html,/new-user-agent/);
++  assert.match(workspace,/field-report/);assert.match(workspace,/photo/);
++});
++
++test('NEXA commercial service pages state support and contract boundaries without fabricated SLA claims',async()=>{
++  const [home,services,contact,playbook]=await Promise.all([load('nexa-tech-service/index.html'),load('nexa-tech-service/services.html'),load('nexa-tech-service/contact.html'),load('nexa-tech-service/playbook.html')]);
++  const all=[home,services,contact,playbook].join('\n');
++  for(const copy of ['정기','현장지원','설치·이전','지원 가능','부품','제조사 정책','작업 결과'])assert.match(all,new RegExp(copy));
++  assert.doesNotMatch(all,/99\.9%|24\/7|30분 이내|1시간 이내|SLA 보장|전국 당일/);
++  const scope=await load('nexa-tech-service/commercial-scope.js');assert.doesNotMatch(scope,/공개 시연|포트폴리오/);assert.match(scope,/page==='other'\)return/);
++});
+diff --git a/test/nexa-delivery-100.test.mjs b/test/nexa-delivery-100.test.mjs
+index bd876bb..ed12a68 100644
+--- a/test/nexa-delivery-100.test.mjs
++++ b/test/nexa-delivery-100.test.mjs
+@@ -200,7 +200,7 @@ test('employee inquiry desk can process inquiry to field job and cannot close wh
+     assert.equal(schedule.status, 200);
+ 
+     let current = scheduled;
+-    for (const suffix of ['dispatch', 'on-site', 'complete']) {
++    for (const suffix of ['dispatch', 'on-site']) {
+       const response = await fetch(`${runtime.root}/api/jobs/${job.id}/${suffix}`, {
+         method: 'POST',
+         headers: sessionHeaders(session, { 'content-type': 'application/json' }),
+@@ -209,6 +209,19 @@ test('employee inquiry desk can process inquiry to field job and cannot close wh
+       assert.equal(response.status, 200);
+       current = await response.json();
+     }
++    const report = await fetch(`${runtime.root}/api/jobs/${job.id}/report`, {
++      method: 'POST',
++      headers: sessionHeaders(session, { 'content-type': 'application/json' }),
++      body: JSON.stringify({ checks: { customer: true, access: true, result: true }, note: '현장 점검과 테스트 출력을 완료했습니다.' })
++    });
++    assert.equal(report.status, 200);
++    const complete = await fetch(`${runtime.root}/api/jobs/${job.id}/complete`, {
++      method: 'POST',
++      headers: sessionHeaders(session, { 'content-type': 'application/json' }),
++      body: JSON.stringify({ expectedVersion: current.version })
++    });
++    assert.equal(complete.status, 200);
++    current = await complete.json();
+     assert.equal(current.status, 'COMPLETED');
+ 
+     const latestInquiry = runtime.inquiryStore.get(createdInquiry.id);
+diff --git a/test/nexa-delivery-acceptance.test.mjs b/test/nexa-delivery-acceptance.test.mjs
+index 4b907f1..2776967 100644
+--- a/test/nexa-delivery-acceptance.test.mjs
++++ b/test/nexa-delivery-acceptance.test.mjs
+@@ -276,7 +276,7 @@ test(

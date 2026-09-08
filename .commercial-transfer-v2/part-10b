@@ -1,0 +1,115 @@
+ 주세요.'); }
++}
++
++function parseAdmins(raw = '') {
++  if (!String(raw).trim()) return [];
++  let value;
++  try { value = JSON.parse(raw); } catch { throw new Error('KZONE_PROJECT_INQUIRY_ADMINS_JSON must be valid JSON'); }
++  if (!Array.isArray(value)) throw new Error('KZONE_PROJECT_INQUIRY_ADMINS_JSON must be an array');
++  return value.map((item, index) => {
++    const token = String(item?.token || '').trim();
++    const id = String(item?.id || '').trim();
++    if (token.length < 16) throw new Error(`project inquiry admin ${index} token must be at least 16 characters`);
++    if (!/^[a-zA-Z0-9._-]{2,80}$/.test(id)) throw new Error(`project inquiry admin ${index} id is invalid`);
++    return { token, id };
++  });
++}
++
++function adminRegistry(items) { return new Map(items.map(item => [tokenHash(item.token), { id: item.id }])); }
++function requireAdmin(req, config) {
++  const match = String(req.headers.authorization || '').match(/^Bearer\s+(.+)$/i);
++  if (!match) throw new ProjectInquiryError(401, 'AUTH_REQUIRED', '관리자 인증이 필요합니다.');
++  const principal = config.admins.get(tokenHash(match[1].trim()));
++  if (!principal) throw new ProjectInquiryError(401, 'INVALID_AUTH_TOKEN', '관리자 인증정보가 올바르지 않습니다.');
++  return principal;
++}
++function clientKey(req, trustProxy) {
++  let address = String(req.socket.remoteAddress || 'unknown');
++  if (trustProxy) address = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || address;
++  return createHash('sha256').update(`${address}|${String(req.headers['user-agent'] || '')}`).digest('hex');
++}
++function consumeRate(req, config) {
++  const key = clientKey(req, config.trustProxy);
++  const now = Date.now();
++  const bucket = config.rateBuckets.get(key);
++  if (!bucket || now >= bucket.resetAt) { config.rateBuckets.set(key, { count: 1, resetAt: now + config.rateWindowMs }); return; }
++  if (bucket.count >= config.rateMax) throw new ProjectInquiryError(429, 'RATE_LIMITED', '문의 요청이 많습니다. 잠시 후 다시 시도해 주세요.');
++  bucket.count += 1;
++}
++function originHeaders(req, config) {
++  const origin = String(req.headers.origin || '').trim();
++  if (!origin) return {};
++  if (!config.allowedOrigins.has('*') && !config.allowedOrigins.has(origin)) throw new ProjectInquiryError(403, 'ORIGIN_NOT_ALLOWED', '요청할 수 없는 출처입니다.');
++  return { 'access-control-allow-origin': config.allowedOrigins.has('*') ? '*' : origin, vary: 'Origin' };
++}
++function send(req, res, config, status, body) {
++  const payload = JSON.stringify(body);
++  res.writeHead(status, {
++    'content-type': 'application/json; charset=utf-8',
++    'content-length': Buffer.byteLength(payload),
++    'cache-control': 'no-store',
++    'x-content-type-options': 'nosniff',
++    'referrer-policy': 'no-referrer',
++    ...originHeaders(req, config)
++  });
++  res.end(payload);
++}
++
++export function createProjectInquiryServer(store = createProjectInquiryStore(), options = {}) {
++  const config = {
++    allowedOrigins: new Set(options.allowedOrigins || ['*']),
++    admins: adminRegistry(options.admins || []),
++    requireAdminConfig: Boolean(options.requireAdminConfig),
++    trustProxy: Boolean(options.trustProxy),
++    rateWindowMs: Number(options.rateWindowMs || DEFAULT_RATE_WINDOW_MS),
++    rateMax: Number(options.rateMax || DEFAULT_RATE_MAX),
++    rateBuckets: new Map()
++  };
++  if (config.requireAdminConfig && !config.admins.size) throw new Error('production project inquiry API requires an admin principal');
++  return http.createServer(async (req, res) => {
++    try {
++      const url = new URL(req.url || '/', 'http://localhost');
++      const path = url.pathname;
++      if (req.method !== 'OPTIONS') originHeaders(req, config);
++      if (req.method === 'OPTIONS') {
++        res.writeHead(204, { ...originHeaders(req, config), 'access-control-allow-headers': 'authorization, content-type', 'access-control-allow-methods': 'GET,POST,OPTIONS', 'access-control-max-age': '600' });
++        res.end(); return;
++      }
++      if (req.method === 'GET' && path === '/api/health') { send(req, res, config, 200, { ok: true, service: 'kzone-project-inquiry' }); return; }
++      if (req.method === 'GET' && path === '/api/ready') { send(req, res, config, 200, { ready: true, service: 'kzone-project-inquiry', inquiries: store.count() }); return; }
++      if (req.method === 'POST' && path === '/api/project-inquiries') {
++        consumeRate(req, config);
++        send(req, res, config, 201, store.create(await readBody(req))); return;
++      }
++      if (path === '/api/admin/project-inquiries' && req.method === 'GET') {
++        requireAdmin(req, config);
++        send(req, res, config, 200, { items: store.list(url.searchParams.get('status') || '') }); return;
++      }
++      const match = path.match(/^\/api\/admin\/project-inquiries\/(KZ-[A-Z0-9-]+)\/status$/);
++      if (match && req.method === 'POST') {
++        const admin = requireAdmin(req, config);
++        const input = await readBody(req);
++        send(req, res, config, 200, store.transition(match[1], input.status, admin.id)); return;
++      }
++      send(req, res, config, 404, { error: { code: 'NOT_FOUND', message: '요청 경로를 찾을 수 없습니다.' } });
++    } catch (error) {
++      const value = error instanceof ProjectInquiryError ? error : new ProjectInquiryError(500, 'INTERNAL_ERROR', '프로젝트 문의를 처리하지 못했습니다.');
++      if (!(error instanceof ProjectInquiryError)) console.error(error);
++      try { send(req, res, config, value.statusCode, { error: { code: value.code, message: value.message } }); }
++      catch { res.writeHead(value.statusCode, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify({ error: { code: value.code, message: value.message } })); }
++    }
++  });
++}
++
++export function runtimeProjectInquiryOptions(env = process.env) {
++  const production = env.NODE_ENV === 'production';
++  const allowedOrigins = String(env.KZONE_PROJECT_INQUIRY_ALLOWED_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean);
++  if (production && (!allowedOrigins.length || allowedOrigins.includes('*'))) throw new Error('KZONE_PROJECT_INQUIRY_ALLOWED_ORIGINS must be a non-wildcard origin list in production');
++  const admins = parseAdmins(env.KZONE_PROJECT_INQUIRY_ADMINS_JSON || '');
++  if (production && !admins.length) throw new Error('KZONE_PROJECT_INQUIRY_ADMINS_JSON is required in production');
++  return { allowedOrigins: production ? allowedOrigins : (allowedOrigins.length ? allowedOrigins : ['*']), admins, requireAdminConfig: production, trustProxy: env.KZONE_PROJECT_INQUIRY_TRUST_PROXY === '1' };
++}
++export function createRuntimeProjectInquiryStore(env = process.env) {
++  const production = env.NODE_ENV === 'production';
++  const path = String(env.KZONE_PROJECT_INQUIRY_DB_PATH || '').trim();
++  if (production && (!path || path === ':

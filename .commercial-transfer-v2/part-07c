@@ -1,0 +1,56 @@
+ite-nav" class="site-nav" aria-label="주요 메뉴"><a href="./about.html">회사소개</a><a href="./services.html">서비스</a><a href="./industries.html">이용 고객</a><a href="./cases.html">이용 상황</a><a href="./contact.html">상담</a></nav><div class="header-actions"><a class="contact-link" href="./contact.html">유지보수 상담</a><button class="menu-button" aria-expanded="false" aria-controls="site-nav" aria-label="메뉴 열기">메뉴</button></div></div></header>
++<header class="site-header"><div class="header-inner"><a class="brand" href="./" aria-label="NEXA TECH SERVICE 홈"><span class="brand-mark">N</span><span>NEXA TECH SERVICE<small>기업용 출력·사무장비 유지보수 · 현장지원</small></span></a><nav id="site-nav" class="site-nav" aria-label="주요 메뉴"><a href="./about.html">회사소개</a><a href="./services.html">서비스</a><a href="./industries.html">이용 고객</a><a href="./cases.html">이용 상황</a><a href="./contact.html">상담</a></nav><div class="header-actions"><a class="contact-link" href="./contact.html">유지보수 상담</a><button class="menu-button" aria-expanded="false" aria-controls="site-nav" aria-label="메뉴 열기">메뉴</button></div></div></header>
+ <main id="main">
+ <section class="shell subhero playbook-hero human-heading"><span>서비스 진행 안내</span><h1>접수부터 작업 완료까지<br>어떻게 진행되는지 미리 확인하세요.</h1><p>고장을 접수할 때 어떤 정보를 알려주면 되는지, 현장에서는 무엇을 확인하는지, 작업이 끝난 뒤 무엇을 안내받는지 순서대로 정리했습니다.</p><div class="subhero-badges"><span>접수</span><span>방문 준비</span><span>현장 작업</span><span>작업 결과</span><span>후속 일정</span></div></section>
+ 
+@@ -27,5 +27,5 @@
+ 
+ <section class="cta"><div class="shell"><div class="cta-box cta-box-100"><div><span>유지보수 상담</span><h2>현재 장비 문제부터 말씀해 주세요.</h2><p>장비 수와 사업장 구조를 정확히 정리하지 않아도 괜찮습니다. 지금 가장 불편한 점부터 확인해 필요한 서비스와 다음 단계를 안내받을 수 있습니다.</p></div><a class="primary-link" href="./contact.html">우리 환경 상담하기</a></div></div></section>
+ </main>
+-<footer class="site-footer"><div class="shell footer-inner"><div class="footer-copy"><a class="brand" href="./"><span class="brand-mark">N</span><span>NEXA TECH<small>기업용 출력·사무장비 유지보수 · 현장지원</small></span></a><p>복합기·프린터·디지털 인쇄장비 등 기업용 출력·사무장비의 정기점검, 고장 대응, 설치·이전과 다사업장 관리를 지원합니다.</p></div><div class="footer-col"><strong>회사</strong><a href="./about.html">회사소개</a><a href="./industries.html">이용 고객</a></div><div class="footer-col"><strong>서비스</strong><a href="./services.html">서비스</a><a href="./playbook.html">서비스 진행 안내</a></div><div class="footer-col"><strong>안내</strong><a href="./cases.html">이용 상황</a><a href="./contact.html">유지보수 상담</a></div></div><div class="shell footer-bottom"><span>© 2026 NEXA TECH SERVICE</span><span>NEXA TECH SERVICE는 포트폴리오 시연을 위해 구성한 가상 브랜드입니다.</span></div></footer><script src="./app.js"></script>
+-</body></html>
+\ No newline at end of file
++<footer class="site-footer"><div class="shell footer-inner"><div class="footer-copy"><a class="brand" href="./"><span class="brand-mark">N</span><span>NEXA TECH SERVICE<small>기업용 출력·사무장비 유지보수 · 현장지원</small></span></a><p>복합기·프린터·디지털 인쇄장비 등 기업용 출력·사무장비의 정기점검, 고장 대응, 설치·이전과 다사업장 관리를 지원합니다.</p></div><div class="footer-col"><strong>회사</strong><a href="./about.html">회사소개</a><a href="./industries.html">이용 고객</a></div><div class="footer-col"><strong>서비스</strong><a href="./services.html">서비스</a><a href="./playbook.html">서비스 진행 안내</a></div><div class="footer-col"><strong>안내</strong><a href="./cases.html">이용 상황</a><a href="./contact.html">유지보수 상담</a></div></div><div class="shell footer-bottom"><span>© 2026 NEXA TECH SERVICE</span><span>NEXA TECH SERVICE는 포트폴리오 시연을 위해 구성한 가상 브랜드입니다.</span></div></footer><script src="./app.js"></script>
++<script src="./commercial-scope.js"></script></body></html>
+\ No newline at end of file
+diff --git a/nexa-tech-service/server/app.mjs b/nexa-tech-service/server/app.mjs
+index 0ad793b..667124a 100644
+--- a/nexa-tech-service/server/app.mjs
++++ b/nexa-tech-service/server/app.mjs
+@@ -207,6 +207,11 @@ export function createFieldOpsClient({ baseUrl, token, fetchImpl = fetch }) {
+       const job = await jobResponse.json().catch(() => ({}));
+       const auditPayload = await auditResponse.json().catch(() => ({ items: [] }));
+       if (!jobResponse.ok) throw new InquiryError(502, 'FIELD_OPS_REJECTED', job?.error?.message || '현장 방문 상태를 확인하지 못했습니다.');
++      let fieldReport = null;
++      try {
++        const reportResponse = await fetchImpl(`${root}/api/jobs/${Number(jobId)}/report`, { headers: headers() });
++        if (reportResponse.ok) fieldReport = await reportResponse.json().catch(() => null);
++      } catch {}
+       return {
+         id: Number(job.id),
+         status: job.status,
+@@ -216,6 +221,7 @@ export function createFieldOpsClient({ baseUrl, token, fetchImpl = fetch }) {
+         address: job.address || '',
+         summary: job.summary || '',
+         agentAssigned: Number.isInteger(Number(job.agentId)) && Number(job.agentId) > 0,
++        fieldReport,
+         updates: (auditPayload.items || []).slice(0, 10)
+       };
+     }
+@@ -250,7 +256,8 @@ export function createInquiryServer(store = createInquiryStore(), options = {})
+     rateMax: Number(options.rateMax || DEFAULT_RATE_MAX),
+     rateBuckets: new Map(),
+     trustProxy: Boolean(options.trustProxy),
+-    fieldOpsClient: options.fieldOpsClient || null
++    fieldOpsClient: options.fieldOpsClient || null,
++    allowLegacyCustomerAccess: options.allowLegacyCustomerAccess !== false
+   };
+   if (config.requireAdminConfig && config.admins.size === 0) throw new Error('production inquiry API requires at least one admin principal');
+   if (!Number.isFinite(config.rateWindowMs) || config.rateWindowMs < 1000) throw new Error('rateWindowMs must be at least 1000 milliseconds');
+@@ -260,6 +267,10 @@ export function createInquiryServer(store = createInquiryStore(), options = {})
+     try {
+       const url = new URL(req.url ?? '/', 'http://localhost');
+       const path = url.pathname;
++      if (req.method !== 'OPTIONS') {
++        const origin = String(req.headers.origin || '').trim();
++        if (origin && !config.allowedOri

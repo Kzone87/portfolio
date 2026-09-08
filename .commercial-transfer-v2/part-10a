@@ -1,0 +1,138 @@
+_RATE_MAX = 5;
++const STATUS = new Set(['NEW', 'CONTACTED', 'CLOSED']);
++const text = (value, max) => String(value ?? '').trim().slice(0, max);
++const nowIso = () => new Date().toISOString();
++const tokenHash = value => createHash('sha256').update(String(value || '')).digest('hex');
++
++export class ProjectInquiryError extends Error {
++  constructor(statusCode, code, message) {
++    super(message);
++    this.name = 'ProjectInquiryError';
++    this.statusCode = statusCode;
++    this.code = code;
++  }
++}
++
++function validate(input) {
++  const value = {
++    company: text(input?.company, 120),
++    name: text(input?.name, 80),
++    email: text(input?.email, 180).toLowerCase(),
++    projectType: text(input?.projectType, 120),
++    budgetRange: text(input?.budgetRange, 120),
++    desiredStart: text(input?.desiredStart, 120),
++    detail: text(input?.detail, 4000),
++    consent: input?.consent === true || input?.consent === 'yes'
++  };
++  if (value.company.length < 2) throw new ProjectInquiryError(400, 'INVALID_COMPANY', '회사·조직명을 확인해 주세요.');
++  if (value.name.length < 2) throw new ProjectInquiryError(400, 'INVALID_NAME', '담당자명을 확인해 주세요.');
++  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.email)) throw new ProjectInquiryError(400, 'INVALID_EMAIL', '회신 이메일을 확인해 주세요.');
++  if (value.projectType.length < 2) throw new ProjectInquiryError(400, 'INVALID_PROJECT_TYPE', '프로젝트 유형을 확인해 주세요.');
++  if (value.detail.length < 10) throw new ProjectInquiryError(400, 'INVALID_DETAIL', '현재 업무와 필요한 범위를 10자 이상 작성해 주세요.');
++  if (!value.consent) throw new ProjectInquiryError(400, 'CONSENT_REQUIRED', '문의 내용 확인이 필요합니다.');
++  return value;
++}
++
++export function createProjectInquiryStore(path = ':memory:') {
++  if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
++  const db = new DatabaseSync(path);
++  db.exec('PRAGMA foreign_keys = ON');
++  if (path !== ':memory:') db.exec('PRAGMA journal_mode = WAL');
++  db.exec(`
++    CREATE TABLE IF NOT EXISTS project_inquiries (
++      id INTEGER PRIMARY KEY AUTOINCREMENT,
++      public_id TEXT NOT NULL UNIQUE,
++      company TEXT NOT NULL,
++      contact_name TEXT NOT NULL,
++      email TEXT NOT NULL,
++      project_type TEXT NOT NULL,
++      budget_range TEXT NOT NULL DEFAULT '',
++      desired_start TEXT NOT NULL DEFAULT '',
++      detail TEXT NOT NULL,
++      status TEXT NOT NULL CHECK(status IN ('NEW','CONTACTED','CLOSED')),
++      created_at TEXT NOT NULL,
++      updated_at TEXT NOT NULL
++    );
++    CREATE INDEX IF NOT EXISTS idx_project_inquiries_status_created ON project_inquiries(status,id DESC);
++    CREATE TABLE IF NOT EXISTS project_inquiry_audits (
++      id INTEGER PRIMARY KEY AUTOINCREMENT,
++      inquiry_id INTEGER NOT NULL REFERENCES project_inquiries(id),
++      actor TEXT NOT NULL,
++      action TEXT NOT NULL,
++      from_status TEXT,
++      to_status TEXT NOT NULL,
++      created_at TEXT NOT NULL
++    );
++  `);
++  const row = value => value ? ({
++    id: value.public_id,
++    company: value.company,
++    name: value.contact_name,
++    email: value.email,
++    projectType: value.project_type,
++    budgetRange: value.budget_range,
++    desiredStart: value.desired_start,
++    detail: value.detail,
++    status: value.status,
++    createdAt: value.created_at,
++    updatedAt: value.updated_at
++  }) : null;
++  const requireRow = publicId => {
++    const value = db.prepare('SELECT * FROM project_inquiries WHERE public_id=?').get(String(publicId || '').toUpperCase());
++    if (!value) throw new ProjectInquiryError(404, 'PROJECT_INQUIRY_NOT_FOUND', '프로젝트 문의를 찾을 수 없습니다.');
++    return value;
++  };
++  return {
++    create(input) {
++      const value = validate(input);
++      const at = nowIso();
++      const publicId = `KZ-${randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
++      const result = db.prepare(`INSERT INTO project_inquiries(public_id,company,contact_name,email,project_type,budget_range,desired_start,detail,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)`).run(
++        publicId, value.company, value.name, value.email, value.projectType, value.budgetRange, value.desiredStart, value.detail, 'NEW', at, at
++      );
++      db.prepare('INSERT INTO project_inquiry_audits(inquiry_id,actor,action,from_status,to_status,created_at) VALUES(?,?,?,?,?,?)').run(Number(result.lastInsertRowid), 'customer', 'CREATE', null, 'NEW', at);
++      return { id: publicId, status: 'NEW', createdAt: at };
++    },
++    list(status = '') {
++      const normalized = String(status || '').toUpperCase();
++      if (normalized && !STATUS.has(normalized)) throw new ProjectInquiryError(400, 'INVALID_STATUS', '프로젝트 문의 상태를 확인해 주세요.');
++      const rows = normalized
++        ? db.prepare('SELECT * FROM project_inquiries WHERE status=? ORDER BY id DESC').all(normalized)
++        : db.prepare('SELECT * FROM project_inquiries ORDER BY id DESC').all();
++      return rows.map(row);
++    },
++    get(publicId) { return row(requireRow(publicId)); },
++    transition(publicId, nextStatus, actor) {
++      const next = String(nextStatus || '').toUpperCase();
++      if (!STATUS.has(next) || next === 'NEW') throw new ProjectInquiryError(400, 'INVALID_STATUS', '변경할 문의 상태를 확인해 주세요.');
++      db.exec('BEGIN IMMEDIATE');
++      try {
++        const current = requireRow(publicId);
++        const allowed = current.status === 'NEW' ? ['CONTACTED', 'CLOSED'] : current.status === 'CONTACTED' ? ['CLOSED'] : [];
++        if (!allowed.includes(next)) throw new ProjectInquiryError(409, 'INVALID_PROJECT_INQUIRY_ACTION', '현재 상태에서는 처리할 수 없습니다.');
++        const at = nowIso();
++        db.prepare('UPDATE project_inquiries SET status=?,updated_at=? WHERE id=?').run(next, at, current.id);
++        db.prepare('INSERT INTO project_inquiry_audits(inquiry_id,actor,action,from_status,to_status,created_at) VALUES(?,?,?,?,?,?)').run(current.id, text(actor, 80), 'STATUS_CHANGE', current.status, next, at);
++        db.exec('COMMIT');
++        return row({ ...current, status: next, updated_at: at });
++      } catch (error) {
++        db.exec('ROLLBACK');
++        throw error;
++      }
++    },
++    count() { return Number(db.prepare('SELECT COUNT(*) AS count FROM project_inquiries').get().count); },
++    close() { db.close(); }
++  };
++}
++
++async function readBody(req) {
++  let size = 0;
++  const chunks = [];
++  for await (const chunk of req) {
++    size += chunk.length;
++    if (size > BODY_LIMIT) throw new ProjectInquiryError(413, 'BODY_TOO_LARGE', '문의 내용이 너무 큽니다.');
++    chunks.push(chunk);
++  }
++  if (!chunks.length) return {};
++  try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
++  catch { throw new ProjectInquiryError(400, 'INVALID_JSON', '요청 형식을 확인해

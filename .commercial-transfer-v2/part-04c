@@ -1,0 +1,107 @@
+illAgentSelect(el.newAgent, el.newAgent?.value || '');
+       if (!preserveSelection || !state.items.some(user => user.id === state.selectedId)) {
+         state.selectedId = state.items.find(user => user.id === currentUserId)?.id || state.items[0]?.id || null;
+       }
+@@ -127,6 +143,7 @@ export function mountTeamAdmin({ adapter, currentUserId }) {
+       await adapter.updateUser(user.id, {
+         name: String(el.name?.value || '').trim(),
+         team: String(el.team?.value || '').trim(),
++        agentId: el.agent?.value ? Number(el.agent.value) : null,
+         role: String(el.role?.value || 'STAFF'),
+         active: Boolean(el.active?.checked)
+       });
+@@ -164,6 +181,7 @@ export function mountTeamAdmin({ adapter, currentUserId }) {
+       username: String(el.newUsername?.value || '').trim(),
+       name: String(el.newName?.value || '').trim(),
+       team: String(el.newTeam?.value || '').trim(),
++      agentId: el.newAgent?.value ? Number(el.newAgent.value) : null,
+       role: String(el.newRole?.value || 'STAFF'),
+       password: String(el.newPassword?.value || '')
+     };
+diff --git a/index.html b/index.html
+index c73caa4..b33a49f 100644
+--- a/index.html
++++ b/index.html
+@@ -18,6 +18,7 @@
+   <link rel="stylesheet" href="./home-alignment.css">
+   <link rel="stylesheet" href="./home-balance.css">
+   <link rel="stylesheet" href="./home-domain.css">
++  <link rel="stylesheet" href="./commercial-portfolio.css">
+   <style>.skip-link{position:absolute;left:16px;top:-56px;z-index:100;padding:10px 14px;border-radius:8px;background:#0b1f33;color:#fff;font-weight:800}.skip-link:focus{top:12px}a:focus-visible,button:focus-visible{outline:3px solid rgba(37,99,235,.38);outline-offset:3px}</style>
+ </head>
+ <body>
+@@ -244,14 +245,20 @@
+             <p>기술 인터뷰, 개발 포지션, 프로젝트 협업에 필요한 역할과 범위를 남길 수 있습니다.</p>
+             <a href="https://github.com/Kzone87/portfolio/issues/new?template=hiring.yml" target="_blank" rel="noreferrer">채용·협업 문의 ↗</a>
+           </article>
+-          <article>
++          <article class="commercial-contact-card">
+             <span>프로젝트</span>
+             <h3>외주·구축 상담</h3>
+-            <p>관리자 시스템, 데이터 자동화, 기업 홈페이지와 내부 운영도구 구축 범위를 남길 수 있습니다.</p>
+-            <a href="https://github.com/Kzone87/portfolio/issues/new?template=project-inquiry.yml" target="_blank" rel="noreferrer">프로젝트 문의 ↗</a>
++            <p>업무 시스템, 데이터 자동화, 기업 홈페이지와 내부 운영도구의 범위·일정·인수기준을 구조화해 상담할 수 있습니다.</p>
++            <a href="./project-inquiry/">프로젝트 의뢰서 작성 →</a>
+           </article>
+         </div>
+-        <p class="contact-note">※ GitHub 공개 이슈로 연결됩니다. 회사 기밀·고객 정보·계정 정보·개인 연락처 등 민감한 내용은 작성하지 마세요.</p>
++        <div class="delivery-process" aria-label="프로젝트 진행 절차">
++          <div><b>01</b><strong>요구사항 확인</strong><span>현재 업무와 해결할 문제를 정리합니다.</span></div>
++          <div><b>02</b><strong>범위·견적 확정</strong><span>화면, 데이터, 권한, 예외와 인수기준을 합의합니다.</span></div>
++          <div><b>03</b><strong>개발·검수</strong><span>중간 확인과 테스트를 거쳐 실제 업무 흐름을 검증합니다.</span></div>
++          <div><b>04</b><strong>배포·인수인계</strong><span>운영환경, 백업, 계정과 유지관리 기준까지 넘깁니다.</span></div>
++        </div>
++        <p class="contact-note">프로젝트 의뢰서는 비공개 endpoint를 연결할 수 있는 구조입니다. 현재 공개 포트폴리오에서 민감한 내용을 남기지 않으려면 상세정보 없이 <a href="https://github.com/Kzone87/portfolio/issues/new?template=project-inquiry.yml" target="_blank" rel="noreferrer">공개 1차 문의</a>만 남겨 주세요.</p>
+       </div>
+       <div class="contact-foot"><span>포트폴리오의 브랜드·기업·데이터는 공개 시연을 위해 구성한 가상 사례입니다.</span><a href="#top">맨 위로 ↑</a></div>
+     </div>
+@@ -260,5 +267,6 @@
+ 
+ <footer><div class="shell footer-inner"><span>© 2026 KZONE87 · Full-stack Web Developer</span><span>Live products · Source · Tests · CI</span></div></footer>
+ <script src="./home-motion.js" defer></script>
++<script src="./commercial-portfolio.js" defer></script>
+ </body>
+ </html>
+\ No newline at end of file
+diff --git a/nexa-service-domain/app.js b/nexa-service-domain/app.js
+index 7561131..f4219f4 100644
+--- a/nexa-service-domain/app.js
++++ b/nexa-service-domain/app.js
+@@ -48,6 +48,8 @@ const demoRequest = {
+ };
+ 
+ const ACTION_LABELS = Object.freeze({ MESSAGE: '추가 문의', RESCHEDULE: '일정 변경 요청', CANCEL: '방문 취소 요청' });
++const actionDisplayLabel = item => item?.type === 'MESSAGE' && String(item?.note || '').startsWith('[재방문 요청]') ? '재방문 요청' : (ACTION_LABELS[item?.type] || '고객 요청');
++const actionDisplayNote = item => String(item?.note || '').replace(/^\[재방문 요청\]\s*/, '');
+ const ACTION_STATES = Object.freeze({ OPEN: '처리 대기', RESOLVED: '처리 완료', REJECTED: '안내 완료' });
+ 
+ function text(id, value) {
+@@ -164,12 +166,12 @@ function renderCustomerActions(data) {
+       const article = document.createElement('article');
+       article.className = 'customer-action-item';
+       const strong = document.createElement('strong');
+-      strong.textContent = ACTION_LABELS[item.type] || '고객 요청';
++      strong.textContent = actionDisplayLabel(item);
+       const state = document.createElement('span');
+       state.className = `customer-action-state ${item.state || 'OPEN'}`;
+       state.textContent = ACTION_STATES[item.state] || item.state || '처리 대기';
+       const detail = document.createElement('p');
+-      detail.textContent = `${item.preferredAt ? `희망시간 ${item.preferredAt} · ` : ''}${item.note || ''}`;
++      detail.textContent = `${item.preferredAt ? `희망시간 ${item.preferredAt} · ` : ''}${actionDisplayNote(item)}`;
+       const time = document.createElement('small');
+       time.textContent = `요청 ${shortDateTime(item.createdAt)}`;
+       article.append(strong, state, detail, time);
+@@ -408,3 +410,7 @@ syncActionForm();
+ if (linkedRequestId && remembered?.requestId === linkedRequestId && remembered.phone) {
+   queueMicrotask(() => form?.requestSubmit());
+ }
++
++window.NEXA_PORTAL_RENDER = render;
++window.NEXA_PORTAL_DEMO_REQUEST = demoRequest;
++window.NEXA_PORTAL_LOOKUP = lookup;
+diff --git a/nexa-service-domain/index.html b/nexa-service-domain/index.html
+index a0d80ff..e89842d 100644
+--- a/nexa-service-domain/index.html
++++ b/nexa-service-domain/index.html
+@@ -13,6 +13,7 @@
+   <title>서비스 
