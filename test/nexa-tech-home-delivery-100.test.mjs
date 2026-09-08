@@ -7,6 +7,7 @@ const scopeJs = readFileSync(new URL('../nexa-tech-service/commercial-scope.js',
 const scopeCss = readFileSync(new URL('../nexa-tech-service/commercial-scope.css', import.meta.url), 'utf8');
 const build = readFileSync(new URL('../scripts/nexa-build-delivery.mjs', import.meta.url), 'utf8');
 const envExample = readFileSync(new URL('../deploy/nexa.env.example', import.meta.url), 'utf8');
+const runbook = readFileSync(new URL('../NEXA_DELIVERY_RUNBOOK.md', import.meta.url), 'utf8');
 
 test('NEXA TECH home keeps customer-critical navigation and contract boundaries usable without JavaScript', () => {
   assert.match(home, /href="\.\.\/nexa-service-domain\/" data-service-status>진행 조회<\/a>/);
@@ -34,6 +35,17 @@ test('public demo stays honest while delivery build has explicit real-company in
   assert.match(build, /company-profile-section/);
   assert.match(envExample, /NEXA_PUBLIC_SITE_ORIGIN=/);
   assert.match(envExample, /NEXA_COMPANY_PROFILE_FILE=/);
+});
+
+test('handover runbook requires the same real-domain and company-profile inputs as the delivery build', () => {
+  for (const key of ['NEXA_PUBLIC_API_ORIGIN','NEXA_OPS_API_ORIGIN','NEXA_CUSTOMER_SECURE_ORIGIN','NEXA_PUBLIC_SITE_ORIGIN','NEXA_COMPANY_PROFILE_FILE','NEXA_DELIVERY_DIR']) {
+    assert.match(runbook, new RegExp(key));
+  }
+  assert.match(runbook, /실제 고객 도메인/);
+  assert.match(runbook, /사업자등록번호/);
+  assert.match(runbook, /개인정보 처리방침 URL/);
+  assert.match(runbook, /Organization JSON-LD/);
+  assert.doesNotMatch(runbook, /이뮔일|이뮔지/);
 });
 
 test('delivery-only company facts and contact actions are responsive and keyboard-visible', () => {
