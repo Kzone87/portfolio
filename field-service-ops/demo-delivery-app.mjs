@@ -40,7 +40,10 @@ const demoInquiries = [
     createdAt: '2026-09-07T08:03:00.000Z',
     updatedAt: '2026-09-07T08:03:00.000Z',
     handoff: null,
-    audits: []
+    customerActions: [
+      { id: 101, type: 'MESSAGE', state: 'OPEN', note: '검정 출력에서 줄이 더 선명해졌습니다. 기사님께 같이 전달해 주세요.', preferredAt: '', resolution: '', createdAt: '2026-09-08T08:20:00.000Z', resolvedAt: null }
+    ],
+    audits: [{ action: 'CUSTOMER_MESSAGE_REQUESTED', actor: 'customer', createdAt: '2026-09-08T08:20:00.000Z' }]
   },
   {
     id: 'NX-260907-0188',
@@ -60,6 +63,7 @@ const demoInquiries = [
     createdAt: '2026-09-07T06:15:00.000Z',
     updatedAt: '2026-09-07T07:10:00.000Z',
     handoff: null,
+    customerActions: [],
     audits: [{ action: 'STATUS_CHANGE', actor: 'ops-admin', toStatus: 'CONTACTED', createdAt: '2026-09-07T07:10:00.000Z' }]
   },
   {
@@ -80,8 +84,12 @@ const demoInquiries = [
     createdAt: '2026-09-06T05:30:00.000Z',
     updatedAt: '2026-09-07T04:40:00.000Z',
     handoff: { state: 'COMPLETED', fieldJobId: 4, address: '서울 영등포구 시장로 44', summary: '최종 가동 상태 확인', priority: 'NORMAL' },
+    customerActions: [
+      { id: 88, type: 'MESSAGE', state: 'RESOLVED', note: '작업 결과를 본사 담당자에게도 안내해 주세요.', preferredAt: '', resolution: '작업 완료 내용을 본사 담당자에게 안내했습니다.', createdAt: '2026-09-07T03:30:00.000Z', resolvedAt: '2026-09-07T04:10:00.000Z' }
+    ],
     audits: [
       { action: 'VISIT_REQUEST_CREATED', actor: 'ops-admin', createdAt: '2026-09-06T07:00:00.000Z' },
+      { action: 'CUSTOMER_ACTION_RESOLVED', actor: 'ops-admin', createdAt: '2026-09-07T04:10:00.000Z' },
       { action: 'STATUS_CHANGE', actor: 'ops-admin', toStatus: 'CLOSED', createdAt: '2026-09-07T04:40:00.000Z' }
     ]
   }
@@ -120,9 +128,23 @@ const demoInquiryAdapter = {
     item.audits.push({ action: 'VISIT_REQUEST_CREATED', actor: CURRENT_USER.id, createdAt: item.updatedAt });
     return { inquiry: clone(item), handoff: clone(item.handoff), fieldJob: { id: 3 } };
   },
+  async resolveCustomerAction(id, actionId, decision, resolution) {
+    const item = requireInquiry(id);
+    const action = (item.customerActions || []).find(entry => entry.id === Number(actionId));
+    if (!action) throw new Error('고객 요청을 찾을 수 없습니다.');
+    if (action.state !== 'OPEN') throw new Error('이미 처리된 고객 요청입니다.');
+    if (String(resolution || '').trim().length < 2) throw new Error('고객에게 안내할 처리 내용을 입력해 주세요.');
+    action.state = decision === 'REJECTED' ? 'REJECTED' : 'RESOLVED';
+    action.resolution = String(resolution).trim();
+    action.resolvedAt = now();
+    item.updatedAt = action.resolvedAt;
+    item.audits.push({ action: action.state === 'RESOLVED' ? 'CUSTOMER_ACTION_RESOLVED' : 'CUSTOMER_ACTION_REJECTED', actor: CURRENT_USER.id, createdAt: action.resolvedAt });
+    return clone(action);
+  },
   async close(id, expectedVersion) {
     const item = requireInquiry(id); version(item, expectedVersion);
     if (item.status === 'CLOSED') throw new Error('이미 종료된 상담입니다.');
+    if ((item.customerActions || []).some(action => action.state === 'OPEN')) throw new Error('처리되지 않은 고객 요청이 남아 있습니다.');
     item.status = 'CLOSED'; item.version += 1; item.updatedAt = now();
     item.audits.push({ action: 'STATUS_CHANGE', actor: CURRENT_USER.id, toStatus: 'CLOSED', createdAt: item.updatedAt });
     return clone(item);
