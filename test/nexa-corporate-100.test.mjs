@@ -130,12 +130,10 @@ test('NEXA customer service is a functional request portal rather than portfolio
 });
 
 test('field operations is a signed-in staff workspace, not a tutorial or role-switching demo', () => {
-  for (const phrase of ['NEXA SERVICE OPERATIONS','직원 전용 · 배차 / 현장 운영','9월 7일 배차 현황','운영 기준일','서울 운영팀','김현수','운영 관리자','기사별 일정','방문 요청','우선 확인할 항목','최근 변경 이력','작업 상태']) assert.ok(fieldOps.includes(phrase), `field ops missing ${phrase}`);
+  for (const phrase of ['NEXA SERVICE OPERATIONS','직원 전용 · 상담 / 배차 / 현장 운영','상담 접수함','9월 7일 배차 현황','운영 기준일','서울 운영팀','김현수','운영 관리자','기사별 일정','방문 요청','우선 확인할 항목','최근 변경 이력','작업 상태']) assert.ok(fieldOps.includes(phrase), `field ops missing ${phrase}`);
   assert.doesNotMatch(fieldOps, /← 프로젝트|포트폴리오|고객용 홈페이지 보기|프로젝트 설명|이 시스템은|id="role"|현재 역할/);
-  assert.match(fieldOpsApp, /CURRENT_USER/);
-  assert.match(fieldOpsApp, /scheduleWindowError/);
-  assert.match(fieldOpsApp, /window\.confirm/);
-  assert.match(fieldOpsApp, /friendlyError/);
+  assert.match(fieldOpsApp, /NEXA_OPS_CONFIG/);
+  assert.match(fieldOpsApp, /demo-delivery-app\.mjs/);
   assert.doesNotMatch(fieldOpsApp, /el\.role\.addEventListener/);
 });
 
