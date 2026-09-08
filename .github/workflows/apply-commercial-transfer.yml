@@ -59,12 +59,13 @@ jobs:
           secure_diff.extend('+' + line for line in lines)
           repaired = raw[:start] + '\n'.join(secure_diff) + '\n' + raw[end:]
           repaired = repaired.replace(';+}\n+\n+async function render() {', ';\n+}\n+\n+async function render() {')
+          repaired = repaired.replace('\n        );\n+        audit(job, \'FIELD_REPORT\'', '\n+        );\n+        audit(job, \'FIELD_REPORT\'')
           repaired = repaired.replace('\n}\ndiff --git a/field-service-ops/server/store.mjs', '\n }\ndiff --git a/field-service-ops/server/store.mjs')
           pathlib.Path('/tmp/nexa-commercial.patch').write_text(repaired, encoding='utf-8')
           PY
           if ! git apply --check /tmp/nexa-commercial.patch; then
-            echo '--- PATCH CONTEXT 800-1100 ---'
-            nl -ba /tmp/nexa-commercial.patch | sed -n '800,1100p'
+            echo '--- PATCH CONTEXT 900-1250 ---'
+            nl -ba /tmp/nexa-commercial.patch | sed -n '900,1250p'
             exit 1
           fi
       - name: Apply verified commercial source
