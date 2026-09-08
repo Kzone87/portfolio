@@ -1,0 +1,30 @@
+name: Fix NEXA runbook Korean
+
+on:
+  push:
+    branches:
+      - upgrade/nexa-tech-home-delivery-100
+    paths:
+      - '.github/workflows/fix-nexa-runbook-korean.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: upgrade/nexa-tech-home-delivery-100
+      - name: Fix Korean words
+        run: |
+          sed -i 's/이뮔일/이메일/g; s/이뮔지/이미지/g' NEXA_DELIVERY_RUNBOOK.md
+      - name: Commit and remove one-time workflow
+        run: |
+          rm .github/workflows/fix-nexa-runbook-korean.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add NEXA_DELIVERY_RUNBOOK.md .github/workflows/fix-nexa-runbook-korean.yml
+          git commit -m 'Fix NEXA delivery runbook Korean'
+          git push origin HEAD:upgrade/nexa-tech-home-delivery-100
