@@ -32,12 +32,14 @@ jobs:
           python - <<'PY'
           import base64, json, os, pathlib, urllib.request
           raw = pathlib.Path('/tmp/nexa-commercial-raw.patch').read_text(encoding='utf-8')
+
+          # Replace the incomplete secure-access.js transport segment with its already-verified Git blob.
           start_marker = 'diff --git a/nexa-service-domain/secure-access.js b/nexa-service-domain/secure-access.js'
           next_marker = 'diff --git a/nexa-tech-service/cases.html b/nexa-tech-service/cases.html'
           start = raw.find(start_marker)
           end = raw.find(next_marker)
           if start < 0 or end < 0 or end <= start:
-              raise SystemExit('commercial patch repair markers not found')
+              raise SystemExit('secure access repair markers not found')
           url = 'https://api.github.com/repos/Kzone87/portfolio/git/blobs/bc2a7cba5852ec6f0b0c617192bee0b81869378d'
           req = urllib.request.Request(url, headers={
               'Authorization': f"Bearer {os.environ['GH_TOKEN']}",
@@ -50,7 +52,7 @@ jobs:
           secure = base64.b64decode(payload['content']).decode('utf-8')
           lines = secure.splitlines()
           secure_diff = [
-              'diff --git a/nexa-service-domain/secure-access.js b/nexa-service-domain/secure-access.js',
+              start_marker,
               'new file mode 100644',
               '--- /dev/null',
               '+++ b/nexa-service-domain/secure-access.js',
@@ -58,14 +60,35 @@ jobs:
           ]
           secure_diff.extend('+' + line for line in lines)
           repaired = raw[:start] + '\n'.join(secure_diff) + '\n' + raw[end:]
+
+          # Repair two transport-boundary newline/prefix losses.
           repaired = repaired.replace(';+}\n+\n+async function render() {', ';\n+}\n+\n+async function render() {')
-          repaired = repaired.replace('\n        );\n+        audit(job, \'FIELD_REPORT\'', '\n+        );\n+        audit(job, \'FIELD_REPORT\'')
-          repaired = repaired.replace('\n}\ndiff --git a/field-service-ops/server/store.mjs', '\n }\ndiff --git a/field-service-ops/server/store.mjs')
+          sqlite_start = repaired.find('diff --git a/field-service-ops/server/sqlite-store.mjs b/field-service-ops/server/sqlite-store.mjs')
+          sqlite_end = repaired.find('diff --git a/field-service-ops/server/store.mjs b/field-service-ops/server/store.mjs')
+          if sqlite_start < 0 or sqlite_end < 0:
+              raise SystemExit('sqlite repair markers not found')
+          sqlite = repaired[sqlite_start:sqlite_end]
+          sqlite_lines = sqlite.splitlines()
+          for i, line in enumerate(sqlite_lines[:-1]):
+              if line.strip() == ');' and "audit(job, 'FIELD_REPORT'" in sqlite_lines[i + 1] and not line.startswith('+'):
+                  sqlite_lines[i] = '+' + line
+          if sqlite_lines and sqlite_lines[-1] == '}':
+              sqlite_lines[-1] = ' }'
+          repaired = repaired[:sqlite_start] + '\n'.join(sqlite_lines) + '\n' + repaired[sqlite_end:]
+
+          # The transported team-admin diff is duplicated at a missing chunk boundary.
+          # Exclude that entire diff and apply the intended change from the clean base file below.
+          team_start = repaired.find('diff --git a/field-service-ops/team-admin.mjs b/field-service-ops/team-admin.mjs')
+          team_end = repaired.find('diff --git a/index.html b/index.html')
+          if team_start < 0 or team_end < 0 or team_end <= team_start:
+              raise SystemExit('team admin repair markers not found')
+          repaired = repaired[:team_start] + repaired[team_end:]
+
           pathlib.Path('/tmp/nexa-commercial.patch').write_text(repaired, encoding='utf-8')
           PY
           if ! git apply --check /tmp/nexa-commercial.patch; then
-            echo '--- PATCH CONTEXT 900-1250 ---'
-            nl -ba /tmp/nexa-commercial.patch | sed -n '900,1250p'
+            echo '--- PATCH FAILURE CONTEXT ---'
+            git apply --check --verbose /tmp/nexa-commercial.patch || true
             exit 1
           fi
       - name: Apply verified commercial source
@@ -75,6 +98,8 @@ jobs:
           git apply /tmp/nexa-commercial.patch
           python - <<'PY'
           from pathlib import Path
+
+          # about.html was truncated at a transport boundary; apply the intended presentation changes explicitly.
           path = Path('nexa-tech-service/about.html')
           text = path.read_text(encoding='utf-8')
           if './commercial-scope.css' not in text:
@@ -82,6 +107,23 @@ jobs:
           text = text.replace('<span>NEXA TECH<small>', '<span>NEXA TECH SERVICE<small>')
           if './commercial-scope.js' not in text:
               text = text.replace('<script src="./app.js"></script>', '<script src="./app.js"></script>\n<script src="./commercial-scope.js"></script>')
+          path.write_text(text, encoding='utf-8')
+
+          # Rebuild team-admin agent mapping from the clean file instead of the corrupted transported diff.
+          path = Path('field-service-ops/team-admin.mjs')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace("    team: $('team-team'),\n    role:", "    team: $('team-team'),\n    agent: $('team-agent'),\n    role:")
+          text = text.replace("    newTeam: $('new-user-team'),\n    newRole:", "    newTeam: $('new-user-team'),\n    newAgent: $('new-user-agent'),\n    newRole:")
+          text = text.replace("const state = { items: [], selectedId: null, audits: [] };", "const state = { items: [], selectedId: null, audits: [], agents: [] };")
+          text = text.replace("node('p', '', `${user.username} · ${user.team || '운영팀'}`),", "node('p', '', `${user.username} · ${user.team || '운영팀'}${user.agentId ? ` · ${state.agents.find(agent => Number(agent.id) === Number(user.agentId))?.name || `기사 #${user.agentId}`}` : ''}`),")
+          marker = "  function renderDetail() {\n"
+          fill = "  function fillAgentSelect(select, selectedValue = '') {\n    if (!select) return;\n    const current = String(selectedValue || '');\n    select.replaceChildren();\n    const none = document.createElement('option'); none.value = ''; none.textContent = '운영/배차 전용'; select.append(none);\n    for (const agent of state.agents.filter(item => item.active !== false)) {\n      const option = document.createElement('option'); option.value = String(agent.id); option.textContent = `${agent.name}${agent.region ? ` · ${agent.region}` : ''}`; select.append(option);\n    }\n    if ([...select.options].some(option => option.value === current)) select.value = current;\n  }\n\n"
+          if 'function fillAgentSelect' not in text:
+              text = text.replace(marker, fill + marker)
+          text = text.replace("    if (el.team) el.team.value = user.team || '';\n    if (el.role)", "    if (el.team) el.team.value = user.team || '';\n    fillAgentSelect(el.agent, user.agentId || '');\n    if (el.role)")
+          text = text.replace("const [users, audits] = await Promise.all([adapter.listUsers(), adapter.authAudits()]);\n      state.items = users.items || [];\n      state.audits = audits.items || [];", "const [users, audits, agents] = await Promise.all([adapter.listUsers(), adapter.authAudits(), adapter.listAgents ? adapter.listAgents() : Promise.resolve({ items: [] })]);\n      state.items = users.items || [];\n      state.audits = audits.items || [];\n      state.agents = agents.items || [];\n      fillAgentSelect(el.newAgent, el.newAgent?.value || '');")
+          text = text.replace("        team: String(el.team?.value || '').trim(),\n        role:", "        team: String(el.team?.value || '').trim(),\n        agentId: el.agent?.value ? Number(el.agent.value) : null,\n        role:")
+          text = text.replace("      team: String(el.newTeam?.value || '').trim(),\n      role:", "      team: String(el.newTeam?.value || '').trim(),\n      agentId: el.newAgent?.value ? Number(el.newAgent.value) : null,\n      role:")
           path.write_text(text, encoding='utf-8')
           PY
           rm -rf .commercial-transfer-v2
