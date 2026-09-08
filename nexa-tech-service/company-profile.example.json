@@ -1,0 +1,14 @@
+{
+  "brandName": "고객사 상호",
+  "brandMark": "K",
+  "legalName": "고객사 법인·사업자명",
+  "representative": "대표자명",
+  "businessNumber": "000-00-00000",
+  "address": "실제 사업장 주소",
+  "phone": "02-0000-0000",
+  "email": "service@example.com",
+  "businessHours": "실제 운영시간",
+  "serviceRegion": "실제 서비스 가능 지역",
+  "privacyUrl": "https://example.com/privacy",
+  "ogImageUrl": "https://example.com/og-image.png"
+}

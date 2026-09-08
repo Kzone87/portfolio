@@ -116,14 +116,34 @@ Service Operations API
 
 ## 7. Build public web package
 
-고객/직원 브라우저에 공개할 정적 파일은 repository 전체가 아니라 delivery build로 생성합니다.
+고객/직원 브라우저에 공개할 정적 파일은 repository 전체가 아니라 delivery build로 생성합니다. 실제 고객 납품 build는 API 주소뿐 아니라 **실제 고객 도메인과 공개 회사정보 파일을 필수 입력**으로 요구합니다. 둘 중 하나라도 빠지거나 유효하지 않으면 build가 실패합니다.
+
+`nexa-tech-service/company-profile.example.json`을 복사해 고객사가 확인한 공개정보로 작성하되, 실제 고객정보 파일은 source control 밖의 배포 설정 경로에 둡니다.
+
+필수 공개 회사정보:
+
+- 상호/브랜드명과 브랜드 마크
+- 법인·사업자명
+- 대표자명
+- 사업자등록번호
+- 사업장 주소
+- 대표 전화와 이메일
+- 실제 운영시간
+- 실제 서비스 가능 지역
+- 개인정보 처리방침 URL
+- 선택: OG 공유 이미지 URL
 
 ```bash
 NEXA_PUBLIC_API_ORIGIN=https://service.example.com \
 NEXA_OPS_API_ORIGIN=https://ops.example.com \
+NEXA_CUSTOMER_SECURE_ORIGIN=https://service.example.com \
+NEXA_PUBLIC_SITE_ORIGIN=https://service.example.com \
+NEXA_COMPANY_PROFILE_FILE=/srv/nexa/app/deploy/company-profile.json \
 NEXA_DELIVERY_DIR=/srv/nexa/web \
 npm run build:nexa-delivery
 ```
+
+build는 TECH SERVICE 7개 페이지의 가상 브랜드 고지를 실제 고객의 법적 Footer로 교체하고, HOME에는 회사·운영 정보 영역을 생성합니다. 또한 실제 고객 도메인으로 canonical/OG URL을 바꾸고 Organization JSON-LD를 생성합니다. 공개 GitHub Pages 원본은 계속 fictional NEXA 고지를 유지하므로 실제 고객정보를 공개 포트폴리오에 섞지 않습니다.
 
 빌드 결과에는:
 
@@ -132,6 +152,7 @@ npm run build:nexa-delivery
 - 직원 Operations UI
 - API endpoint runtime config
 - 공용 UI dictionary
+- 고객이 확인한 공개 회사정보가 반영된 기업사이트 HTML
 
 만 포함됩니다.
 
@@ -142,10 +163,10 @@ npm run build:nexa-delivery
 - scripts
 - public demo application/data
 - credentials
+- `company-profile.example.json`
+- 실제 company profile 원본 JSON
 
-API endpoint는 URL만 포함합니다. 브라우저용 config에 password/token을 넣지 않습니다.
-
-NEXA는 공개 포트폴리오용 fictional brand이므로 실제 고객 납품 전 회사명, 법적 고지, 연락처, 서비스 범위와 개인정보 문구는 발주사의 실제 정보로 교체해야 합니다.
+API endpoint는 URL만 포함합니다. 브라우저용 config에 password/token을 넣지 않습니다. 고객 개인정보나 secret은 company profile에 넣지 말고 공개 가능한 사업자/연락 정보만 사용합니다.
 
 ## 8. Reverse proxy and TLS
 
