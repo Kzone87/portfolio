@@ -11,7 +11,22 @@ const HANDOFF_LABELS = Object.freeze({
 const AUDIT_LABELS = Object.freeze({
   STATUS_CHANGE: '상담 상태 변경',
   VISIT_REQUEST_PREPARED: '방문 요청 준비',
-  VISIT_REQUEST_CREATED: '현장 운영 전달'
+  VISIT_REQUEST_CREATED: '현장 운영 전달',
+  CUSTOMER_MESSAGE_REQUESTED: '고객 추가 문의',
+  CUSTOMER_RESCHEDULE_REQUESTED: '고객 일정 변경 요청',
+  CUSTOMER_CANCEL_REQUESTED: '고객 방문 취소 요청',
+  CUSTOMER_ACTION_RESOLVED: '고객 요청 처리 완료',
+  CUSTOMER_ACTION_REJECTED: '고객 요청 안내 완료'
+});
+const CUSTOMER_ACTION_LABELS = Object.freeze({
+  MESSAGE: '추가 문의',
+  RESCHEDULE: '일정 변경 요청',
+  CANCEL: '방문 취소 요청'
+});
+const CUSTOMER_ACTION_STATES = Object.freeze({
+  OPEN: '처리 대기',
+  RESOLVED: '처리 완료',
+  REJECTED: '안내 완료'
 });
 
 const node = (tag, cls = '', text = '') => {
@@ -53,6 +68,7 @@ export function mountInquiryDesk({ adapter, principal, onVisitCreated = () => {}
     context: $('inquiry-context'),
     copy: $('inquiry-detail-copy'),
     handoff: $('inquiry-handoff'),
+    customerActions: $('inquiry-customer-actions'),
     audits: $('inquiry-audits'),
     message: $('inquiry-message'),
     contacted: $('inquiry-contacted'),
@@ -73,13 +89,22 @@ export function mountInquiryDesk({ adapter, principal, onVisitCreated = () => {}
     el.message.dataset.error = error ? 'true' : 'false';
   }
 
+  function openCustomerActions(item) {
+    return (item?.customerActions || []).filter(action => action.state === 'OPEN');
+  }
+
   function visibleItems() {
     const query = String(el.search?.value || '').trim().toLowerCase();
     const status = String(el.statusFilter?.value || '');
     return state.items.filter(item => !status || item.status === status).filter(item => {
       if (!query) return true;
-      return [item.id, item.company, item.name, item.phone, item.service, item.detail]
+      const actionText = (item.customerActions || []).map(action => `${action.note} ${action.preferredAt} ${action.resolution}`).join(' ');
+      return [item.id, item.company, item.name, item.phone, item.service, item.detail, actionText]
         .some(value => String(value || '').toLowerCase().includes(query));
+    }).sort((a, b) => {
+      const actionPressure = openCustomerActions(b).length - openCustomerActions(a).length;
+      if (actionPressure) return actionPressure;
+      return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
     });
   }
 
@@ -91,7 +116,10 @@ export function mountInquiryDesk({ adapter, principal, onVisitCreated = () => {}
       button.type = 'button';
       button.setAttribute('aria-label', `${item.company} ${STATUS_LABELS[item.status] || item.status}`);
       const head = node('div', 'inquiry-card-head');
-      head.append(node('strong', '', item.company), node('span', `inquiry-state ${item.status}`, STATUS_LABELS[item.status] || item.status));
+      const title = node('strong', '', item.company);
+      const openCount = openCustomerActions(item).length;
+      if (openCount) title.append(node('span', 'inquiry-card-action-count', `고객요청 ${openCount}`));
+      head.append(title, node('span', `inquiry-state ${item.status}`, STATUS_LABELS[item.status] || item.status));
       button.append(
         head,
         node('p', '', item.detail || item.service || '상담 내용 확인'),
@@ -106,7 +134,7 @@ export function mountInquiryDesk({ adapter, principal, onVisitCreated = () => {}
   function renderAudits() {
     if (!el.audits) return;
     el.audits.replaceChildren();
-    for (const audit of state.audits.slice(0, 12)) {
+    for (const audit of state.audits.slice(0, 16)) {
       const row = node('article', 'inquiry-audit-row');
       const title = AUDIT_LABELS[audit.action] || (audit.toStatus ? `${STATUS_LABELS[audit.toStatus] || audit.toStatus}` : '상담 변경');
       row.append(node('strong', '', title), node('span', '', `${audit.actor || 'system'} · ${fmt(audit.createdAt)}`));
@@ -119,6 +147,70 @@ export function mountInquiryDesk({ adapter, principal, onVisitCreated = () => {}
     const div = node('div');
     div.append(node('dt', '', label), node('dd', '', value));
     return div;
+  }
+
+  async function decideCustomerAction(action, decision, resolutionInput) {
+    const item = state.selected;
+    if (!item || !action) return;
+    const resolution = String(resolutionInput?.value || '').trim();
+    if (resolution.length < 2) {
+      message('고객에게 안내할 처리 결과를 2자 이상 입력해 주세요.', true);
+      resolutionInput?.focus();
+      return;
+    }
+    if (decision === 'REJECTED' && !window.confirm('이 고객 요청을 처리 불가/안내 완료로 기록하시겠습니까?')) return;
+    message('');
+    try {
+      await adapter.resolveCustomerAction(item.id, action.id, decision, resolution);
+      message(decision === 'RESOLVED' ? '고객 요청을 처리 완료했습니다.' : '고객 요청에 처리 결과를 안내했습니다.');
+      await refresh();
+    } catch (error) {
+      message(safeError(error, '고객 요청 처리 결과를 저장하지 못했습니다.'), true);
+    }
+  }
+
+  function renderCustomerActions() {
+    if (!el.customerActions) return;
+    const actions = state.selected?.customerActions || [];
+    el.customerActions.replaceChildren();
+    if (!actions.length) {
+      el.customerActions.append(node('div', 'customer-action-none', '현재 고객이 추가로 남긴 요청이 없습니다.'));
+      return;
+    }
+    for (const action of actions) {
+      const row = node('article', 'customer-action-row');
+      const head = node('div', 'customer-action-row-head');
+      head.append(
+        node('strong', '', CUSTOMER_ACTION_LABELS[action.type] || '고객 요청'),
+        node('span', `customer-action-status ${action.state}`, CUSTOMER_ACTION_STATES[action.state] || action.state)
+      );
+      row.append(head, node('small', '', fmt(action.createdAt)));
+      const detail = `${action.preferredAt ? `희망 방문시간: ${action.preferredAt}\n` : ''}${action.note || ''}`;
+      row.append(node('p', '', detail));
+      if (action.state === 'OPEN') {
+        const form = node('div', 'customer-action-resolution-form');
+        const input = node('input');
+        input.type = 'text';
+        input.maxLength = 1000;
+        input.placeholder = action.type === 'RESCHEDULE'
+          ? '배차 탭에서 일정 변경 후 고객 안내 내용을 입력'
+          : action.type === 'CANCEL'
+            ? '배차 탭에서 취소 처리 후 고객 안내 내용을 입력'
+            : '고객에게 안내할 답변 또는 처리 내용을 입력';
+        input.setAttribute('aria-label', `${CUSTOMER_ACTION_LABELS[action.type] || '고객 요청'} 처리 결과`);
+        const resolve = node('button', 'resolve', '처리 완료');
+        resolve.type = 'button';
+        resolve.addEventListener('click', () => decideCustomerAction(action, 'RESOLVED', input));
+        const reject = node('button', 'reject', '처리 불가');
+        reject.type = 'button';
+        reject.addEventListener('click', () => decideCustomerAction(action, 'REJECTED', input));
+        form.append(input, resolve, reject);
+        row.append(form);
+      } else if (action.resolution) {
+        row.append(node('p', 'customer-action-result', `고객 안내: ${action.resolution}`));
+      }
+      el.customerActions.append(row);
+    }
   }
 
   function renderDetail() {
@@ -164,12 +256,16 @@ export function mountInquiryDesk({ adapter, principal, onVisitCreated = () => {}
       }
     }
 
+    renderCustomerActions();
     const canContact = item.status === 'PENDING';
     const canVisit = item.status === 'CONTACTED' && !item.handoff;
-    const canClose = item.status !== 'CLOSED';
+    const canClose = item.status !== 'CLOSED' && openCustomerActions(item).length === 0;
     if (el.contacted) el.contacted.disabled = !canContact;
     if (el.visit) el.visit.disabled = !canVisit;
-    if (el.close) el.close.disabled = !canClose;
+    if (el.close) {
+      el.close.disabled = !canClose;
+      el.close.title = openCustomerActions(item).length ? '처리 대기 중인 고객 추가 요청을 먼저 처리해 주세요.' : '';
+    }
     if (el.priority) {
       const urgent = [...el.priority.options].find(option => option.value === 'URGENT');
       if (urgent) urgent.disabled = principal?.role !== 'ADMIN';
@@ -205,11 +301,11 @@ export function mountInquiryDesk({ adapter, principal, onVisitCreated = () => {}
     try {
       const payload = await adapter.list();
       state.items = payload.items || [];
-      onCount(state.items.filter(item => item.status !== 'CLOSED').length);
+      onCount(state.items.filter(item => item.status !== 'CLOSED' || openCustomerActions(item).length).length);
       renderList();
       const nextId = preserveSelection && state.selectedId && state.items.some(item => item.id === state.selectedId)
         ? state.selectedId
-        : (state.items.find(item => item.status !== 'CLOSED') || state.items[0])?.id;
+        : (state.items.find(item => openCustomerActions(item).length) || state.items.find(item => item.status !== 'CLOSED') || state.items[0])?.id;
       if (nextId) await select(nextId);
       else {
         state.selectedId = null;
@@ -242,6 +338,7 @@ export function mountInquiryDesk({ adapter, principal, onVisitCreated = () => {}
         message(`방문 요청을 생성했습니다.${result.fieldJob?.id ? ` Field Job #${result.fieldJob.id}` : ''}`);
         if (result.fieldJob) onVisitCreated(result.fieldJob);
       } else if (action === 'close') {
+        if (openCustomerActions(item).length) throw new Error('처리 대기 중인 고객 추가 요청을 먼저 처리해 주세요.');
         if (!window.confirm('이 상담 요청을 종료하시겠습니까?')) return;
         await adapter.close(item.id, item.version);
         message('상담 요청을 종료했습니다.');
