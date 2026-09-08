@@ -118,7 +118,8 @@ function transformCorporateHtml(file, profile, siteBase) {
   let html = readFileSync(target, 'utf8');
   const pageUrl = corporatePageUrl(siteBase, file);
 
-  html = html.replace(/<span data-demo-disclaimer>[^<]*<\/span>/g, companyLegalFooter(profile));
+  const demoDisclaimer = /<span(?: data-demo-disclaimer)?>NEXA TECH SERVICE는 포트폴리오 시연을 위해 구성한 가상 브랜드입니다\.<\/span>/g;
+  html = html.replace(demoDisclaimer, companyLegalFooter(profile));
   html = html.replaceAll('NEXA TECH SERVICE', profile.brandName);
   html = html.replaceAll('<span class="brand-mark">N</span>', `<span class="brand-mark">${escapeHtml(profile.brandMark)}</span>`);
   html = html.replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${escapeHtml(pageUrl)}">`);
