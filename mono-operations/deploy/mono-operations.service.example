@@ -1,0 +1,23 @@
+[Unit]
+Description=MONO OPERATIONS Commercial Runtime
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mono
+Group=mono
+WorkingDirectory=/opt/mono-operations/app
+EnvironmentFile=/etc/mono-operations/mono.env
+ExecStart=/usr/bin/node server/commercial-app.mjs
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/mono-operations /var/backups/mono-operations
+
+[Install]
+WantedBy=multi-user.target
