@@ -74,13 +74,17 @@ for (const viewport of viewports) {
   try {
     await goto(page, `${base}/`);
     await page.locator('#delivery').waitFor({ state:'attached', timeout:15_000 });
+    await page.locator('.booking-portfolio-showcase').waitFor({ state:'visible', timeout:15_000 });
     await page.locator('.mono-portfolio-featured').waitFor({ state:'visible', timeout:15_000 });
     await reveal(page);
     const bodyText = await page.locator('body').innerText();
     for (const phrase of [
-      '04', 'PRODUCT LINES', 'NEXA SERVICE SUITE', 'MONO OPERATIONS', 'Excel Workbench', 'OPS KIT',
+      '05', 'PRODUCT LINES', 'NEXA SERVICE SUITE', 'BOOKING CRM', 'MONO OPERATIONS', 'Excel Workbench', 'OPS KIT',
       '실제 납품은 화면에서 끝나지 않습니다.', '프로젝트 의뢰서 →', 'OPS KIT 실제 도구 열기 →'
     ]) if (!bodyText.includes(phrase)) throw new Error(`portfolio/${viewport.name}: missing ${phrase}`);
+
+    const count = (await page.locator('.studio-meta .live-mark strong').innerText()).trim();
+    if (count !== '05') throw new Error(`portfolio/${viewport.name}: product line count must be 05, got ${count}`);
 
     const stack = await page.locator('.studio-stack').innerText();
     if (stack.includes('Spring') || !stack.includes('SQLite/SQL')) throw new Error(`portfolio/${viewport.name}: public stack is not evidence-aligned: ${stack}`);
@@ -92,10 +96,11 @@ for (const viewport of viewports) {
 
     if (viewport.width > 760) {
       await assertFrame(page.frameLocator('.nexa-live-preview iframe'), ['NEXA TECH SERVICE'], `portfolio/${viewport.name}/NEXA`);
+      await assertFrame(page.frameLocator('.booking-portfolio-preview iframe'), ['BOOKING CRM','고객 예약·문의'], `portfolio/${viewport.name}/BOOKING`);
       await assertFrame(page.frameLocator('.mono-live-preview iframe'), ['MONO OPERATIONS','통합 업무함'], `portfolio/${viewport.name}/MONO`);
       await assertFrame(page.frameLocator('.excel-live-preview iframe'), ['Excel 정리 작업실','한 파일 정리'], `portfolio/${viewport.name}/Excel`);
     } else {
-      for (const selector of ['.nexa-live-preview','.mono-live-preview','.excel-live-preview']) {
+      for (const selector of ['.nexa-live-preview','.booking-portfolio-preview','.mono-live-preview','.excel-live-preview']) {
         const display = await page.locator(selector).evaluate(el => getComputedStyle(el).display);
         if (display !== 'none') throw new Error(`portfolio/mobile: ${selector} should use compact no-iframe fallback`);
       }
@@ -104,7 +109,7 @@ for (const viewport of viewports) {
     await noOverflow(page, `portfolio/${viewport.name}`);
     await page.screenshot({ path:`${output}/portfolio-client-${viewport.name}.png`, fullPage:true });
     if (errors.length) throw new Error(`portfolio/${viewport.name}: ${errors.join(' | ')}`);
-    console.log(`PASS client portfolio ${viewport.width}x${viewport.height} + live product evidence`);
+    console.log(`PASS client portfolio ${viewport.width}x${viewport.height} + five live product lines`);
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   } finally {
