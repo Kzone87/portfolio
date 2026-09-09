@@ -68,11 +68,18 @@ test('high-value refund is flagged for human approval and updates financial stat
   assert.equal(requested.order.paymentStatus, PAYMENT_STATUS.REFUND_PENDING);
   assert.equal(requested.order.refundedAmount, 0);
 
-  const approved = decideRefund(requested.order, requested.refund, { decision: 'APPROVE', decidedBy: 'admin' }, '2026-09-06T02:00:00Z');
+  const approved = decideRefund(requested.order, requested.refund, { decision: 'APPROVE', decidedBy: 'admin', decisionNote: '검토 완료 승인' }, '2026-09-06T02:00:00Z');
   assert.equal(approved.refund.status, REFUND_STATUS.APPROVED);
+  assert.equal(approved.refund.decisionNote, '검토 완료 승인');
   assert.equal(approved.order.paymentStatus, PAYMENT_STATUS.PARTIALLY_REFUNDED);
   assert.equal(approved.order.refundedAmount, 120000);
   assert.equal(snapshotOrder(approved.order).refundableAmount, 180000);
+});
+
+test('refund decisions reject missing audit rationale', () => {
+  const order = createOrder({ orderNo: 'ORD-REFUND-NOTE', customerName: 'Refund Buyer', email: 'refund-note@example.com', total: 300000, itemCount: 1 }, { id: 13, createdAt: '2026-09-06T00:00:00Z' });
+  const requested = requestRefund(order, { amount: 120000, reason: 'CUSTOMER_REQUEST', note: 'partial refund' }, { id: 31, requestedBy: 'staff', createdAt: '2026-09-06T01:00:00Z' });
+  assert.throws(() => decideRefund(requested.order, requested.refund, { decision: 'APPROVE', decidedBy: 'admin', decisionNote: 'x' }, '2026-09-06T02:00:00Z'), /decisionNote must be 4-500 characters/);
 });
 
 test('metrics expose holds, unfulfilled work and refund review pressure', () => {
@@ -136,7 +143,7 @@ test('HTTP order workflow ships with version checks and audit history', async ()
   });
 });
 
-test('HTTP sensitive refund workflow requires ADMIN and current order version', async () => {
+test('HTTP sensitive refund workflow requires ADMIN, current order version and decision rationale', async () => {
   await withServer(async (baseUrl) => {
     const requested = await request(baseUrl, '/api/orders/3/refunds', {
       method: 'POST',
@@ -149,17 +156,24 @@ test('HTTP sensitive refund workflow requires ADMIN and current order version', 
 
     const stale = await request(baseUrl, `/api/refunds/${requested.body.refund.id}/decision`, {
       method: 'POST',
-      body: JSON.stringify({ expectedVersion: 2, decision: 'APPROVE', decidedBy: 'ops-admin', role: 'ADMIN' })
+      body: JSON.stringify({ expectedVersion: 2, decision: 'APPROVE', decidedBy: 'ops-admin', role: 'ADMIN', decisionNote: 'verified' })
     });
     assert.equal(stale.response.status, 409);
     assert.equal(stale.body.error.code, 'STALE_ORDER');
 
     const forbidden = await request(baseUrl, `/api/refunds/${requested.body.refund.id}/decision`, {
       method: 'POST',
-      body: JSON.stringify({ expectedVersion: 3, decision: 'APPROVE', decidedBy: 'support-user', role: 'STAFF' })
+      body: JSON.stringify({ expectedVersion: 3, decision: 'APPROVE', decidedBy: 'support-user', role: 'STAFF', decisionNote: 'verified' })
     });
     assert.equal(forbidden.response.status, 403);
     assert.equal(forbidden.body.error.code, 'REFUND_APPROVAL_FORBIDDEN');
+
+    const missingNote = await request(baseUrl, `/api/refunds/${requested.body.refund.id}/decision`, {
+      method: 'POST',
+      body: JSON.stringify({ expectedVersion: 3, decision: 'APPROVE', decidedBy: 'ops-admin', role: 'ADMIN', decisionNote: '' })
+    });
+    assert.equal(missingNote.response.status, 400);
+    assert.equal(missingNote.body.error.code, 'REFUND_DECISION_NOTE_REQUIRED');
 
     const approved = await request(baseUrl, `/api/refunds/${requested.body.refund.id}/decision`, {
       method: 'POST',
@@ -167,12 +181,13 @@ test('HTTP sensitive refund workflow requires ADMIN and current order version', 
     });
     assert.equal(approved.response.status, 200);
     assert.equal(approved.body.refund.status, 'APPROVED');
+    assert.equal(approved.body.refund.decisionNote, 'verified');
     assert.equal(approved.body.order.paymentStatus, 'PARTIALLY_REFUNDED');
     assert.equal(approved.body.order.refundedAmount, 120000);
 
     const audits = await request(baseUrl, '/api/audits?orderId=3');
     assert.ok(audits.body.items.some((item) => item.action === 'REQUEST_REFUND'));
-    assert.ok(audits.body.items.some((item) => item.action === 'APPROVE_REFUND' && item.actor === 'ops-admin'));
+    assert.ok(audits.body.items.some((item) => item.action === 'APPROVE_REFUND' && item.actor === 'ops-admin' && item.detail.includes('verified')));
   });
 });
 
@@ -180,7 +195,7 @@ test('HTTP seeded sensitive refund cannot be decided by STAFF', async () => {
   await withServer(async (baseUrl) => {
     const forbidden = await request(baseUrl, '/api/refunds/1/decision', {
       method: 'POST',
-      body: JSON.stringify({ expectedVersion: 5, decision: 'REJECT', decidedBy: 'demo-staff', role: 'STAFF' })
+      body: JSON.stringify({ expectedVersion: 5, decision: 'REJECT', decidedBy: 'demo-staff', role: 'STAFF', decisionNote: '권한 없음' })
     });
     assert.equal(forbidden.response.status, 403);
     assert.equal(forbidden.body.error.code, 'REFUND_APPROVAL_FORBIDDEN');
