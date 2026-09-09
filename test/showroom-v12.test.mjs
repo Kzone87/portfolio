@@ -12,8 +12,8 @@ const demos = [
   { route: 'commerce-ops-console/', html: 'commerce-ops-console/index.html', app: 'commerce-ops-console/app.js', controls: ['search','request-refund'], results: ['order-list','status-message','audit-list'], productWorkspace: true },
   { route: 'field-service-ops/', html: 'field-service-ops/index.html', app: 'field-service-ops/app.js', controls: ['search','schedule'], results: ['job-list','message','audit-list'], internalWorkspace: true },
   { route: 'document-intake-approval/', html: 'document-intake-approval/index.html', app: 'document-intake-approval/app.js', controls: ['search','save','extract','submit'], results: ['doc-list','message','audit-list'], documentWorkspace: true },
-  { route: 'ai-workflow-review-desk/', html: 'ai-workflow-review-desk/index.html', app: 'ai-workflow-review-desk/app.js', controls: ['task-form','generate-selected','approve','reject'], results: ['task-list','evidence-list','review-history'] },
-  { route: 'integration-control-center/', html: 'integration-control-center/index.html', app: 'integration-control-center/app.js', controls: ['jobForm','resetDemo','clearHistory'], results: ['jobTable','historyList','formStatus'] },
+  { route: 'ai-workflow-review-desk/', html: 'ai-workflow-review-desk/index.html', app: 'ai-workflow-review-desk/app.js', controls: ['task-form','generate-selected','approve','reject'], results: ['task-list','evidence-list','review-history'], monoWorkspace: 'MONO SUPPORT' },
+  { route: 'integration-control-center/', html: 'integration-control-center/index.html', app: 'integration-control-center/app.js', controls: ['jobForm','resetDemo','clearHistory'], results: ['jobTable','historyList','formStatus'], monoWorkspace: 'MONO DATA HUB' },
   { route: 'mini-labs/', html: 'mini-labs/index.html', app: 'mini-labs/app.js', controls: ['cms-run','extract-run','automation-run'], results: ['cms-output','extract-output','automation-output'] }
 ];
 const corporatePages = ['nexa-tech-service/','nexa-tech-service/about.html','nexa-tech-service/services.html','nexa-tech-service/industries.html','nexa-tech-service/cases.html','nexa-tech-service/playbook.html','nexa-tech-service/contact.html'];
@@ -80,12 +80,18 @@ test('every internal showroom page exposes real controls and visible results', a
       assert.match(html, /MONO MARKET/);
       assert.match(html, /주문 운영/);
       assert.match(html, /주문 운영센터/);
+      assert.match(html, /mono-operations\/suite-nav\.js/);
       assert.doesNotMatch(html, /← (?:체험센터|포트폴리오|프로젝트)/);
     } else if (demo.documentWorkspace) {
       assert.match(html, /MONO OFFICE/);
       assert.match(html, /문서 접수·검수/);
       assert.match(html, /새 문서 접수/);
       assert.match(html, /검수 패널/);
+      assert.match(html, /mono-operations\/suite-nav\.js/);
+      assert.doesNotMatch(html, /← (?:체험센터|포트폴리오|프로젝트)/);
+    } else if (demo.monoWorkspace) {
+      assert.match(html, new RegExp(demo.monoWorkspace));
+      assert.match(html, /mono-operations\/suite-nav\.js/);
       assert.doesNotMatch(html, /← (?:체험센터|포트폴리오|프로젝트)/);
     } else {
       assert.match(html, /<a href="\.\.\/"[^>]*>← (?:체험센터|포트폴리오|프로젝트)<\/a>/);
@@ -155,11 +161,11 @@ test('customer label dictionary covers the internal states that appear in demos'
 test('showroom checks all live public scripts', () => {
   assert.equal(packageJson.version, '12.0.0');
   assert.ok(!packageJson.scripts.test.includes('scope-estimator'));
-  for (const script of ['customer-ui.js','nexa-tech-service/app.js','commerce-ops-console/app.js','field-service-ops/app.js','document-intake-approval/app.js','ai-workflow-review-desk/app.js','integration-control-center/app.js','mini-labs/app.js']) assert.ok(packageJson.scripts.test.includes(script), `missing syntax check: ${script}`);
+  for (const script of ['customer-ui.js','nexa-tech-service/app.js','commerce-ops-console/app.js','field-service-ops/app.js','document-intake-approval/app.js','ai-workflow-review-desk/app.js','integration-control-center/app.js','mono-operations/app.js','mono-operations/suite-nav.js','mini-labs/app.js']) assert.ok(packageJson.scripts.test.includes(script), `missing syntax check: ${script}`);
 });
 
 test('public showroom assets contain no common credential patterns', async () => {
-  const content = [home, sitemap, customerUi, await load('nexa-tech-service/app.js'), await load('nexa-service-domain/index.html')];
+  const content = [home, sitemap, customerUi, await load('nexa-tech-service/app.js'), await load('nexa-service-domain/index.html'), await load('mono-operations/index.html'), await load('mono-operations/app.js')];
   for (const page of ['index.html','about.html','services.html','industries.html','cases.html','playbook.html','contact.html']) content.push(await load(`nexa-tech-service/${page}`));
   for (const demo of demos) content.push(await load(demo.html), await load(demo.app));
   const all = content.join('\n');
