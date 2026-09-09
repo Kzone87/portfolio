@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
-const repo=path.resolve(new URL('..',import.meta.url).pathname);
+const repo=path.resolve(fileURLToPath(new URL('..',import.meta.url)));
 const out=path.resolve(repo,'dist/mono-operations-delivery');
 fs.rmSync(out,{recursive:true,force:true});
 fs.mkdirSync(out,{recursive:true});
