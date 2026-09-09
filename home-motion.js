@@ -1,4 +1,7 @@
 (() => {
+  const excelKicker = document.querySelector('.excel-case .project-kicker span');
+  if (excelKicker) excelKicker.textContent = 'Excel 정리 작업실 · Excel Workbench';
+
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion || !('IntersectionObserver' in window)) return;
 
