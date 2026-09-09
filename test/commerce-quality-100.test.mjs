@@ -47,7 +47,7 @@ test('commerce production QA waits for same-SHA Pages and verifies real workflow
   assert.match(liveQa, /SHIP/);
   assert.match(liveQa, /DELIVER/);
   assert.match(liveQa, /decision-note/);
-  assert.match(liveQa, /data-decision=\\"APPROVE\\"/);
+  assert.ok(liveQa.includes('[data-decision="APPROVE"]'));
   assert.match(liveQa, /COMMERCE LIVE PAGES QA: PASS/);
   assert.match(workflow, /Wait for same-SHA GitHub Pages deployment/);
   assert.match(workflow, /head_sha=\$\{GITHUB_SHA\}/);
