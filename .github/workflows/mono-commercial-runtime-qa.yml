@@ -62,5 +62,6 @@ jobs:
         with:
           name: mono-operations-commercial-delivery
           path: dist/mono-operations-delivery
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 7

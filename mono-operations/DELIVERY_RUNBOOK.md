@@ -267,6 +267,14 @@ GET /ready
 - pageerror / console.error / unexpected HTTP >= 400 / requestfailed 0
 - horizontal overflow 0
 - public demo same-SHA Pages QA 회귀 PASS
+- 납품 artifact에 `deploy/.env.example`을 포함한 모든 운영 파일 존재
+- `MANIFEST.json`의 모든 파일이 실제 artifact에 존재하고 bytes/SHA-256이 일치
+
+### Delivery artifact 무결성
+
+`npm run build:mono-delivery`가 만드는 `dist/mono-operations-delivery`가 납품 원본입니다. GitHub Actions artifact 업로드 시 dotfile을 포함해야 하므로 `include-hidden-files: true`를 유지합니다. 특히 `deploy/.env.example`은 실제 Secret이 아니라 고객사가 Production 환경변수를 구성하기 위한 템플릿이며 납품 패키지에서 빠져서는 안 됩니다.
+
+최종 납품 증빙에서는 GitHub Actions에서 내려받은 **실제 artifact ZIP**을 다시 열어 `MANIFEST.json`을 기준으로 모든 파일의 존재 여부, byte 크기, SHA-256을 재검증합니다. 빌드 디렉터리만 정상이고 업로드 artifact가 불완전한 상태는 납품 완료로 인정하지 않습니다.
 
 ## 17. 범위 경계
 
