@@ -20,6 +20,12 @@ test('public shell is responsive without hiding horizontal defects',()=>{
   assert.match(html,/mobile-tabs/);
 });
 
+test('mobile header keeps MONO OPERATIONS identity visible when sidebar is closed',()=>{
+  assert.match(html,/<p>MONO OPERATIONS<\/p><h1>통합 업무 운영<\/h1>/);
+  assert.match(css,/@media\(max-width:760px\)[\s\S]*?\.topbar>div:first-of-type p\{display:block/);
+  assert.doesNotMatch(css,/@media\(max-width:760px\)[\s\S]*?\.topbar>div:first-of-type p\{display:none/);
+});
+
 test('browser demo uses capability checks and human-review language',()=>{
   assert.match(js,/ROLE_CAPS/);
   assert.match(js,/refunds\.approve/);
