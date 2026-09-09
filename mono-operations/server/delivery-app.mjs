@@ -1,0 +1,78 @@
+import http from 'node:http';
+import { fileURLToPath } from 'node:url';
+import { createCoreStore, MonoError } from './core-store.mjs';
+import { createPersistentModules } from './persistent-modules.mjs';
+import { DomainError as MarketError } from '../../commerce-ops-console/server/store.mjs';
+import { DomainError as OfficeError } from '../../document-intake-approval/server/store.mjs';
+import { DomainError as SupportError } from '../../ai-workflow-review-desk/server/store.mjs';
+import { ApiError as DataError } from '../../integration-control-center/server/store.mjs';
+
+const JSON_LIMIT=128*1024,SESSION_COOKIE='mono_session';
+const isProd=process.env.NODE_ENV==='production';
+const dbPath=process.env.MONO_DB_PATH||(isProd?'':':memory:');
+const allowedOrigin=process.env.MONO_ALLOWED_ORIGIN||(isProd?'':'*');
+if(isProd&&(!dbPath||dbPath===':memory:'))throw new Error('MONO_DB_PATH persistent path is required in production');
+if(isProd&&(!allowedOrigin||allowedOrigin==='*'))throw new Error('MONO_ALLOWED_ORIGIN explicit origin is required in production');
+const bootstrapAdmin=isProd?{id:process.env.MONO_BOOTSTRAP_ADMIN_ID,username:process.env.MONO_BOOTSTRAP_ADMIN_USER,name:process.env.MONO_BOOTSTRAP_ADMIN_NAME,team:process.env.MONO_BOOTSTRAP_ADMIN_TEAM||'Operations',password:process.env.MONO_BOOTSTRAP_ADMIN_PASSWORD}:{id:'mono-admin',username:'mono-admin',name:'김서준',team:'서울 운영팀',password:'MonoDemo!2026'};
+if(isProd&&[bootstrapAdmin.id,bootstrapAdmin.username,bootstrapAdmin.name,bootstrapAdmin.password].some(v=>!String(v||'').trim()))throw new Error('MONO_BOOTSTRAP_ADMIN_* values are required for first production bootstrap');
+const core=createCoreStore(dbPath,{bootstrapAdmin});
+const persistent=createPersistentModules(dbPath),{market,office,support,dataHub}=persistent;
+const loginAttempts=new Map(),now=()=>Date.now();
+function trimAttempts(){for(const [key,v] of loginAttempts)if(now()-v.start>10*60*1000)loginAttempts.delete(key);}
+function limitLogin(req){trimAttempts();const key=String(req.socket?.remoteAddress||'local'),v=loginAttempts.get(key)||{count:0,start:now()};if(now()-v.start>10*60*1000){v.count=0;v.start=now();}if(v.count>=10)throw new MonoError(429,'LOGIN_RATE_LIMIT','로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.');v.count++;loginAttempts.set(key,v);return key;}
+function parseCookies(req){return Object.fromEntries(String(req.headers.cookie||'').split(';').map(x=>x.trim()).filter(Boolean).map(pair=>{const i=pair.indexOf('=');return i<0?[pair,'']:[pair.slice(0,i),decodeURIComponent(pair.slice(i+1))];}));}
+function cors(req){const origin=String(req.headers.origin||'');const allow=allowedOrigin==='*'?'*':origin===allowedOrigin?origin:'';return allow?{'access-control-allow-origin':allow,'vary':'Origin'}:{};}
+function send(req,res,status,body,extra={}){const text=JSON.stringify(body);res.writeHead(status,{'content-type':'application/json; charset=utf-8','content-length':Buffer.byteLength(text),'cache-control':'no-store',...cors(req),...extra});res.end(text);}
+async function body(req){let size=0;const chunks=[];for await(const chunk of req){size+=chunk.length;if(size>JSON_LIMIT)throw new MonoError(413,'BODY_TOO_LARGE','요청 데이터가 너무 큽니다.');chunks.push(chunk);}if(!chunks.length)return{};try{return JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new MonoError(400,'INVALID_JSON','JSON 형식을 확인해 주세요.');}}
+function setCookie(res,token){res.setHeader('set-cookie',`${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=28800${isProd?'; Secure':''}`);}
+function clearCookie(res){res.setHeader('set-cookie',`${SESSION_COOKIE}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0${isProd?'; Secure':''}`);}
+function session(req){const token=parseCookies(req)[SESSION_COOKIE]||'';if(!token)throw new MonoError(401,'AUTH_REQUIRED','로그인이 필요합니다.');return{...core.resolveSession(token),token};}
+function read(req,cap){const s=session(req);core.requireCapability(s.principal,cap);return s;}
+function mutate(req,cap){const s=read(req,cap);if(String(req.headers['x-csrf-token']||'')!==s.csrfToken)throw new MonoError(403,'CSRF_INVALID','요청 보안 토큰을 확인해 주세요.');return s;}
+function esc(value){return String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function route(path,prefix,suffix=''){const m=path.match(new RegExp(`^${esc(prefix)}([^/]+)${esc(suffix)}$`));return m?decodeURIComponent(m[1]):null;}
+function numberRoute(path,prefix,suffix=''){const value=route(path,prefix,suffix);return value!==null&&/^\d+$/.test(value)?Number(value):null;}
+function moduleActor(s,extra={}){return{...extra,actor:s.principal.id,reviewer:s.principal.id,decidedBy:s.principal.id,role:['ADMIN','MANAGER'].includes(s.principal.role)?'ADMIN':s.principal.role==='REVIEWER'?'REVIEWER':'SUBMITTER'};}
+function audit(s,module,type,id,action,detail=''){core.audit({module,resourceType:type,resourceId:String(id??''),actorId:s.principal.id,actorName:s.principal.name,action,detail});}
+function unifiedInbox(){const items=[];for(const r of market.listRefunds('REQUESTED')){const o=market.getOrder(r.orderId);items.push({id:`market-refund-${r.id}`,module:'MARKET',kind:'APPROVAL',priority:r.requiresApproval?'HIGH':'NORMAL',title:'환불 승인 대기',detail:`${o.orderNo} · ${r.amount} ${o.currency}`,resourceId:String(r.id)});}for(const o of market.listOrders({})){if(o.opsStatus==='ON_HOLD')items.push({id:`market-hold-${o.id}`,module:'MARKET',kind:'URGENT',priority:'HIGH',title:'보류 주문 확인',detail:`${o.orderNo} · ${o.customerName}`,resourceId:String(o.id)});else if(['UNFULFILLED','PICKING'].includes(o.fulfillmentStatus))items.push({id:`market-fulfill-${o.id}`,module:'MARKET',kind:'ACTION',priority:'NORMAL',title:'출고 처리',detail:o.orderNo,resourceId:String(o.id)});}for(const d of office.listDocuments({})){if(d.status==='SUBMITTED')items.push({id:`office-${d.id}`,module:'OFFICE',kind:'APPROVAL',priority:'HIGH',title:'문서 검수 대기',detail:d.title,resourceId:String(d.id)});if(d.status==='NEEDS_CHANGES')items.push({id:`office-change-${d.id}`,module:'OFFICE',kind:'ACTION',priority:'NORMAL',title:'수정 요청 문서',detail:d.title,resourceId:String(d.id)});}for(const t of support.listTasks()){if(['GENERATED','NEEDS_REVIEW'].includes(t.status))items.push({id:`support-${t.id}`,module:'SUPPORT',kind:'APPROVAL',priority:t.evaluation?.risk==='HIGH'?'HIGH':'NORMAL',title:'고객 답변 검토',detail:t.title,resourceId:String(t.id)});else if(t.status==='PENDING')items.push({id:`support-pending-${t.id}`,module:'SUPPORT',kind:'ACTION',priority:'NORMAL',title:'고객 문의 정리',detail:t.title,resourceId:String(t.id)});}for(const r of dataHub.listRuns(50))if(r.result==='FAILED')items.push({id:`data-${r.id}`,module:'DATA HUB',kind:'FAILURE',priority:'HIGH',title:'연동 실패 재처리',detail:r.jobName,resourceId:r.id});for(const d of dataHub.listDeadLetters(50))items.push({id:`dead-${d.id}`,module:'DATA HUB',kind:'FAILURE',priority:'CRITICAL',title:'Dead Letter 확인',detail:d.jobName,resourceId:d.id});return items;}
+function overview(){const mm=market.metrics(),om=office.metrics(),tasks=support.listTasks(),runs=dataHub.listRuns(50),dead=dataHub.listDeadLetters(50);return{market:mm,office:om,support:{pending:tasks.filter(x=>x.status==='PENDING').length,review:tasks.filter(x=>['GENERATED','NEEDS_REVIEW'].includes(x.status)).length,final:tasks.filter(x=>['APPROVED','REJECTED'].includes(x.status)).length},dataHub:{failed:runs.filter(x=>x.result==='FAILED').length,deadLetters:dead.length,runs:runs.length},inbox:unifiedInbox().length};}
+function mapped(raw){if(raw instanceof MonoError)return raw;if(raw instanceof MarketError||raw instanceof OfficeError||raw instanceof SupportError)return new MonoError(raw.statusCode,raw.code,raw.message);if(raw instanceof DataError)return new MonoError(raw.status,raw.code,raw.message);return raw;}
+
+export function createMonoDeliveryServer(){return http.createServer(async(req,res)=>{try{const url=new URL(req.url||'/','http://localhost'),path=url.pathname;
+  if(req.method==='OPTIONS'){send(req,res,204,{}, {'access-control-allow-headers':'content-type,x-csrf-token','access-control-allow-methods':'GET,POST,OPTIONS'});return;}
+  if(req.method==='GET'&&path==='/api/health'){send(req,res,200,{ok:true,service:'mono-operations',mode:isProd?'production':'development',persistence:'sqlite'});return;}
+  if(req.method==='GET'&&path==='/api/ready'){const ok=core.ready();send(req,res,ok?200:503,{ok,database:ok?'ready':'unavailable'});return;}
+  if(req.method==='POST'&&path==='/api/auth/login'){const key=limitLogin(req),input=await body(req),result=core.login(input.username,input.password);loginAttempts.delete(key);setCookie(res,result.token);send(req,res,200,{principal:result.principal,csrfToken:result.csrfToken,expiresAt:result.expiresAt});return;}
+  if(req.method==='POST'&&path==='/api/auth/logout'){const s=session(req);if(String(req.headers['x-csrf-token']||'')!==s.csrfToken)throw new MonoError(403,'CSRF_INVALID','요청 보안 토큰을 확인해 주세요.');core.logout(s.token,s.principal);clearCookie(res);send(req,res,200,{ok:true});return;}
+  if(req.method==='GET'&&path==='/api/me'){const s=session(req);send(req,res,200,{principal:s.principal,csrfToken:s.csrfToken});return;}
+  if(req.method==='GET'&&path==='/api/overview'){session(req);send(req,res,200,overview());return;}
+  if(req.method==='GET'&&path==='/api/inbox'){session(req);send(req,res,200,{items:unifiedInbox()});return;}
+  if(req.method==='GET'&&path==='/api/audits'){const s=read(req,'audit.read');send(req,res,200,{items:core.listAudits(Number(url.searchParams.get('limit')||100)),viewer:s.principal.name});return;}
+  if(req.method==='GET'&&path==='/api/admin/users'){const s=session(req);core.requireCapability(s.principal,'*');send(req,res,200,{items:core.listUsers()});return;}
+  if(req.method==='POST'&&path==='/api/admin/users'){const s=mutate(req,'*'),input=await body(req);send(req,res,201,core.createUser(input,s.principal.id));return;}
+
+  if(req.method==='GET'&&path==='/api/market/orders'){read(req,'market.read');send(req,res,200,{items:market.listOrders({query:url.searchParams.get('query')||''})});return;}
+  if(req.method==='GET'&&path==='/api/market/refunds'){read(req,'market.read');send(req,res,200,{items:market.listRefunds(url.searchParams.get('status')||'')});return;}
+  for(const [suffix,method,action] of [['/pick','startPicking','START_PICKING'],['/ship','ship','SHIP'],['/deliver','deliver','DELIVER']]){const id=numberRoute(path,'/api/market/orders/',suffix);if(req.method==='POST'&&id!==null){const s=mutate(req,'market.fulfill'),input=await body(req),result=market[method](id,moduleActor(s,input));audit(s,'MARKET','ORDER',id,action,`v${result.version}`);send(req,res,200,result);return;}}
+  const refundId=numberRoute(path,'/api/market/refunds/','/decision');if(req.method==='POST'&&refundId!==null){const s=mutate(req,'market.refund.approve'),input=await body(req),result=market.decideRefund(refundId,moduleActor(s,{...input,role:'ADMIN'}));audit(s,'MARKET','REFUND',refundId,result.refund.status==='APPROVED'?'APPROVE_REFUND':'REJECT_REFUND',result.refund.decisionNote||'');send(req,res,200,result);return;}
+
+  if(req.method==='GET'&&path==='/api/office/documents'){read(req,'office.read');send(req,res,200,{items:office.listDocuments({status:url.searchParams.get('status')||''})});return;}
+  const reviewDoc=numberRoute(path,'/api/office/documents/','/review');if(req.method==='POST'&&reviewDoc!==null){const s=mutate(req,'office.review'),input=await body(req),result=office.review(reviewDoc,moduleActor(s,{...input,role:['ADMIN','MANAGER'].includes(s.principal.role)?'ADMIN':'REVIEWER'}));audit(s,'OFFICE','DOCUMENT',reviewDoc,input.decision||'REVIEW',input.comment||'');send(req,res,200,result);return;}
+  const archiveDoc=numberRoute(path,'/api/office/documents/','/archive');if(req.method==='POST'&&archiveDoc!==null){const s=mutate(req,'office.archive'),input=await body(req),result=office.archive(archiveDoc,moduleActor(s,{...input,role:'ADMIN'}));audit(s,'OFFICE','DOCUMENT',archiveDoc,'ARCHIVE');send(req,res,200,result);return;}
+
+  if(req.method==='GET'&&path==='/api/support/tasks'){read(req,'support.read');send(req,res,200,{items:support.listTasks()});return;}
+  const generate=numberRoute(path,'/api/support/tasks/','/generate');if(req.method==='POST'&&generate!==null){const s=mutate(req,'support.review'),input=await body(req),result=support.generateTask(generate,input);audit(s,'SUPPORT','TASK',generate,'GENERATE',`evidence=${result.run.retrieval?.evidence?.length||0}`);send(req,res,200,result);return;}
+  const reviewTask=numberRoute(path,'/api/support/tasks/','/review');if(req.method==='POST'&&reviewTask!==null){const s=mutate(req,'support.review'),input=await body(req),result=support.reviewTask(reviewTask,{...input,reviewer:s.principal.id});audit(s,'SUPPORT','TASK',reviewTask,input.decision||'REVIEW',`evidence=${result.review.evidenceIds.length}`);send(req,res,200,result);return;}
+
+  if(req.method==='GET'&&path==='/api/data-hub/connections'){read(req,'data.read');send(req,res,200,{items:dataHub.listConnections()});return;}
+  if(req.method==='GET'&&path==='/api/data-hub/jobs'){read(req,'data.read');send(req,res,200,{items:dataHub.listJobs()});return;}
+  if(req.method==='GET'&&path==='/api/data-hub/runs'){read(req,'data.read');send(req,res,200,{items:dataHub.listRuns(Number(url.searchParams.get('limit')||50))});return;}
+  if(req.method==='GET'&&path==='/api/data-hub/dead-letters'){read(req,'data.read');send(req,res,200,{items:dataHub.listDeadLetters(50)});return;}
+  const jobId=route(path,'/api/data-hub/jobs/','/run');if(req.method==='POST'&&jobId!==null){const s=mutate(req,'data.run'),input=await body(req),result=dataHub.runJob(jobId,String(input.idempotencyKey||''));audit(s,'DATA HUB','JOB',jobId,'RUN',result.result);send(req,res,200,result);return;}
+  const retry=route(path,'/api/data-hub/runs/','/retry');if(req.method==='POST'&&retry!==null){const s=mutate(req,'data.retry'),result=dataHub.retryRun(retry);audit(s,'DATA HUB','RUN',retry,'RETRY',result.result);send(req,res,200,result);return;}
+  const connection=route(path,'/api/data-hub/webhooks/');if(req.method==='POST'&&connection!==null){const s=mutate(req,'data.run'),input=await body(req),event=dataHub.receiveWebhook(connection,input);if(event.replayed){send(req,res,200,{event,order:null,replayed:true});return;}audit(s,'DATA HUB','WEBHOOK',input.eventId,'WEBHOOK_ACCEPTED',input.type||'');let order=null;if(input.type==='order.updated'&&event.status==='PROCESSED'){const p=input.payload||{};order=market.createOrder({orderNo:String(p.orderNo||`WEB-${String(input.eventId).slice(-10)}`),customerName:String(p.customerName||'연동 고객'),email:String(p.email||'integration@example.com'),total:Number(p.total||10000),currency:String(p.currency||'KRW'),itemCount:Number(p.itemCount||1)},'data-hub');core.audit({module:'MARKET',resourceType:'ORDER',resourceId:String(order.id),actorId:'system',actorName:'DATA HUB',action:'INTEGRATION_CREATE_ORDER',detail:`${order.orderNo} · ${input.eventId}`});}send(req,res,201,{event,order,replayed:false});return;}
+  send(req,res,404,{error:{code:'NOT_FOUND',message:'route not found'}});
+}catch(raw){const error=mapped(raw);if(error instanceof MonoError){send(req,res,error.statusCode,{error:{code:error.code,message:error.message}});return;}console.error(raw);send(req,res,500,{error:{code:'INTERNAL_ERROR',message:'unexpected server error'}});}});}
+
+export function closeMonoDelivery(){persistent.close();core.close();}
+const isMain=process.argv[1]&&fileURLToPath(import.meta.url)===process.argv[1];if(isMain){const port=Number(process.env.PORT||8794),server=createMonoDeliveryServer();server.listen(port,'127.0.0.1',()=>console.log(`MONO Operations delivery API listening on http://127.0.0.1:${port}`));}
