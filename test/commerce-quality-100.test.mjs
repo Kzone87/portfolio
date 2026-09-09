@@ -48,6 +48,9 @@ test('commerce production QA waits for same-SHA Pages and verifies real workflow
   assert.match(liveQa, /DELIVER/);
   assert.match(liveQa, /decision-note/);
   assert.ok(liveQa.includes('[data-decision="APPROVE"]'));
+  assert.ok(liveQa.includes('.order-card[data-order-id="1"]'));
+  assert.ok(liveQa.includes('.order-card[data-order-id="4"]'));
+  assert.doesNotMatch(liveQa, /page\.locator\('\[data-order-id="1"\]'\)\.click/);
   assert.match(liveQa, /COMMERCE LIVE PAGES QA: PASS/);
   assert.match(workflow, /Wait for same-SHA GitHub Pages deployment/);
   assert.match(workflow, /head_sha=\$\{GITHUB_SHA\}/);
