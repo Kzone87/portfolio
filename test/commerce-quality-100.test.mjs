@@ -51,6 +51,9 @@ test('commerce production QA waits for same-SHA Pages and verifies real workflow
   assert.ok(liveQa.includes('.order-card[data-order-id="1"]'));
   assert.ok(liveQa.includes('.order-card[data-order-id="4"]'));
   assert.doesNotMatch(liveQa, /page\.locator\('\[data-order-id="1"\]'\)\.click/);
+  assert.match(liveQa, /'환불 승인', '관리자', '파손 증빙 및 결제 내역 확인 완료'/);
+  assert.doesNotMatch(liveQa, /auditText\.includes\('demo-admin'\)/);
+  assert.match(liveQa, /STAFF block -> ADMIN refund approval -> audit/);
   assert.match(liveQa, /COMMERCE LIVE PAGES QA: PASS/);
   assert.match(workflow, /Wait for same-SHA GitHub Pages deployment/);
   assert.match(workflow, /head_sha=\$\{GITHUB_SHA\}/);
