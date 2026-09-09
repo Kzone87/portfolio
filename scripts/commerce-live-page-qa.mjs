@@ -124,12 +124,14 @@ for (const viewport of viewports) {
     await page.locator('.order-card[data-order-id="4"]').click();
     await page.locator('#payment-status').filter({ hasText: '부분 환불' }).waitFor({ timeout: 10_000 });
     const auditText = await page.locator('#audit-list').innerText();
-    if (!auditText.includes('환불 승인') || !auditText.includes('demo-admin')) throw new Error('refund approval audit entry missing');
+    for (const required of ['환불 승인', '관리자', '파손 증빙 및 결제 내역 확인 완료']) {
+      if (!auditText.includes(required)) throw new Error(`refund approval audit entry missing: ${required}`);
+    }
 
     await assertNoHorizontalOverflow(page, 'commerce/interaction');
     await page.screenshot({ path: `${output}/commerce-interaction-final.png`, fullPage: true });
     if (errors.length) throw new Error(`interaction: ${errors.join(' | ')}`);
-    console.log('PASS commerce search/filter -> fulfillment -> ADMIN refund approval -> audit');
+    console.log('PASS commerce search/filter -> fulfillment -> STAFF block -> ADMIN refund approval -> audit');
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   } finally {
