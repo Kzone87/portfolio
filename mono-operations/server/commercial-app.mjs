@@ -120,7 +120,7 @@ function staticFile(pathname) {
   const requestPath = pathname === '/' ? '/index.html' : pathname;
   const normalized = path.normalize(requestPath).replace(/^(\.\.[/\\])+/, '');
   const file = path.resolve(UI_ROOT, `.${normalized.startsWith('/') ? normalized : `/${normalized}`}`);
-  if (!file.startsWith(UI_ROOT)) return null;
+  if (file !== UI_ROOT && !file.startsWith(`${UI_ROOT}${path.sep}`)) return null;
   return file;
 }
 function contentType(file) {
@@ -169,13 +169,27 @@ export function createCommercialRuntime({config=loadCommercialConfig(),store=nul
     ownedStore.ensureBootstrapAdmin({email:config.bootstrapAdminEmail,name:config.bootstrapAdminName,password:config.bootstrapAdminPassword});
   }
   const ai = createAiProviderChain({providers:config.providers,fetchImpl});
-  let workerTimer = null; let workerBusy = false;
-  async function workerTick(){
-    if(workerBusy)return; workerBusy=true;
-    try{for(let i=0;i<20;i+=1){if(!(await processIntegrationOnce({store:ownedStore,config,fetchImpl})))break}}
-    finally{workerBusy=false}
+  let workerTimer = null;
+  let workerPromise = null;
+  function workerTick(){
+    if(workerPromise)return workerPromise;
+    workerPromise=(async()=>{
+      try{
+        for(let i=0;i<20;i+=1){
+          if(!(await processIntegrationOnce({store:ownedStore,config,fetchImpl})))break;
+        }
+      }finally{
+        workerPromise=null;
+      }
+    })();
+    return workerPromise;
   }
-  function startWorker(){ if(workerTimer)return; workerTimer=setInterval(workerTick,config.integrationPollMs); workerTimer.unref?.(); }
+  function reportWorkerError(error){console.error('[MONO worker]',error)}
+  function startWorker(){
+    if(workerTimer)return;
+    workerTimer=setInterval(()=>{workerTick().catch(reportWorkerError)},config.integrationPollMs);
+    workerTimer.unref?.();
+  }
   function stopWorker(){ if(workerTimer){clearInterval(workerTimer);workerTimer=null} }
 
   const server = http.createServer(async(req,res)=>{
@@ -190,7 +204,7 @@ export function createCommercialRuntime({config=loadCommercialConfig(),store=nul
         const raw = await readRawBody(req,512_000);
         let input; try{input=JSON.parse(raw.toString('utf8'))}catch{throw new CommercialError(400,'INVALID_JSON')}
         const event = ownedStore.ingestWebhook({connectionId:decodeURIComponent(webhook[1]),rawBody:raw,signature:req.headers['x-mono-signature'],input});
-        workerTick();
+        workerTick().catch(reportWorkerError);
         return sendJson(res,config,event.replayed?200:202,{event});
       }
 
@@ -210,7 +224,7 @@ export function createCommercialRuntime({config=loadCommercialConfig(),store=nul
         const session = req.method==='GET' ? sessionFrom(req,ownedStore) : authorizeMutation(req,ownedStore,config);
         const actorId = session.user.id;
 
-        if (req.method==='GET' && pathname==='/api/me') return sendJson(res,config,200,{user:session.user,csrfToken:req.headers['x-csrf-token']||null});
+        if (req.method==='GET' && pathname==='/api/me') return sendJson(res,config,200,{user:session.user});
         if (req.method==='GET' && pathname==='/api/work-items') return sendJson(res,config,200,{items:ownedStore.listWorkItems(actorId)});
         let match = routeMatch(pathname,/^\/api\/work-items\/([^/]+)\/acknowledge$/);
         if(req.method==='POST'&&match){const p=await readJson(req,16_384);return sendJson(res,config,200,{item:ownedStore.acknowledgeWorkItem(actorId,decodeURIComponent(match[1]),p.expectedVersion)})}
@@ -284,7 +298,13 @@ export function createCommercialRuntime({config=loadCommercialConfig(),store=nul
     }
   });
 
-  function close(){stopWorker();return new Promise(resolve=>server.close(()=>{ownedStore.checkpoint();ownedStore.close();resolve()}))}
+  async function close(){
+    stopWorker();
+    if(workerPromise)await workerPromise;
+    if(server.listening)await new Promise(resolve=>server.close(resolve));
+    ownedStore.checkpoint();
+    ownedStore.close();
+  }
   return {server,store:ownedStore,startWorker,stopWorker,workerTick,close};
 }
 
@@ -295,6 +315,11 @@ if(import.meta.url===`file://${process.argv[1]}`){
     runtime.startWorker();
     console.log(`MONO Commercial Runtime listening on ${config.bind}:${config.port}`);
   });
-  const shutdown=()=>runtime.close().finally(()=>process.exit(0));
+  let shuttingDown=false;
+  const shutdown=()=>{
+    if(shuttingDown)return;
+    shuttingDown=true;
+    runtime.close().then(()=>process.exit(0),error=>{console.error('[MONO shutdown]',error);process.exit(1)});
+  };
   process.on('SIGTERM',shutdown);process.on('SIGINT',shutdown);
 }
