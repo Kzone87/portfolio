@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="MONO OPERATIONS는 주문·문서·고객지원·데이터 연동 업무를 하나의 직원 계정과 업무함, 권한, 감사이력으로 운영하는 중소기업용 Back-office Operations Suite입니다.">
+  <meta name="theme-color" content="#111827">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23111827'/><path d='M14 46V18h8l10 15 10-15h8v28h-8V30L32 44 22 30v16z' fill='white'/></svg>">
+  <title>MONO OPERATIONS · Work Inbox</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">본문으로 바로가기</a>
+<div class="app-shell">
+  <aside class="sidebar" aria-label="MONO OPERATIONS 주요 메뉴">
+    <a class="brand" href="./" aria-label="MONO OPERATIONS 홈"><span>M</span><div><strong>MONO</strong><small>OPERATIONS</small></div></a>
+    <nav class="side-nav">
+      <a class="active" href="./" aria-current="page"><span>⌂</span>업무 홈</a>
+      <a href="#work-inbox"><span>☑</span>통합 업무함</a>
+      <hr>
+      <a href="../commerce-ops-console/"><span>01</span>MARKET<small>주문·배송</small></a>
+      <a href="../document-intake-approval/"><span>02</span>OFFICE<small>문서·검수</small></a>
+      <a href="../ai-workflow-review-desk/"><span>03</span>SUPPORT<small>고객지원</small></a>
+      <a href="../integration-control-center/"><span>04</span>DATA HUB<small>데이터 연동</small></a>
+      <hr>
+      <a href="#audit"><span>↺</span>감사 이력</a>
+      <a href="#system"><span>⚙</span>시스템 상태</a>
+    </nav>
+    <div class="sidebar-foot"><span class="online-dot" aria-hidden="true"></span><div><strong>운영 시스템 정상</strong><small>공개 시연 데이터</small></div></div>
+  </aside>
+
+  <main id="main" class="main-content">
+    <header class="topbar">
+      <div><button id="mobileMenu" class="menu-button" type="button" aria-label="메뉴 열기" aria-expanded="false">☰</button><div><p>MONO OPERATIONS</p><h1>업무 홈</h1></div></div>
+      <div class="identity"><span class="avatar">김</span><div><strong>김서준</strong><small>운영 관리자 · 서울 운영팀</small></div><span class="role-chip">ADMIN</span></div>
+    </header>
+
+    <section class="intro-card">
+      <div><span class="eyebrow">TODAY · OPERATIONS OVERVIEW</span><h2>지금 처리해야 할 업무를 한 곳에서 확인합니다.</h2><p>주문, 문서, 고객문의, 데이터 연동의 대기·위험·실패 업무를 우선순위로 모아 보여줍니다.</p></div>
+      <button id="simulateEvent" class="primary-button" type="button">주문 연동 이벤트 시연</button>
+    </section>
+
+    <section class="metrics" aria-label="오늘의 운영 지표">
+      <article><span>출고 대기</span><strong id="metricOrders">12</strong><small>MARKET · 2건 지연</small></article>
+      <article><span>검수 대기</span><strong id="metricDocs">7</strong><small>OFFICE · 1건 긴급</small></article>
+      <article><span>답변 검토</span><strong id="metricSupport">4</strong><small>SUPPORT · 고위험 1건</small></article>
+      <article><span>연동 실패</span><strong id="metricIntegrations">2</strong><small>DATA HUB · Dead Letter 1건</small></article>
+    </section>
+
+    <section id="work-inbox" class="panel work-panel">
+      <div class="panel-head">
+        <div><span class="eyebrow">WORK INBOX</span><h2>통합 업무함</h2><p>부서가 아니라 처리 우선순위 기준으로 봅니다.</p></div>
+        <div class="filters" role="group" aria-label="업무 필터">
+          <button class="filter active" type="button" data-filter="ALL">전체 <b id="allCount">6</b></button>
+          <button class="filter" type="button" data-filter="URGENT">긴급</button>
+          <button class="filter" type="button" data-filter="APPROVAL">승인</button>
+          <button class="filter" type="button" data-filter="FAILURE">실패</button>
+        </div>
+      </div>
+      <div id="workList" class="work-list" aria-live="polite"></div>
+    </section>
+
+    <section class="workspace-grid">
+      <article class="panel module-panel market">
+        <div class="module-icon">01</div><div><span class="eyebrow">MONO MARKET</span><h2>주문·배송 운영</h2><p>결제 확인부터 피킹, 출고, 배송, 반품과 고위험 환불 승인까지 관리합니다.</p><div class="module-meta"><span>출고대기 12</span><span>환불검토 3</span></div><a href="../commerce-ops-console/">주문 운영 열기 →</a></div>
+      </article>
+      <article class="panel module-panel office">
+        <div class="module-icon">02</div><div><span class="eyebrow">MONO OFFICE</span><h2>문서 접수·검수</h2><p>문서 접수, 필드 추출, 체크리스트, 검수 요청과 승인·수정요청·보관을 관리합니다.</p><div class="module-meta"><span>검수대기 7</span><span>수정요청 2</span></div><a href="../document-intake-approval/">문서 운영 열기 →</a></div>
+      </article>
+      <article class="panel module-panel support">
+        <div class="module-icon">03</div><div><span class="eyebrow">MONO SUPPORT</span><h2>고객 문의 업무지원</h2><p>고객문의와 관련 정책 근거를 함께 검토하고, 자동 제안을 사람이 승인하거나 수정합니다.</p><div class="module-meta"><span>답변검토 4</span><span>고위험 1</span></div><a href="../ai-workflow-review-desk/">고객지원 열기 →</a></div>
+      </article>
+      <article class="panel module-panel data">
+        <div class="module-icon">04</div><div><span class="eyebrow">MONO DATA HUB</span><h2>데이터 연동·복구</h2><p>Webhook과 예약 실행, 중복 방지, 재시도와 Dead Letter를 운영합니다.</p><div class="module-meta"><span>최근실패 2</span><span>Dead Letter 1</span></div><a href="../integration-control-center/">연동 운영 열기 →</a></div>
+      </article>
+    </section>
+
+    <section class="two-column">
+      <article id="audit" class="panel">
+        <div class="panel-head compact"><div><span class="eyebrow">AUDIT</span><h2>최근 활동</h2></div><button id="resetDemo" class="text-button" type="button">시연 초기화</button></div>
+        <div id="auditList" class="audit-list"></div>
+      </article>
+      <article id="system" class="panel system-panel">
+        <div class="panel-head compact"><div><span class="eyebrow">SYSTEM</span><h2>운영 상태</h2></div><span class="healthy">정상</span></div>
+        <div class="system-list"><div><span>MONO API</span><strong>정상</strong></div><div><span>Database</span><strong>정상</strong></div><div><span>AI Provider</span><strong>정상</strong></div><div><span>Integration Queue</span><strong class="warning">주의 1</strong></div></div>
+        <p class="demo-boundary">이 공개 페이지는 가상 데이터로 실행되는 브라우저 시연입니다. 납품 런타임에서는 서버 인증, HttpOnly 세션, 서버측 권한, 영속 SQLite, 감사이력과 운영 점검을 사용합니다.</p>
+      </article>
+    </section>
+  </main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
