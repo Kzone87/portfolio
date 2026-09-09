@@ -58,12 +58,12 @@ test('NEXA keeps the fictional boundary while the customer site stays customer-f
   assert.doesNotMatch(all, /98\.7%|-31%|-42%|96%|초기 가동 100%|확인시간 -37%|평균 1차 응답/);
 });
 
-test('repository readme matches the current portfolio identity and contact paths', async () => {
+test('repository readme matches the current product lines, evidence and contact paths', async () => {
   const readme = await load('README.md');
   assert.match(readme, /Kzone87 · Full-stack Web Developer/);
-  assert.match(readme, /NEXA TECH SERVICE/);
-  assert.match(readme, /MONO OPERATIONS/);
-  assert.match(readme, /Excel 정리 작업실/);
+  for (const product of ['NEXA SERVICE SUITE','MONO OPERATIONS','Excel Workbench','OPS KIT']) assert.match(readme, new RegExp(product));
+  for (const proof of ['Browser QA','SQLite \/ SQL','프로젝트 의뢰서 준비','TXT 다운로드']) assert.match(readme, new RegExp(proof));
   assert.match(readme, /template=hiring\.yml/);
-  assert.doesNotMatch(readme, /49만원|149만원|299만원|499만원|scope-estimator|\/services\//);
+  assert.match(readme, /template=project-inquiry\.yml/);
+  assert.doesNotMatch(readme, /Java \/ Spring|49만원|149만원|299만원|499만원|scope-estimator|\/services\//);
 });
