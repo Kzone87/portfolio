@@ -25,7 +25,7 @@
     <div>
       <p class="breadcrumb">LOCAL-FIRST / OPERATIONS UTILITIES</p>
       <h1>작은 운영 작업도<br>검사와 증빙까지 남깁니다.</h1>
-      <p>텍스트와 설정을 이 브라우저 안에서만 처리합니다. 서버 업로드, 계정, 외부 사이트 자동조작 없이 입력 → 검사 → 결과 → 증빙 파일까지 한 번에 만듭니다.</p>
+      <p>작은 반복업무를 바로 줄이는 도구입니다. 텍스트와 설정을 이 브라우저 안에서만 처리하며 서버 업로드, 계정, 외부 사이트 자동조작 없이 입력 → 검사 → 결과 → 증빙 파일까지 한 번에 만듭니다.</p>
     </div>
     <div class="service-status" aria-label="서비스 처리 원칙">
       <span><b>LOCAL</b> 서버 전송 없음</span>
@@ -38,7 +38,7 @@
   <nav class="tool-grid tabs" role="tablist" aria-label="OPS KIT 도구 선택">
     <button type="button" role="tab" aria-selected="true" aria-controls="content" data-tab="content" class="tool-card active"><span class="tool-icon">01</span><div><strong>Content Preflight</strong><small>게시 전 길이·slug·placeholder 검사</small></div><b>열기</b></button>
     <button type="button" role="tab" aria-selected="false" aria-controls="extract" data-tab="extract" class="tool-card"><span class="tool-icon">02</span><div><strong>Data Extractor</strong><small>key:value + quoted CSV 구조화</small></div><b>열기</b></button>
-    <button type="button" role="tab" aria-selected="false" aria-controls="workflow" data-tab="workflow" class="tool-card"><span class="tool-icon">03</span><div><strong>Workflow Dry-Run</strong><small>자동화 계획 검증·실패 시뮬레이션</small></div><b>열기</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="workflow" data-tab="automation" class="tool-card"><span class="tool-icon">03</span><div><strong>Workflow Dry-Run</strong><small>자동화 계획 검증·실패 시뮬레이션</small></div><b>열기</b></button>
     <button type="button" role="tab" aria-selected="false" aria-controls="security" data-tab="security" class="tool-card"><span class="tool-icon">04</span><div><strong>Security Check</strong><small>redirect·origin·sheet·secret 점검</small></div><b>열기</b></button>
     <button type="button" role="tab" aria-selected="false" aria-controls="release" data-tab="release" class="tool-card"><span class="tool-icon">05</span><div><strong>Release Gate</strong><small>필수 배포조건 GO / NO-GO 판정</small></div><b>열기</b></button>
   </nav>
@@ -73,7 +73,7 @@
 
       <section id="extract" class="lab" role="tabpanel">
         <div class="panel input-panel">
-          <div class="panel-title"><div><span class="section-kicker">DATA EXTRACTOR</span><h2>문서 값과 CSV 구조화</h2><p class="muted">입력당 100KB, CSV 최대 5,000행·100열. 따옴표 안 쉼표와 escaped quote를 처리합니다.</p></div></div>
+          <div class="panel-title"><div><span class="section-kicker">DATA EXTRACTOR</span><h2>문서 값 추출 · CSV 구조화</h2><p class="muted">입력당 100KB, CSV 최대 5,000행·100열. 따옴표 안 쉼표와 escaped quote를 처리합니다.</p></div></div>
           <div class="lab-form two-inputs">
             <label>key:value 문서<textarea id="kv-source" rows="10">문서번호: INV-2026-0906
 거래처: 모노상사
@@ -89,7 +89,7 @@ C002,라이트웍스,확인대기,"담당자 ""검토"""</textarea></label>
 
       <section id="workflow" class="lab" role="tabpanel">
         <div class="panel input-panel">
-          <div class="panel-title"><div><span class="section-kicker">WORKFLOW DRY-RUN</span><h2>자동화 계획 검증</h2><p class="muted">실제 사이트에는 접속하지 않습니다. public HTTPS URL과 최대 30단계의 계획만 검증·시뮬레이션합니다.</p></div></div>
+          <div class="panel-title"><div><span class="section-kicker">WORKFLOW DRY-RUN</span><h2>반복 입력작업 계획 검증</h2><p class="muted">실제 사이트에는 접속하지 않습니다. public HTTPS URL과 최대 30단계의 계획만 검증·시뮬레이션합니다.</p></div></div>
           <div class="lab-form">
             <label>Workflow JSON<textarea id="workflow-source" rows="13">[
   {"id":"open","type":"NAVIGATE","target":"https://example.com/form"},
@@ -97,11 +97,14 @@ C002,라이트웍스,확인대기,"담당자 ""검토"""</textarea></label>
   {"id":"submit","type":"CLICK","target":"#submit"},
   {"id":"assert","type":"ASSERT_TEXT","target":"#status","value":"Saved"}
 ]</textarea></label>
-            <label>실패를 재현할 step id <span class="label-help">비워두면 정상 처리</span><input id="fail-step" maxlength="80" placeholder="예: submit"></label>
-            <div class="form-actions"><button type="button" id="workflow-run">Dry-run 실행</button><button type="button" class="ghost-button" data-clear-output="#workflow-output">결과 지우기</button></div>
+            <details class="diagnostic-options">
+              <summary>오류 상황 점검</summary>
+              <label>실패를 재현할 단계 <span class="label-help">Workflow JSON의 step id에서 자동 갱신</span><select id="fail-step"><option value="">정상 처리</option><option value="open">open</option><option value="fill">fill</option><option value="submit">submit</option><option value="assert">assert</option></select></label>
+            </details>
+            <div class="form-actions"><button type="button" id="automation-run">Dry-run 실행</button><button type="button" class="ghost-button" data-clear-output="#automation-output">결과 지우기</button></div>
           </div>
         </div>
-        <div class="result-column"><div class="result-label">Dry-run 결과</div><div id="workflow-output" class="panel result-panel" aria-live="polite"></div></div>
+        <div class="result-column"><div class="result-label">Dry-run 결과</div><div id="automation-output" class="panel result-panel" aria-live="polite"></div></div>
       </section>
 
       <section id="security" class="lab" role="tabpanel">
