@@ -73,11 +73,11 @@ try {
   await page.locator('#content-title').fill('x');
   await page.locator('#content-body').fill('short');
   await page.locator('#content-run').click();
-  await page.getByText('게시 전에 확인이 필요합니다.').waitFor();
+  await page.locator('#content-output').getByText('게시 전에 확인이 필요합니다.', { exact: true }).waitFor();
   await page.locator('#content-title').fill('Production Notice');
   await page.locator('#content-body').fill('This production notice contains enough content for a clean preflight verification without placeholders.');
   await page.locator('#content-run').click();
-  await page.getByText('게시 전 검사를 통과했습니다.').waitFor();
+  await page.locator('#content-output').getByText('게시 전 검사를 통과했습니다.', { exact: true }).waitFor();
   const contentDownload = page.waitForEvent('download');
   await page.locator('#content-output').getByRole('button', { name: '증빙 JSON' }).click();
   await contentDownload;
@@ -89,8 +89,8 @@ try {
   await page.locator('#kv-source').fill('Invoice: INV-100\nCustomer: Mono Works\nAmount: 180000');
   await page.locator('#csv-source').fill('id,name,note\n1,"Mono, Inc","He said ""ready"""\n2,Light Works,queued');
   await page.locator('#extract-run').click();
-  await page.getByText('구조화가 완료되었습니다.').waitFor();
-  await page.getByText('2행', { exact: true }).waitFor();
+  await page.locator('#extract-output').getByText('구조화가 완료되었습니다.', { exact: true }).waitFor();
+  await page.locator('#extract-output').getByText('2행', { exact: true }).waitFor();
   const dataDownload = page.waitForEvent('download');
   await page.locator('#extract-output').getByRole('button', { name: '추출 결과 JSON' }).click();
   await dataDownload;
@@ -101,11 +101,11 @@ try {
   await page.getByRole('tab', { name: /Workflow Dry-Run/ }).click();
   await page.locator('#fail-step').fill('submit');
   await page.locator('#workflow-run').click();
-  await page.getByText('실패 지점을 확인했습니다.').waitFor();
+  await page.locator('#workflow-output').getByText('실패 지점을 확인했습니다.', { exact: true }).waitFor();
   await page.locator('#fail-step').fill('');
   await page.locator('#workflow-run').click();
-  await page.getByText('Dry-run을 끝까지 통과했습니다.').waitFor();
-  await page.getByText(/실제 웹사이트에는 접속하지 않았습니다/).waitFor();
+  await page.locator('#workflow-output').getByText('Dry-run을 끝까지 통과했습니다.', { exact: true }).waitFor();
+  await page.locator('#workflow-output').getByText(/실제 웹사이트에는 접속하지 않았습니다/).waitFor();
   await page.screenshot({ path: path.join(artifactDir, 'ops-kit-workflow-pass.png'), fullPage: true });
   console.log('PASS Workflow Dry-Run failure -> recovery without navigation');
 
@@ -116,14 +116,14 @@ try {
   await page.locator('#security-cell').fill('=2+2');
   await page.locator('#security-secret').fill('123');
   await page.locator('#security-run').click();
-  await page.getByText('보완할 항목이 있습니다.').waitFor();
-  await page.getByText("'=2+2", { exact: true }).waitFor();
+  await page.locator('#security-output').getByText('보완할 항목이 있습니다.', { exact: true }).waitFor();
+  await page.locator('#security-output').getByText("'=2+2", { exact: true }).waitFor();
   await page.locator('#security-origin').fill('https://example.com');
   await page.locator('#security-redirect').fill('/dashboard');
   await page.locator('#security-cell').fill('safe-value');
   await page.locator('#security-secret').fill('safe-demo-secret');
   await page.locator('#security-run').click();
-  await page.getByText('보안 점검을 통과했습니다.').waitFor();
+  await page.locator('#security-output').getByText('보안 점검을 통과했습니다.', { exact: true }).waitFor();
   await page.screenshot({ path: path.join(artifactDir, 'ops-kit-security-pass.png'), fullPage: true });
   console.log('PASS Security Check unsafe -> safe');
 
@@ -131,10 +131,10 @@ try {
   await page.getByRole('tab', { name: /Release Gate/ }).click();
   await page.locator('#release-form input[name="secretScan"]').uncheck();
   await page.locator('#release-run').click();
-  await page.getByText('NO-GO · 배포를 중단합니다.').waitFor();
+  await page.locator('#release-output').getByText('NO-GO · 배포를 중단합니다.', { exact: true }).waitFor();
   await page.locator('#release-form input[name="secretScan"]').check();
   await page.locator('#release-run').click();
-  await page.getByText('GO · 배포 필수 조건 통과').waitFor();
+  await page.locator('#release-output').getByText('GO · 배포 필수 조건 통과', { exact: true }).waitFor();
   await page.screenshot({ path: path.join(artifactDir, 'ops-kit-release-pass.png'), fullPage: true });
   console.log('PASS Release Gate NO-GO -> GO');
 
