@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright-core';
 
-const portfolioBase = 'https://kzone87.github.io/portfolio';
+const portfolioBase = process.env.PORTFOLIO_BASE || 'https://kzone87.github.io/portfolio';
 const excelBase = 'https://kzone87.github.io/customer-map-planner';
 const output = 'portfolio-full-live-qa-artifacts';
 const chromePath = process.env.CHROME_PATH;
