@@ -27,7 +27,7 @@ Production은 DB path, admin password, allowed origin 중 하나라도 빠지면
 ## 3. Security boundary
 
 - 직원 로그인은 scrypt password hash 사용
-- 인증은 HttpOnly + SameSite=Strict session cookie
+- 인증은 HttpOnly Session + SameSite=Strict cookie 사용
 - 관리자 mutation은 CSRF header 필요
 - Role은 브라우저 요청 body가 아니라 서버 session에서 결정
 - 로그인/공개 예약·문의 endpoint에 process-level rate limit 적용
