@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="MONO OPERATIONS 상용 운영 Workspace">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111827'/%3E%3Cpath d='M14 45V19h8l10 14 10-14h8v26h-8V31L32 44 22 31v14z' fill='white'/%3E%3C/svg%3E">
+  <title>MONO OPERATIONS</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<a class="skip" href="#main">본문 바로가기</a>
+
+<section id="login-screen" class="login-shell">
+  <div class="login-card">
+    <div class="brand-mark">M</div>
+    <p class="eyebrow">MONO OPERATIONS</p>
+    <h1>업무 운영 Workspace</h1>
+    <p class="muted">회사 계정으로 로그인해 주문·문서·고객지원·데이터 연동 업무를 처리합니다.</p>
+    <form id="login-form" autocomplete="on">
+      <label>이메일<input id="login-email" name="email" type="email" autocomplete="username" required></label>
+      <label>비밀번호<input id="login-password" name="password" type="password" autocomplete="current-password" minlength="12" required></label>
+      <button class="primary" type="submit">로그인</button>
+      <p id="login-message" class="form-message" role="status"></p>
+    </form>
+  </div>
+</section>
+
+<div id="app-shell" class="app-shell" hidden>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span>M</span><div><strong>MONO OPERATIONS</strong><small>BACK-OFFICE SUITE</small></div></div>
+    <nav aria-label="업무 모듈">
+      <button data-view="dashboard" class="active">통합 업무함</button>
+      <button data-view="market">MARKET <small>주문·환불</small></button>
+      <button data-view="office">OFFICE <small>문서·승인</small></button>
+      <button data-view="support">SUPPORT <small>AI 업무지원</small></button>
+      <button data-view="datahub">DATA HUB <small>연동·복구</small></button>
+      <button data-view="audit">감사이력</button>
+    </nav>
+    <div class="sidebar-foot"><span id="side-user"></span><button id="logout-btn" class="text-button">로그아웃</button></div>
+  </aside>
+
+  <main id="main">
+    <header class="topbar">
+      <button id="menu-btn" class="menu-btn" aria-label="메뉴 열기">☰</button>
+      <div><p class="eyebrow">MONO OPERATIONS</p><h1 id="view-title">통합 업무함</h1></div>
+      <div class="identity"><strong id="user-name"></strong><span id="user-role"></span></div>
+    </header>
+
+    <section class="view active" data-panel="dashboard">
+      <div class="hero"><div><p class="eyebrow">WORK INBOX</p><h2>지금 처리해야 할 업무를 한 곳에서 확인합니다.</h2><p>권한이 없는 고위험 작업은 서버에서 차단되며 모든 주요 결정은 감사이력에 기록됩니다.</p></div><button id="refresh-dashboard" class="secondary">새로고침</button></div>
+      <div id="metrics" class="metrics"></div>
+      <div class="panel"><div class="panel-head"><div><p class="eyebrow">PRIORITY QUEUE</p><h2>통합 업무함</h2></div><select id="work-filter" aria-label="모듈 필터"><option value="ALL">전체</option><option>MARKET</option><option>OFFICE</option><option>SUPPORT</option><option value="DATA_HUB">DATA HUB</option></select></div><div id="work-list" class="work-list"></div></div>
+    </section>
+
+    <section class="view" data-panel="market">
+      <div class="section-head"><div><p class="eyebrow">MONO MARKET</p><h2>주문·배송·환불 운영</h2></div></div>
+      <div class="two-col">
+        <form id="order-form" class="panel compact-form"><h3>신규 주문</h3><label>고객명<input name="customerName" required minlength="2"></label><label>주문금액(원)<input name="amount" type="number" min="1" required></label><button class="primary">주문 등록</button><p class="form-message" data-message="order"></p></form>
+        <div class="panel"><h3>주문 목록</h3><div id="order-list" class="record-list"></div></div>
+      </div>
+    </section>
+
+    <section class="view" data-panel="office">
+      <div class="section-head"><div><p class="eyebrow">MONO OFFICE</p><h2>문서 접수·검수·승인</h2></div></div>
+      <div class="two-col">
+        <form id="document-form" class="panel compact-form"><h3>문서 접수</h3><label>제목<input name="title" required minlength="2"></label><label>유형<select name="type"><option>INVOICE</option><option>APPLICATION</option><option>CONTRACT</option><option>OTHER</option></select></label><label>원문/메모<textarea name="sourceText" rows="6"></textarea></label><button class="primary">문서 생성</button><p class="form-message" data-message="document"></p></form>
+        <div class="panel"><h3>문서 목록</h3><div id="document-list" class="record-list"></div></div>
+      </div>
+    </section>
+
+    <section class="view" data-panel="support">
+      <div class="section-head"><div><p class="eyebrow">MONO SUPPORT</p><h2>근거 기반 AI 업무지원 + Human Review</h2></div></div>
+      <div class="two-col">
+        <form id="support-form" class="panel compact-form"><h3>고객 문의 등록</h3><label>제목<input name="title" required minlength="2"></label><label>문의내용<textarea name="content" rows="6" required minlength="5"></textarea></label><button class="primary">문의 등록</button><p class="form-message" data-message="support"></p></form>
+        <div class="panel"><h3>문의·검토 Queue</h3><div id="support-list" class="record-list"></div></div>
+      </div>
+    </section>
+
+    <section class="view" data-panel="datahub">
+      <div class="section-head"><div><p class="eyebrow">MONO DATA HUB</p><h2>데이터 연동·재시도·Dead Letter</h2></div><button id="refresh-integrations" class="secondary">새로고침</button></div>
+      <div class="metrics mini" id="integration-metrics"></div>
+      <div class="two-col"><div class="panel"><h3>Connections</h3><div id="connection-list" class="record-list"></div></div><div class="panel"><h3>Jobs / Runs</h3><div id="integration-list" class="record-list"></div></div></div>
+      <div class="panel"><h3>Dead Letter</h3><div id="dead-list" class="record-list"></div></div>
+    </section>
+
+    <section class="view" data-panel="audit">
+      <div class="section-head"><div><p class="eyebrow">AUDIT TRAIL</p><h2>감사이력</h2></div><button id="refresh-audit" class="secondary">새로고침</button></div>
+      <div class="panel"><div id="audit-list" class="audit-list"></div></div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
