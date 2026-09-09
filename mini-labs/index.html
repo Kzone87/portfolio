@@ -1,15 +1,153 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="게시 전 내용 검사, 문서 값 추출, 반복 입력작업처럼 자주 하는 작은 업무를 빠르게 처리하는 OPS KIT 업무도구 모음"><title>OPS KIT · 업무 자동화 도구</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./quality.css"></head><body>
-<header class="topbar"><div><a href="../" aria-label="프로젝트 목록으로 돌아가기">← 프로젝트</a><strong>OPS KIT</strong><span class="workspace-name">업무 자동화 도구</span></div></header>
-<main class="mini-main"><section class="page-head"><div><p class="breadcrumb">업무도구 / Utilities</p><h1>작은 반복업무를 바로 줄이는 도구</h1><p>별도 시스템까지 만들 필요가 없는 반복업무를 필요한 도구 하나로 빠르게 처리합니다.</p></div></section>
-<nav class="tool-grid tabs" aria-label="자동화 도구 선택"><button data-tab="cms" class="tool-card active"><span class="tool-icon">01</span><div><strong>게시 전 내용 검사</strong><small>제목·본문의 필수 조건을 한 번에 확인</small></div><b>열기</b></button><button data-tab="extract" class="tool-card"><span class="tool-icon">02</span><div><strong>문서 값 추출</strong><small>문서와 표에서 다시 입력할 값을 정리</small></div><b>열기</b></button><button data-tab="automation" class="tool-card"><span class="tool-icon">03</span><div><strong>반복 입력작업</strong><small>정해진 입력·저장·확인 순서를 자동 처리</small></div><b>열기</b></button></nav>
-<section class="tool-workspace"><aside class="tool-guide"><span>현재 도구</span><strong id="current-tool-name">게시 전 내용 검사</strong><p id="current-tool-copy">게시 전에 빠진 제목이나 너무 짧은 본문을 찾아냅니다.</p><div class="guide-points"><div><b>1</b><span>업무 내용을 입력합니다.</span></div><div><b>2</b><span>실행 버튼을 누릅니다.</span></div><div><b>3</b><span>오른쪽 결과를 확인합니다.</span></div></div></aside><div class="tool-stage">
-<section id="cms" class="lab active"><div class="panel input-panel"><div class="panel-title"><div><span class="section-kicker">입력</span><h2>게시할 내용</h2><p class="muted">실제 게시 전에 기본 조건을 자동으로 확인합니다.</p></div></div><div class="lab-form"><label>제목<input id="cms-title" value="9월 서비스 이용안내"></label><label>본문<textarea id="cms-body" rows="7">9월 서비스 운영시간과 휴무일을 안내드립니다. 문의가 필요한 경우 고객센터 운영시간 안에 연락해 주세요.</textarea></label><button id="cms-run">게시 가능 여부 확인</button></div></div><div class="result-column"><div class="result-label">검사 결과</div><div id="cms-output" class="panel result-panel" aria-live="polite"></div></div></section>
-<section id="extract" class="lab"><div class="panel input-panel"><div class="panel-title"><div><span class="section-kicker">입력</span><h2>문서와 표</h2><p class="muted">사람이 다시 옮겨 적어야 하는 값을 자동으로 정리합니다.</p></div></div><div class="lab-form two-inputs"><label>문서 원문<textarea id="kv-source" rows="6">문서번호: INV-2026-0906
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="브라우저에서 로컬로 실행하는 Content Preflight, Data Extractor, Workflow Dry-Run, Security Check, Release Gate 업무도구 모음">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>OPS KIT · Operations Utility Suite</title>
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./quality.css">
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <a href="../" aria-label="프로젝트 목록으로 돌아가기">← 프로젝트</a>
+    <strong>OPS KIT</strong>
+    <span class="workspace-name">Operations Utility Suite</span>
+  </div>
+</header>
+
+<main class="mini-main">
+  <section class="page-head">
+    <div>
+      <p class="breadcrumb">LOCAL-FIRST / OPERATIONS UTILITIES</p>
+      <h1>작은 운영 작업도<br>검사와 증빙까지 남깁니다.</h1>
+      <p>작은 반복업무를 바로 줄이는 도구입니다. 텍스트와 설정을 이 브라우저 안에서만 처리하며 서버 업로드, 계정, 외부 사이트 자동조작 없이 입력 → 검사 → 결과 → 증빙 파일까지 한 번에 만듭니다.</p>
+    </div>
+    <div class="service-status" aria-label="서비스 처리 원칙">
+      <span><b>LOCAL</b> 서버 전송 없음</span>
+      <span><b>LIMIT</b> 입력 크기 제한</span>
+      <span><b>EVIDENCE</b> JSON 증빙</span>
+      <span><b>NO NETWORK</b> 외부 요청 없음</span>
+    </div>
+  </section>
+
+  <nav class="tool-grid tabs" role="tablist" aria-label="OPS KIT 도구 선택">
+    <button type="button" role="tab" aria-selected="true" aria-controls="content" data-tab="content" class="tool-card active"><span class="tool-icon">01</span><div><strong>Content Preflight</strong><small>게시 전 길이·slug·placeholder 검사</small></div><b>열기</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="extract" data-tab="extract" class="tool-card"><span class="tool-icon">02</span><div><strong>Data Extractor</strong><small>문서 값 추출 · quoted CSV 구조화</small></div><b>열기</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="workflow" data-tab="automation" class="tool-card"><span class="tool-icon">03</span><div><strong>Workflow Dry-Run</strong><small>반복 입력작업 계획 검증·실패 시뮬레이션</small></div><b>열기</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="security" data-tab="security" class="tool-card"><span class="tool-icon">04</span><div><strong>Security Check</strong><small>redirect·origin·sheet·secret 점검</small></div><b>열기</b></button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="release" data-tab="release" class="tool-card"><span class="tool-icon">05</span><div><strong>Release Gate</strong><small>필수 배포조건 GO / NO-GO 판정</small></div><b>열기</b></button>
+  </nav>
+
+  <section class="tool-workspace">
+    <aside class="tool-guide">
+      <span>현재 도구</span>
+      <strong id="current-tool-name">Content Preflight</strong>
+      <p id="current-tool-copy">게시 전에 길이, slug, placeholder와 과도한 링크를 검사합니다.</p>
+      <div class="guide-points">
+        <div><b>1</b><span>업무 입력값을 넣습니다.</span></div>
+        <div><b>2</b><span>로컬 검사를 실행합니다.</span></div>
+        <div><b>3</b><span>결과와 실패 이유를 확인합니다.</span></div>
+        <div><b>4</b><span>필요하면 증빙 JSON을 저장합니다.</span></div>
+      </div>
+      <div class="boundary-note"><strong>데이터 경계</strong><p>입력값은 이 페이지에서만 처리되며 자동 저장하지 않습니다. 민감정보는 필요한 경우에만 입력하세요.</p></div>
+    </aside>
+
+    <div class="tool-stage">
+      <section id="content" class="lab active" role="tabpanel">
+        <div class="panel input-panel">
+          <div class="panel-title"><div><span class="section-kicker">CONTENT PREFLIGHT</span><h2>게시 전 내용 검사</h2><p class="muted">제목 3~120자, 본문 20~10,000자와 placeholder·링크 밀도를 확인합니다.</p></div></div>
+          <div class="lab-form">
+            <label>제목<input id="content-title" maxlength="120" value="9월 서비스 이용안내"></label>
+            <label>Slug <span class="label-help">비워두면 제목으로 자동 생성</span><input id="content-slug" maxlength="80" placeholder="september-service-guide"></label>
+            <label>본문<textarea id="content-body" rows="10" maxlength="10000">9월 서비스 운영시간과 휴무일을 안내드립니다. 문의가 필요한 경우 고객센터 운영시간 안에 연락해 주세요.</textarea></label>
+            <div class="form-actions"><button type="button" id="content-run">Preflight 실행</button><button type="button" class="ghost-button" data-clear-output="#content-output">결과 지우기</button></div>
+          </div>
+        </div>
+        <div class="result-column"><div class="result-label">검사 결과</div><div id="content-output" class="panel result-panel" aria-live="polite"></div></div>
+      </section>
+
+      <section id="extract" class="lab" role="tabpanel">
+        <div class="panel input-panel">
+          <div class="panel-title"><div><span class="section-kicker">DATA EXTRACTOR</span><h2>문서 값 추출 · CSV 구조화</h2><p class="muted">입력당 100KB, CSV 최대 5,000행·100열. 따옴표 안 쉼표와 escaped quote를 처리합니다.</p></div></div>
+          <div class="lab-form two-inputs">
+            <label>key:value 문서<textarea id="kv-source" rows="10">문서번호: INV-2026-0906
 거래처: 모노상사
-금액: 180000</textarea></label><label>CSV 표<textarea id="csv-source" rows="6">고객번호,고객명,상태
-C001,모노상사,이용중
-C002,라이트웍스,확인대기</textarea></label><button id="extract-run">값 추출</button></div></div><div class="result-column"><div class="result-label">추출 결과</div><div id="extract-output" class="panel result-panel" aria-live="polite"></div></div></section>
-<section id="automation" class="lab"><div class="panel input-panel"><div class="panel-title"><div><span class="section-kicker">실행 설정</span><h2>반복 입력 순서</h2><p class="muted">화면 열기 → 고객명 입력 → 저장 → 완료 확인을 순서대로 처리합니다.</p></div></div><div class="automation-plan"><div><span>1</span><strong>입력 화면 열기</strong></div><i>→</i><div><span>2</span><strong>고객명 입력</strong></div><i>→</i><div><span>3</span><strong>저장</strong></div><i>→</i><div><span>4</span><strong>완료 확인</strong></div></div><div class="lab-form compact-form"><details class="diagnostic-options"><summary>오류 상황 점검</summary><label>재현할 단계<select id="fail-step"><option value="">정상 처리</option><option value="fill">이름 입력 단계 중단</option><option value="submit">저장 단계 중단</option><option value="assert">완료 확인 실패</option></select></label></details><button id="automation-run">반복작업 실행</button></div></div><div class="result-column"><div class="result-label">실행 결과</div><div id="automation-output" class="panel result-panel" aria-live="polite"></div></div></section>
-</div></section>
-<section class="use-cases"><div><span>적용 업무</span><strong>매일 반복하지만 별도 시스템을 만들기에는 작은 일</strong></div><div class="case-list"><span>게시 전 누락 확인</span><span>문서에서 값 옮기기</span><span>반복 입력·저장</span><span>작업 단계 확인</span></div></section>
-</main><script type="module" src="./app.js"></script></body></html>
+금액: 180000</textarea></label>
+            <label>CSV 표<textarea id="csv-source" rows="10">고객번호,고객명,상태,메모
+C001,"모노, 상사",이용중,"9월 확인"
+C002,라이트웍스,확인대기,"담당자 ""검토"""</textarea></label>
+            <div class="form-actions"><button type="button" id="extract-run">구조화 실행</button><button type="button" class="ghost-button" data-clear-output="#extract-output">결과 지우기</button></div>
+          </div>
+        </div>
+        <div class="result-column"><div class="result-label">추출 결과</div><div id="extract-output" class="panel result-panel" aria-live="polite"></div></div>
+      </section>
+
+      <section id="workflow" class="lab" role="tabpanel">
+        <div class="panel input-panel">
+          <div class="panel-title"><div><span class="section-kicker">WORKFLOW DRY-RUN</span><h2>반복 입력작업 계획 검증</h2><p class="muted">실제 사이트에는 접속하지 않습니다. public HTTPS URL과 최대 30단계의 계획만 검증·시뮬레이션합니다.</p></div></div>
+          <div class="lab-form">
+            <label>Workflow JSON<textarea id="workflow-source" rows="13">[
+  {"id":"open","type":"NAVIGATE","target":"https://example.com/form"},
+  {"id":"fill","type":"INPUT","target":"#customer-name","value":"Demo Customer"},
+  {"id":"submit","type":"CLICK","target":"#submit"},
+  {"id":"assert","type":"ASSERT_TEXT","target":"#status","value":"Saved"}
+]</textarea></label>
+            <details class="diagnostic-options">
+              <summary>오류 상황 점검</summary>
+              <label>실패를 재현할 단계 <span class="label-help">Workflow JSON의 step id에서 자동 갱신</span><select id="fail-step"><option value="">정상 처리</option><option value="open">open</option><option value="fill">fill</option><option value="submit">submit</option><option value="assert">assert</option></select></label>
+            </details>
+            <div class="form-actions"><button type="button" id="automation-run">Dry-run 실행</button><button type="button" class="ghost-button" data-clear-output="#automation-output">결과 지우기</button></div>
+          </div>
+        </div>
+        <div class="result-column"><div class="result-label">Dry-run 결과</div><div id="automation-output" class="panel result-panel" aria-live="polite"></div></div>
+      </section>
+
+      <section id="security" class="lab" role="tabpanel">
+        <div class="panel input-panel">
+          <div class="panel-title"><div><span class="section-kicker">SECURITY CHECK</span><h2>웹 입력 경계 점검</h2><p class="muted">외부 요청 없이 exact origin, same-origin redirect, spreadsheet formula 위험, secret 표시를 확인합니다.</p></div></div>
+          <div class="lab-form security-grid">
+            <label>허용 Origin<input id="security-allowed-origin" value="https://example.com"></label>
+            <label>검사할 Origin<input id="security-origin" value="https://example.com"></label>
+            <label>Redirect 기준 URL<input id="security-base" value="https://example.com"></label>
+            <label>Redirect 값<input id="security-redirect" value="/dashboard?tab=1"></label>
+            <label>Spreadsheet cell<input id="security-cell" value="plain-value"></label>
+            <label>Secret 샘플 <span class="label-help">화면에는 마스킹</span><input id="security-secret" type="password" autocomplete="off" value="local-demo-secret"></label>
+            <div class="form-actions"><button type="button" id="security-run">Security Check 실행</button><button type="button" class="ghost-button" data-clear-output="#security-output">결과 지우기</button></div>
+          </div>
+        </div>
+        <div class="result-column"><div class="result-label">보안 점검 결과</div><div id="security-output" class="panel result-panel" aria-live="polite"></div></div>
+      </section>
+
+      <section id="release" class="lab" role="tabpanel">
+        <div class="panel input-panel">
+          <div class="panel-title"><div><span class="section-kicker">RELEASE GATE</span><h2>배포 GO / NO-GO</h2><p class="muted">필수 5개 gate가 하나라도 실패하면 배포를 중단합니다. 운영·백업은 추가 경고로 표시합니다.</p></div></div>
+          <div id="release-form" class="release-checks">
+            <label><input type="checkbox" name="tests" checked><span><strong>자동 테스트</strong><small>회귀 테스트가 통과했는가</small></span></label>
+            <label><input type="checkbox" name="build" checked><span><strong>Production build</strong><small>배포 산출물이 정상 생성되는가</small></span></label>
+            <label><input type="checkbox" name="secretScan" checked><span><strong>Secret scan</strong><small>credential 노출이 없는가</small></span></label>
+            <label><input type="checkbox" name="healthCheck" checked><span><strong>Health check</strong><small>배포 후 서비스 상태를 확인하는가</small></span></label>
+            <label><input type="checkbox" name="rollbackPlan" checked><span><strong>Rollback plan</strong><small>문제 시 되돌릴 방법이 준비됐는가</small></span></label>
+            <label class="optional-check"><input type="checkbox" name="observability" checked><span><strong>Observability</strong><small>운영 로그·오류 관측 준비</small></span></label>
+            <label class="optional-check"><input type="checkbox" name="backupVerified" checked><span><strong>Backup verification</strong><small>복구 가능한 백업 확인</small></span></label>
+          </div>
+          <div class="lab-form release-actions"><div class="form-actions"><button type="button" id="release-run">Release Gate 판정</button><button type="button" class="ghost-button" data-clear-output="#release-output">결과 지우기</button></div></div>
+        </div>
+        <div class="result-column"><div class="result-label">Release 판정</div><div id="release-output" class="panel result-panel" aria-live="polite"></div></div>
+      </section>
+    </div>
+  </section>
+
+  <section class="service-boundary">
+    <div><span>서비스 범위</span><strong>브라우저 로컬 검사 · 자동 저장 없음 · 외부 시스템 조작 없음</strong></div>
+    <p>OPS KIT는 실제 운영 전 검증을 돕는 local-first utility입니다. Workflow Dry-Run은 자동화 계획을 검증할 뿐 실제 웹사이트를 클릭하거나 로그인하지 않습니다. 증빙 JSON과 추출 결과 파일은 사용자가 명시적으로 다운로드할 때만 생성됩니다.</p>
+  </section>
+</main>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
