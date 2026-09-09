@@ -3,6 +3,7 @@ const form = document.getElementById('project-inquiry-form');
 const message = document.getElementById('project-inquiry-message');
 const summary = document.getElementById('project-inquiry-summary');
 const copyButton = document.getElementById('copy-project-inquiry');
+const downloadButton = document.getElementById('download-project-inquiry');
 let currentText = '';
 
 const line = (label, value) => `${label}: ${value || '미입력'}`;
@@ -31,10 +32,15 @@ function buildText(value) {
     `현재 업무/문제:\n${value.detail}`
   ].join('\n');
 }
+function enablePortableDraftActions() {
+  if (copyButton) copyButton.disabled = false;
+  if (downloadButton) downloadButton.disabled = false;
+}
 function showSummary(text, id = '') {
-  currentText = text;
+  currentText = id ? `${text}\n\n접수번호: ${id}` : text;
   summary.hidden = false;
-  summary.querySelector('pre').textContent = id ? `${text}\n\n접수번호: ${id}` : text;
+  summary.querySelector('pre').textContent = currentText;
+  enablePortableDraftActions();
   summary.scrollIntoView({ block:'nearest', behavior:'smooth' });
 }
 
@@ -43,6 +49,8 @@ if (endpoint) {
   if (submit) submit.textContent = '비공개 의뢰 보내기';
   const note = summary?.querySelector('p');
   if (note) note.textContent = '입력한 프로젝트 의뢰는 비공개 상담 API로 전송됩니다.';
+  const mode = document.querySelector('.inquiry-mode');
+  if (mode) mode.innerHTML = '<span>PRIVATE INTAKE</span><strong>이 운영환경은 비공개 상담 API가 연결되어 있습니다.</strong><small>정상 접수 후 접수번호가 표시되며, 동일 내용을 복사하거나 TXT로 보관할 수 있습니다.</small>';
 }
 
 form?.addEventListener('submit', async event => {
@@ -57,7 +65,7 @@ form?.addEventListener('submit', async event => {
   const text = buildText(value);
   if (!endpoint) {
     showSummary(text);
-    message.textContent = '의뢰 내용을 정리했습니다. 공개 포트폴리오에서는 서버로 전송하지 않습니다.';
+    message.textContent = '의뢰 내용을 정리했습니다. 공개 포트폴리오에서는 서버로 전송하지 않습니다. 아래에서 복사하거나 TXT로 저장할 수 있습니다.';
     return;
   }
   const button = form.querySelector('button[type="submit"]');
@@ -76,7 +84,7 @@ form?.addEventListener('submit', async event => {
     message.textContent = `비공개 프로젝트 문의가 접수되었습니다. 접수번호 ${payload.id}`;
   } catch (error) {
     showSummary(text);
-    message.textContent = error instanceof Error ? error.message : '의뢰를 접수하지 못했습니다.';
+    message.textContent = `${error instanceof Error ? error.message : '의뢰를 접수하지 못했습니다.'} 작성한 내용은 복사하거나 TXT로 보관할 수 있습니다.`;
     message.classList.add('error');
   } finally {
     button.disabled = false;
@@ -89,8 +97,24 @@ copyButton?.addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(currentText);
     message.textContent = '의뢰 내용을 복사했습니다.';
+    message.classList.remove('error');
   } catch {
-    message.textContent = '자동 복사를 사용할 수 없습니다. 내용을 직접 복사해 주세요.';
+    message.textContent = '자동 복사를 사용할 수 없습니다. 아래 의뢰 내용을 직접 복사해 주세요.';
     message.classList.add('error');
   }
+});
+
+downloadButton?.addEventListener('click', () => {
+  if (!currentText) return;
+  const blob = new Blob([`${currentText}\n`], { type:'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = 'KZONE87-project-inquiry.txt';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+  message.textContent = 'TXT 의뢰서를 저장했습니다.';
+  message.classList.remove('error');
 });
