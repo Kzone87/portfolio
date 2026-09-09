@@ -9,11 +9,14 @@ test('commerce workspace presents readable operational order data', async () => 
   const css = await load('commerce-ops-console/styles.css');
 
   assert.match(html, /MONO MARKET/);
-  assert.match(html, /운영 기준일/);
+  assert.match(html, /운영 스냅샷/);
+  assert.match(html, /데모 데이터 기준/);
   assert.doesNotMatch(html, /샘플 쇼핑몰|시연 주문 업무|체험 방법|시연 기준일|오늘의 주문 업무|오늘 업무/);
   assert.match(html, /id="search" type="search" aria-label="주문 검색"/);
   assert.match(html, /id="ops-filter" aria-label="처리상태"/);
+  assert.match(html, /id="payment-filter" aria-label="결제상태"/);
   assert.match(html, /id="fulfillment-filter" aria-label="배송상태"/);
+  assert.match(html, /id="reset-filters"/);
 
   assert.match(css, /\.order-main strong\{font-size:13px/);
   assert.match(css, /\.order-main span\{[^}]*font-size:12px/);
@@ -22,4 +25,5 @@ test('commerce workspace presents readable operational order data', async () => 
   assert.match(css, /\.timeline-item strong\{font-size:12px/);
   assert.match(css, /\.timeline-item span\{[^}]*font-size:11px/);
   assert.match(css, /\.side-nav nav a\{[^}]*font-size:13px/);
+  assert.match(css, /\.mobile-nav\{display:none\}/);
 });

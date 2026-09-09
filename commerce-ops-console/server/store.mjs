@@ -34,6 +34,7 @@ function mapEngineError(error) {
   const message = error instanceof Error ? error.message : String(error);
   if (message.startsWith('STALE_ORDER_VERSION:')) return new DomainError(409, 'STALE_ORDER', message);
   if (/expectedVersion/.test(message)) return new DomainError(400, 'EXPECTED_VERSION_REQUIRED', message);
+  if (/decisionNote/.test(message)) return new DomainError(400, 'REFUND_DECISION_NOTE_REQUIRED', message);
   return new DomainError(409, 'INVALID_ORDER_ACTION', message);
 }
 
@@ -175,7 +176,7 @@ export function createStore() {
       replaceOrder(result.order);
       const refundIndex = state.refunds.findIndex((item) => item.id === refund.id);
       state.refunds[refundIndex] = result.refund;
-      audit(result.order, result.refund.status === REFUND_STATUS.APPROVED ? 'APPROVE_REFUND' : 'REJECT_REFUND', input.decidedBy, `${result.refund.amount} ${result.order.currency}`);
+      audit(result.order, result.refund.status === REFUND_STATUS.APPROVED ? 'APPROVE_REFUND' : 'REJECT_REFUND', input.decidedBy, `${result.refund.amount} ${result.order.currency} · ${result.refund.decisionNote}`);
       return { order: snapshotOrder(result.order), refund: clone(result.refund) };
     }
   };
