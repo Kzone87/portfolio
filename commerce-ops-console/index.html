@@ -1,13 +1,94 @@
-<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="주문 검색, 출고, 배송, 보류, 반품, 환불 검토를 한 화면에서 처리하는 모노마켓 주문운영 시스템"><title>MONO MARKET · 주문 운영센터</title><link rel="stylesheet" href="./styles.css"></head><body>
-<header class="topbar"><div><a href="../" aria-label="프로젝트 목록으로 돌아가기">← 프로젝트</a><strong>MONO MARKET</strong><span class="workspace-name">주문 운영센터</span></div><label>업무 권한<select id="role"><option value="STAFF">운영 담당자</option><option value="ADMIN">운영 관리자</option></select></label></header>
-<div class="commerce-shell"><aside class="side-nav" aria-label="주문관리 메뉴"><div class="nav-brand"><span class="nav-logo">M</span><div><strong>Order Ops</strong><small>Commerce Operations</small></div></div><nav><a class="active" href="#orders">주문</a><a href="#refunds">환불 검토</a><a href="#history">변경 이력</a></nav><div class="nav-note"><strong>업무 가이드</strong><p>주문 상태에 따라 상품 준비, 출고, 배송완료를 순서대로 처리합니다.</p></div></aside>
-<main class="commerce-main">
-<section id="orders" class="page-head"><div><p class="breadcrumb">운영센터 / 주문</p><h1>주문</h1><p>결제 이후 주문을 확인하고 출고·배송·반품·환불까지 한곳에서 처리합니다.</p></div><div class="page-context"><span>운영 기준일</span><strong>2026. 09. 06</strong></div></section>
-<section class="metrics" aria-label="주문 운영 현황"><article><strong id="m-active">0</strong><span>처리 중</span><small>현재 진행 주문</small></article><article><strong id="m-hold">0</strong><span>보류</span><small>확인이 필요한 주문</small></article><article><strong id="m-unfulfilled">0</strong><span>출고 전</span><small>아직 발송하지 않음</small></article><article><strong id="m-refund">0</strong><span>환불 검토</span><small>결정 대기</small></article><article><strong id="m-high">0</strong><span>관리자 확인</span><small>고액·위험 환불</small></article></section>
-<section class="workspace commerce-workspace"><article class="panel order-list-panel"><div class="panel-head"><div><h2>주문 목록</h2><p class="muted">검색하거나 상태별로 빠르게 좁혀보세요.</p></div><span id="visible-order-count" class="count-chip">0건</span></div><div class="filters"><label class="search-field"><span class="sr-only">주문 검색</span><input id="search" type="search" aria-label="주문 검색" placeholder="주문번호·고객명·이메일 검색"></label><select id="ops-filter" aria-label="처리상태"><option value="">처리상태 전체</option><option value="ACTIVE">처리 중</option><option value="ON_HOLD">처리 보류</option><option value="CANCELLED">취소됨</option><option value="CLOSED">처리 완료</option></select><select id="fulfillment-filter" aria-label="배송상태"><option value="">배송상태 전체</option><option value="UNFULFILLED">출고 전</option><option value="PICKING">상품 준비 중</option><option value="SHIPPED">배송 중</option><option value="DELIVERED">배송 완료</option><option value="RETURNED">반품 접수</option></select></div><div class="order-table-head" aria-hidden="true"><span>주문</span><span>결제</span><span>배송</span><span>금액</span></div><div id="order-list" class="order-list"></div></article>
-<section class="panel detail-panel"><div id="empty-detail" class="empty"><div><strong>주문을 선택하세요</strong><span>왼쪽 주문 목록에서 한 건을 선택하면 상세 정보와 처리 버튼이 표시됩니다.</span></div></div><div id="detail" hidden><div class="detail-head"><div><span class="detail-kicker">주문 상세</span><h2 id="order-title"></h2><p id="order-customer" class="muted"></p></div><span id="order-version"></span></div><div class="state-grid"><article><span>주문 처리</span><strong id="ops-status"></strong></article><article><span>결제</span><strong id="payment-status"></strong></article><article><span>배송</span><strong id="fulfillment-status"></strong></article><article><span>환불 가능액</span><strong id="refundable"></strong></article></div><div id="flags" class="flags"></div>
-<div class="detail-grid"><div class="detail-primary"><section class="control-block"><div class="section-title"><div><h3>주문 처리</h3><p class="muted">현재 상태에서 가능한 다음 작업만 표시됩니다.</p></div></div><div id="actions" class="actions"></div><div class="inline-controls"><label>보류 사유<select id="hold-reason"><option value="ADDRESS_CHECK">주소 확인</option><option value="STOCK_CHECK">재고 확인</option><option value="PAYMENT_REVIEW">결제 확인</option><option value="FRAUD_REVIEW">이상 거래 확인</option><option value="CUSTOMER_REQUEST">고객 요청</option><option value="OTHER">기타</option></select></label><label>운송장 번호<input id="tracking" value="CJ-260906-1842"></label></div></section>
-<section class="control-block refund-block"><div class="section-title"><div><h3>환불 요청</h3><p class="muted">배송 완료 주문에서 환불을 요청할 수 있습니다.</p></div></div><div class="refund-form"><label>환불 금액<input id="refund-amount" type="number" min="1" step="1"></label><label>환불 사유<select id="refund-reason"><option value="CUSTOMER_REQUEST">고객 요청</option><option value="DUPLICATE">중복 결제</option><option value="DAMAGED">상품 파손</option><option value="LOST">배송 분실</option><option value="FRAUD_REVIEW">이상 거래 확인</option><option value="OTHER">기타</option></select></label><label class="wide">처리 메모<input id="refund-note" maxlength="500" placeholder="예: 배송 중 포장 파손 확인"></label><button id="request-refund" type="button">환불 검토 요청</button></div><p class="fine">10만원 이상이거나 파손·분실·이상거래 사유는 관리자 확인이 필요합니다.</p></section><p id="status-message" class="status-message" role="status" aria-live="polite"></p></div>
-<aside class="detail-side"><section class="summary-card"><h3>고객 정보</h3><div id="customer-summary"></div></section><section class="summary-card timeline-card"><h3>처리 타임라인</h3><div id="order-timeline" class="order-timeline"></div></section></aside></div></div></section></section>
-<section id="refunds" class="lower-grid"><article class="panel"><div class="panel-head"><div><h2>환불 검토 대기</h2><p class="muted">고액 또는 위험 사유 환불은 관리자 권한에서 결정합니다.</p></div></div><div id="refund-list" class="review-list"></div></article><article id="history" class="panel"><div class="panel-head"><div><h2>최근 변경 이력</h2><p class="muted">누가 어떤 주문을 처리했는지 확인할 수 있습니다.</p></div></div><div id="audit-list" class="audit-list"></div></article></section>
-</main></div><script type="module" src="./app.js"></script></body></html>
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="주문 검색, 출고, 배송, 보류, 반품, 환불 검토를 한 화면에서 처리하는 MONO MARKET 주문 운영센터">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="MONO MARKET · 주문 운영센터">
+  <meta property="og:description" content="주문 예외, 출고·배송, 반품과 환불 검토를 한 화면에서 처리하는 운영 콘솔">
+  <meta property="og:url" content="https://kzone87.github.io/portfolio/commerce-ops-console/">
+  <link rel="canonical" href="https://kzone87.github.io/portfolio/commerce-ops-console/">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <title>MONO MARKET · 주문 운영센터</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">본문으로 바로가기</a>
+<header class="topbar">
+  <div class="topbar-brand"><span class="topbar-mark" aria-hidden="true">M</span><strong>MONO MARKET</strong><span class="workspace-name">주문 운영센터</span></div>
+  <div class="topbar-tools"><span class="snapshot-chip">운영 스냅샷</span><label>업무 권한<select id="role"><option value="STAFF">운영 담당자</option><option value="ADMIN">운영 관리자</option></select></label></div>
+</header>
+<nav class="mobile-nav" aria-label="모바일 주문관리 메뉴"><a href="#orders">주문</a><a href="#refunds">환불 검토</a><a href="#history">변경 이력</a></nav>
+<div class="commerce-shell">
+  <aside class="side-nav" aria-label="주문관리 메뉴">
+    <div class="nav-brand"><span class="nav-logo">M</span><div><strong>Order Ops</strong><small>Commerce Operations</small></div></div>
+    <nav><a class="active" href="#orders" aria-current="page">주문</a><a href="#refunds">환불 검토</a><a href="#history">변경 이력</a></nav>
+    <div class="nav-note"><strong>업무 기준</strong><p>보류·출고·환불 검토처럼 업무 중단 가능성이 큰 예외부터 처리합니다.</p></div>
+  </aside>
+  <main id="main" class="commerce-main">
+    <section id="orders" class="page-head">
+      <div><p class="breadcrumb">운영센터 / 주문</p><h1>주문 운영</h1><p>주문 예외를 먼저 확인하고 출고·배송·반품·환불까지 상태에 맞는 다음 작업을 처리합니다.</p></div>
+      <div class="page-context"><span>데모 데이터 기준</span><strong>2026. 09. 06 · 09:00</strong><small>고정 스냅샷</small></div>
+    </section>
+
+    <section class="priority-strip" aria-labelledby="priority-title">
+      <div class="priority-copy"><span>WORK QUEUE</span><h2 id="priority-title">지금 먼저 확인할 업무</h2><p>운영 중단 가능성이 높은 보류·출고·관리자 환불 검토를 빠르게 좁힐 수 있습니다.</p></div>
+      <div class="priority-actions">
+        <button type="button" data-quick-filter="hold"><span>보류 확인</span><strong><b id="q-hold">0</b>건</strong><small>주소·재고·결제 확인</small></button>
+        <button type="button" data-quick-filter="unfulfilled"><span>출고 전 확인</span><strong><b id="q-unfulfilled">0</b>건</strong><small>상품 준비 포함</small></button>
+        <button type="button" data-quick-filter="refund"><span>관리자 환불</span><strong><b id="q-refund">0</b>건</strong><small>고액·위험 사유</small></button>
+      </div>
+    </section>
+
+    <section class="metrics" aria-label="주문 운영 현황">
+      <article><strong id="m-active">0</strong><span>처리 중</span><small>현재 진행 주문</small></article>
+      <article><strong id="m-hold">0</strong><span>보류</span><small>확인이 필요한 주문</small></article>
+      <article><strong id="m-unfulfilled">0</strong><span>출고 전</span><small>아직 발송하지 않음</small></article>
+      <article><strong id="m-refund">0</strong><span>환불 검토</span><small>결정 대기</small></article>
+      <article><strong id="m-high">0</strong><span>관리자 확인</span><small>고액·위험 환불</small></article>
+    </section>
+
+    <section class="workspace commerce-workspace">
+      <article class="panel order-list-panel">
+        <div class="panel-head"><div><h2>주문 목록</h2><p class="muted">주문번호·고객·이메일을 검색하거나 상태별로 좁혀보세요.</p></div><span id="visible-order-count" class="count-chip">0건</span></div>
+        <div class="filters">
+          <label class="search-field"><span class="sr-only">주문 검색</span><input id="search" type="search" aria-label="주문 검색" placeholder="주문번호·고객명·이메일 검색"></label>
+          <select id="ops-filter" aria-label="처리상태"><option value="">처리상태 전체</option><option value="ACTIVE">처리 중</option><option value="ON_HOLD">처리 보류</option><option value="CANCELLED">취소됨</option><option value="CLOSED">처리 완료</option></select>
+          <select id="payment-filter" aria-label="결제상태"><option value="">결제상태 전체</option><option value="PAID">결제 완료</option><option value="REFUND_PENDING">환불 검토 중</option><option value="PARTIALLY_REFUNDED">부분 환불</option><option value="REFUNDED">환불 완료</option></select>
+          <select id="fulfillment-filter" aria-label="배송상태"><option value="">배송상태 전체</option><option value="UNFULFILLED">출고 전</option><option value="PICKING">상품 준비 중</option><option value="SHIPPED">배송 중</option><option value="DELIVERED">배송 완료</option><option value="RETURNED">반품 접수</option></select>
+          <button id="reset-filters" class="filter-reset" type="button">필터 초기화</button>
+        </div>
+        <div class="order-table-head" aria-hidden="true"><span>주문</span><span>결제</span><span>배송</span><span>금액</span></div>
+        <div id="order-list" class="order-list"></div>
+      </article>
+
+      <section class="panel detail-panel" aria-label="선택 주문 상세">
+        <div id="empty-detail" class="empty"><div><strong>주문을 선택하세요</strong><span>왼쪽 주문 목록에서 한 건을 선택하면 상세 정보와 현재 처리 가능한 작업이 표시됩니다.</span></div></div>
+        <div id="detail" hidden>
+          <div class="detail-head"><div><span class="detail-kicker">주문 상세</span><h2 id="order-title"></h2><p id="order-customer" class="muted"></p></div><span id="order-version"></span></div>
+          <div class="state-grid"><article><span>주문 처리</span><strong id="ops-status"></strong></article><article><span>결제</span><strong id="payment-status"></strong></article><article><span>배송</span><strong id="fulfillment-status"></strong></article><article><span>환불 가능액</span><strong id="refundable"></strong></article></div>
+          <div id="flags" class="flags"></div>
+          <div class="detail-grid">
+            <div class="detail-primary">
+              <section class="control-block"><div class="section-title"><div><h3>주문 처리</h3><p class="muted">현재 상태에서 가능한 다음 작업만 표시됩니다.</p></div></div><div id="actions" class="actions"></div><div class="inline-controls"><label>보류 사유<select id="hold-reason"><option value="ADDRESS_CHECK">주소 확인</option><option value="STOCK_CHECK">재고 확인</option><option value="PAYMENT_REVIEW">결제 확인</option><option value="FRAUD_REVIEW">이상 거래 확인</option><option value="CUSTOMER_REQUEST">고객 요청</option><option value="OTHER">기타</option></select></label><label>운송장 번호<input id="tracking" value="CJ-260906-1842" autocomplete="off"></label></div></section>
+              <section class="control-block refund-block"><div class="section-title"><div><h3>환불 요청</h3><p class="muted">배송 상태와 환불 가능액을 확인한 뒤 검토 요청을 등록합니다.</p></div></div><div class="refund-form"><label>환불 금액<input id="refund-amount" type="number" min="1" step="1"></label><label>환불 사유<select id="refund-reason"><option value="CUSTOMER_REQUEST">고객 요청</option><option value="DUPLICATE">중복 결제</option><option value="DAMAGED">상품 파손</option><option value="LOST">배송 분실</option><option value="FRAUD_REVIEW">이상 거래 확인</option><option value="OTHER">기타</option></select></label><label class="wide">처리 메모<input id="refund-note" maxlength="500" placeholder="예: 배송 중 포장 파손 확인"></label><button id="request-refund" type="button">환불 검토 요청</button></div><p class="fine">10만원 이상 또는 파손·분실·이상거래 사유는 운영 관리자의 별도 승인·반려와 결정 메모가 필요합니다.</p></section>
+              <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
+            </div>
+            <aside class="detail-side"><section class="summary-card"><h3>고객 정보</h3><div id="customer-summary"></div></section><section class="summary-card timeline-card"><h3>처리 타임라인</h3><div id="order-timeline" class="order-timeline"></div></section></aside>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="refunds" class="lower-grid">
+      <article class="panel"><div class="panel-head"><div><h2>환불 검토 대기</h2><p class="muted">고액 또는 위험 사유 환불은 관리자 권한과 결정 메모가 있어야 처리할 수 있습니다.</p></div><span id="refund-role-chip" class="count-chip">운영 담당자</span></div><div id="refund-list" class="review-list"></div></article>
+      <article id="history" class="panel"><div class="panel-head"><div><h2>최근 변경 이력</h2><p class="muted">누가 어떤 주문을 처리했는지 감사 이력으로 확인합니다.</p></div></div><div id="audit-list" class="audit-list"></div></article>
+    </section>
+  </main>
+</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
