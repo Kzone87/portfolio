@@ -165,7 +165,9 @@ async function assertMainHashLinks(page) {
     const id = decodeURIComponent(hash.slice(1));
     const target = id ? page.locator(`[id="${id.replaceAll('"', '\\"')}"]`) : page.locator('body');
     if (await target.count() !== 1) throw new Error(`portfolio hash target missing: ${hash}`);
-    await page.locator(`a[href="${hash}"]`).first().click();
+    const visibleLinks = page.locator(`a[href="${hash}"]:visible`);
+    if (await visibleLinks.count() < 1) throw new Error(`portfolio hash has no visible navigation link: ${hash}`);
+    await visibleLinks.last().click();
     await page.waitForTimeout(80);
     if (id && page.url().split('#')[1] !== encodeURIComponent(id) && !page.url().endsWith(`#${id}`)) {
       throw new Error(`portfolio hash navigation failed: ${hash} -> ${page.url()}`);
