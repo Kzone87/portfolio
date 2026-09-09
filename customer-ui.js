@@ -1,3 +1,8 @@
+const MONO_SUITE_PATHS = ['/commerce-ops-console/','/document-intake-approval/','/ai-workflow-review-desk/','/integration-control-center/'];
+if (typeof window !== 'undefined' && MONO_SUITE_PATHS.some(segment => window.location.pathname.includes(segment))) {
+  import('./mono-operations/suite-shell.js');
+}
+
 export const STATUS_LABELS = Object.freeze({
   ACTIVE: '처리 중', ON_HOLD: '처리 보류', CANCELLED: '취소됨', CLOSED: '처리 완료',
   PAID: '결제 완료', REFUND_PENDING: '환불 검토 중', PARTIALLY_REFUNDED: '부분 환불', REFUNDED: '환불 완료',
