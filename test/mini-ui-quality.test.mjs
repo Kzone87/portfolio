@@ -8,10 +8,18 @@ const quality = await readFile(new URL('../mini-labs/quality.css', import.meta.u
 const app = await readFile(new URL('../mini-labs/app.js', import.meta.url), 'utf8');
 
 test('OPS KIT exposes five real local-first utilities', () => {
-  for (const id of ['content', 'extract', 'workflow', 'security', 'release']) {
-    assert.match(html, new RegExp(`data-tab="${id}"`));
-    assert.match(html, new RegExp(`id="${id}"`));
-    assert.match(html, new RegExp(`id="${id}-run"`));
+  const tools = [
+    { tab: 'content', panel: 'content', run: 'content-run', output: 'content-output' },
+    { tab: 'extract', panel: 'extract', run: 'extract-run', output: 'extract-output' },
+    { tab: 'automation', panel: 'workflow', run: 'automation-run', output: 'automation-output' },
+    { tab: 'security', panel: 'security', run: 'security-run', output: 'security-output' },
+    { tab: 'release', panel: 'release', run: 'release-run', output: 'release-output' }
+  ];
+  for (const tool of tools) {
+    assert.match(html, new RegExp(`data-tab="${tool.tab}"`));
+    assert.match(html, new RegExp(`id="${tool.panel}"`));
+    assert.match(html, new RegExp(`id="${tool.run}"`));
+    assert.match(html, new RegExp(`id="${tool.output}"`));
   }
   assert.match(html, /Content Preflight/);
   assert.match(html, /Data Extractor/);
@@ -42,6 +50,8 @@ test('OPS KIT accessibility layer preserves focus, readable mobile inputs and re
   assert.match(html, /role="tablist"/);
   assert.match(html, /aria-selected="true"/);
   assert.match(html, /aria-live="polite"/);
+  assert.match(html, /diagnostic-options/);
+  assert.match(html, /<select id="fail-step">/);
   assert.match(quality, /focus-visible/);
   assert.match(quality, /prefers-reduced-motion/);
   assert.match(quality, /font-size:16px!important/);
@@ -52,4 +62,5 @@ test('OPS KIT exposes evidence and explicit result-download behavior', () => {
   assert.match(app, /추출 결과 JSON/);
   assert.match(app, /createEvidence/);
   assert.match(app, /downloadText/);
+  assert.match(app, /syncFailStepOptions/);
 });
