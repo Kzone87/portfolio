@@ -41,7 +41,7 @@ test('document responsive workspace protects intake, mobile navigation, and narr
 });
 
 test('document production QA waits for same-SHA Pages and verifies the real intake-review-archive flow',()=>{
-  for(const width of ['1440','768','390'])assert.match(liveQa,new RegExp(`width: ${width}`));
+  for(const width of ['1440','768','390'])assert.match(liveQa,new RegExp(`width:\\s*${width}`));
   assert.match(liveQa,/create-document/);
   assert.match(liveQa,/검수 근거를 4자 이상/);
   assert.match(liveQa,/selectOption\('REVIEWER'\)/);
