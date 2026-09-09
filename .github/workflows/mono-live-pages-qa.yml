@@ -5,6 +5,9 @@ on:
     branches:
       - main
     paths:
+      - 'index.html'
+      - 'commercial-portfolio.js'
+      - 'commercial-portfolio.css'
       - 'mono-operations/**'
       - 'commerce-ops-console/**'
       - 'document-intake-approval/**'
@@ -13,6 +16,7 @@ on:
       - 'scripts/mono-live-page-qa.mjs'
       - '.github/workflows/mono-live-pages-qa.yml'
       - 'test/mono-operations-suite.test.mjs'
+      - 'test/mono-portfolio-showcase.test.mjs'
   workflow_dispatch:
 
 permissions:
@@ -69,7 +73,7 @@ jobs:
           "$CHROME_PATH" --version
       - name: Install browser driver only
         run: npm install --no-save --package-lock=false --ignore-scripts playwright-core@1.55.0
-      - name: Verify MONO Operations and four modules in real Chrome
+      - name: Verify portfolio MONO showcase, Operations and four modules in real Chrome
         run: node scripts/mono-live-page-qa.mjs
       - name: Upload live screenshots
         if: always()
