@@ -9,7 +9,7 @@ const customerUi = await load('customer-ui.js');
 const packageJson = JSON.parse(await load('package.json'));
 
 const demos = [
-  { route: 'commerce-ops-console/', html: 'commerce-ops-console/index.html', app: 'commerce-ops-console/app.js', controls: ['search','request-refund'], results: ['order-list','status-message','audit-list'] },
+  { route: 'commerce-ops-console/', html: 'commerce-ops-console/index.html', app: 'commerce-ops-console/app.js', controls: ['search','request-refund'], results: ['order-list','status-message','audit-list'], productWorkspace: true },
   { route: 'field-service-ops/', html: 'field-service-ops/index.html', app: 'field-service-ops/app.js', controls: ['search','schedule'], results: ['job-list','message','audit-list'], internalWorkspace: true },
   { route: 'document-intake-approval/', html: 'document-intake-approval/index.html', app: 'document-intake-approval/app.js', controls: ['search','save','extract','submit'], results: ['doc-list','message','audit-list'] },
   { route: 'ai-workflow-review-desk/', html: 'ai-workflow-review-desk/index.html', app: 'ai-workflow-review-desk/app.js', controls: ['task-form','generate-selected','approve','reject'], results: ['task-list','evidence-list','review-history'] },
@@ -75,6 +75,11 @@ test('every internal showroom page exposes real controls and visible results', a
       assert.match(html, /상담 접수함/);
       assert.match(html, /배차 현황/);
       assert.match(html, /운영 기준일/);
+      assert.doesNotMatch(html, /← (?:체험센터|포트폴리오|프로젝트)/);
+    } else if (demo.productWorkspace) {
+      assert.match(html, /MONO MARKET/);
+      assert.match(html, /주문 운영/);
+      assert.match(html, /주문 운영센터/);
       assert.doesNotMatch(html, /← (?:체험센터|포트폴리오|프로젝트)/);
     } else {
       assert.match(html, /<a href="\.\.\/"[^>]*>← (?:체험센터|포트폴리오|프로젝트)<\/a>/);
