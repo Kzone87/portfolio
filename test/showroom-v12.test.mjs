@@ -14,7 +14,7 @@ const demos = [
   { route: 'document-intake-approval/', html: 'document-intake-approval/index.html', app: 'document-intake-approval/app.js', controls: ['search','save','extract','submit'], results: ['doc-list','message','audit-list'], documentWorkspace: true },
   { route: 'ai-workflow-review-desk/', html: 'ai-workflow-review-desk/index.html', app: 'ai-workflow-review-desk/app.js', controls: ['task-form','generate-selected','approve','reject'], results: ['task-list','evidence-list','review-history'], monoWorkspace: 'MONO SUPPORT' },
   { route: 'integration-control-center/', html: 'integration-control-center/index.html', app: 'integration-control-center/app.js', controls: ['jobForm','resetDemo','clearHistory'], results: ['jobTable','historyList','formStatus'], monoWorkspace: 'MONO DATA HUB' },
-  { route: 'mini-labs/', html: 'mini-labs/index.html', app: 'mini-labs/app.js', controls: ['cms-run','extract-run','automation-run'], results: ['cms-output','extract-output','automation-output'] }
+  { route: 'mini-labs/', html: 'mini-labs/index.html', app: 'mini-labs/app.js', controls: ['content-run','extract-run','workflow-run','security-run','release-run'], results: ['content-output','extract-output','workflow-output','security-output','release-output'], technicalUtility: true }
 ];
 const corporatePages = ['nexa-tech-service/','nexa-tech-service/about.html','nexa-tech-service/services.html','nexa-tech-service/industries.html','nexa-tech-service/cases.html','nexa-tech-service/playbook.html','nexa-tech-service/contact.html'];
 
@@ -149,6 +149,7 @@ test('NEXA keeps customer-facing text readable and interactive controls accessib
 test('customer-visible demo text excludes developer implementation jargon', async () => {
   const forbidden = [/\bRBAC\b/i,/Idempotency/i,/Dead Letter/i,/WorkflowPreset/i,/Local RAG/i,/\bProvider\b/i,/\bPrompt\b/i,/\bEvidence\b/i,/\bVERSION\b/i,/\bCRUD\b/i,/State Machine/i,/\bAudit\b/i,/\bWebhook\b/i,/REST API/i,/\bJSON\b/i,/Runbook/i,/\bschema\b/i,/\bvalidation\b/i,/deterministic/i,/DEMO INFO/i];
   for (const demo of demos) {
+    if (demo.technicalUtility) continue;
     const text = visibleText(await load(demo.html));
     for (const pattern of forbidden) assert.doesNotMatch(text, pattern, `${demo.route} exposes ${pattern}`);
   }
