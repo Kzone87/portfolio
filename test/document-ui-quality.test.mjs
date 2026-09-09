@@ -17,7 +17,9 @@ test('document review keeps the three-pane review workflow and accessible filter
 });
 
 test('document preview readability is protected by a final quality layer', () => {
-  assert.match(html, /styles\.css"><link rel="stylesheet" href="\.\/quality\.css"/);
+  assert.match(html, /href="\.\/styles\.css"/);
+  assert.match(html, /href="\.\/quality\.css"/);
+  assert.ok(html.indexOf('href="./styles.css"') < html.indexOf('href="./quality.css"'));
   assert.match(quality, /\.paper-source p\{font-size:13px!important/);
   assert.match(quality, /\.paper-meta strong\{font-size:13px!important/);
   assert.match(quality, /\.doc-card p\{font-size:13px!important/);
