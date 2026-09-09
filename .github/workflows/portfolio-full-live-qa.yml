@@ -8,6 +8,9 @@ on:
       - 'index.html'
       - 'commercial-portfolio.js'
       - 'commercial-portfolio.css'
+      - 'booking-portfolio.js'
+      - 'home-motion.js'
+      - 'booking-crm/**'
       - 'project-inquiry/**'
       - 'mini-labs/**'
       - 'nexa-tech-service/**'
@@ -18,6 +21,7 @@ on:
       - 'document-intake-approval/**'
       - 'ai-workflow-review-desk/**'
       - 'integration-control-center/**'
+      - 'scripts/booking-crm-live-qa.mjs'
       - 'scripts/portfolio-full-live-qa.mjs'
       - '.github/workflows/portfolio-full-live-qa.yml'
   push:
@@ -27,6 +31,9 @@ on:
       - 'index.html'
       - 'commercial-portfolio.js'
       - 'commercial-portfolio.css'
+      - 'booking-portfolio.js'
+      - 'home-motion.js'
+      - 'booking-crm/**'
       - 'project-inquiry/**'
       - 'mini-labs/**'
       - 'nexa-tech-service/**'
@@ -37,6 +44,7 @@ on:
       - 'document-intake-approval/**'
       - 'ai-workflow-review-desk/**'
       - 'integration-control-center/**'
+      - 'scripts/booking-crm-live-qa.mjs'
       - 'scripts/portfolio-full-live-qa.mjs'
       - '.github/workflows/portfolio-full-live-qa.yml'
   workflow_dispatch:
@@ -112,6 +120,11 @@ jobs:
         run: npm install --no-save --package-lock=false --ignore-scripts playwright-core@1.55.0
       - name: Verify complete public portfolio in real Chrome
         run: node scripts/portfolio-full-live-qa.mjs
+      - name: Verify Booking CRM as part of full public portfolio
+        env:
+          BOOKING_LIVE_URL: ${{ github.event_name == 'pull_request' && 'http://127.0.0.1:4173/booking-crm/' || 'https://kzone87.github.io/portfolio/booking-crm/' }}
+          BOOKING_QA_ARTIFACT_DIR: portfolio-full-live-qa-artifacts/booking-crm
+        run: node scripts/booking-crm-live-qa.mjs
       - name: Upload full live evidence
         if: always()
         uses: actions/upload-artifact@v4
