@@ -99,13 +99,14 @@ try {
 
   // 3. Workflow Dry-Run — simulated failure then complete pass.
   await page.getByRole('tab', { name: /Workflow Dry-Run/ }).click();
-  await page.locator('#fail-step').fill('submit');
-  await page.locator('#workflow-run').click();
-  await page.locator('#workflow-output').getByText('실패 지점을 확인했습니다.', { exact: true }).waitFor();
-  await page.locator('#fail-step').fill('');
-  await page.locator('#workflow-run').click();
-  await page.locator('#workflow-output').getByText('Dry-run을 끝까지 통과했습니다.', { exact: true }).waitFor();
-  await page.locator('#workflow-output').getByText(/실제 웹사이트에는 접속하지 않았습니다/).waitFor();
+  await page.locator('.diagnostic-options summary').click();
+  await page.locator('#fail-step').selectOption('submit');
+  await page.locator('#automation-run').click();
+  await page.locator('#automation-output').getByText('실패 지점을 확인했습니다.', { exact: true }).waitFor();
+  await page.locator('#fail-step').selectOption('');
+  await page.locator('#automation-run').click();
+  await page.locator('#automation-output').getByText('Dry-run을 끝까지 통과했습니다.', { exact: true }).waitFor();
+  await page.locator('#automation-output').getByText(/실제 웹사이트에는 접속하지 않았습니다/).waitFor();
   await page.screenshot({ path: path.join(artifactDir, 'ops-kit-workflow-pass.png'), fullPage: true });
   console.log('PASS Workflow Dry-Run failure -> recovery without navigation');
 
