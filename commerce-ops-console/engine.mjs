@@ -158,7 +158,8 @@ export function decideRefund(order, refund, input, timestamp = '') {
   const decision = text(input?.decision).toUpperCase();
   if (!['APPROVE', 'REJECT'].includes(decision)) throw new Error('decision must be APPROVE or REJECT');
   const decidedBy = text(input?.decidedBy || 'ops-admin').slice(0, 80);
-  const decisionNote = text(input?.decisionNote).slice(0, 500);
+  const decisionNote = text(input?.decisionNote);
+  if (decisionNote.length < 4 || decisionNote.length > 500) throw new Error('decisionNote must be 4-500 characters');
   if (decision === 'REJECT') {
     return {
       order: changed(order, { paymentStatus: order.refundedAmount > 0 ? PAYMENT_STATUS.PARTIALLY_REFUNDED : PAYMENT_STATUS.PAID }, timestamp),
