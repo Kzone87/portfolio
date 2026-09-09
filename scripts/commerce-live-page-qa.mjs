@@ -86,16 +86,16 @@ for (const viewport of viewports) {
 
     await page.locator('#search').fill('Beta Studio');
     await page.locator('#visible-order-count').filter({ hasText: '1건' }).waitFor({ timeout: 10_000 });
-    await page.locator('[data-order-id="2"]').waitFor({ state: 'visible', timeout: 10_000 });
+    await page.locator('.order-card[data-order-id="2"]').waitFor({ state: 'visible', timeout: 10_000 });
     await page.locator('#reset-filters').click();
     await page.locator('#visible-order-count').filter({ hasText: '4건' }).waitFor({ timeout: 10_000 });
 
     await page.locator('[data-quick-filter="hold"]').click();
     await page.locator('#visible-order-count').filter({ hasText: '1건' }).waitFor({ timeout: 10_000 });
-    await page.locator('[data-order-id="2"]').waitFor({ state: 'visible', timeout: 10_000 });
+    await page.locator('.order-card[data-order-id="2"]').waitFor({ state: 'visible', timeout: 10_000 });
     await page.locator('#reset-filters').click();
 
-    await page.locator('[data-order-id="1"]').click();
+    await page.locator('.order-card[data-order-id="1"]').click();
     await page.locator('[data-action="START_PICKING"][data-order-id="1"]').click();
     await page.locator('#fulfillment-status').filter({ hasText: '상품 준비 중' }).waitFor({ timeout: 10_000 });
     if ((await page.locator('#order-version').innerText()).trim() !== 'v2') throw new Error('order version did not advance to v2 after picking');
@@ -121,7 +121,7 @@ for (const viewport of viewports) {
     if ((await page.locator('#m-refund').innerText()).trim() !== '0') throw new Error('pending refund metric did not drop to zero');
 
     await page.locator('#search').fill('ORD-260904');
-    await page.locator('[data-order-id="4"]').click();
+    await page.locator('.order-card[data-order-id="4"]').click();
     await page.locator('#payment-status').filter({ hasText: '부분 환불' }).waitFor({ timeout: 10_000 });
     const auditText = await page.locator('#audit-list').innerText();
     if (!auditText.includes('환불 승인') || !auditText.includes('demo-admin')) throw new Error('refund approval audit entry missing');
