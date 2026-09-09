@@ -1,3 +1,4 @@
+const stylesheet=document.createElement('link');stylesheet.rel='stylesheet';stylesheet.href='../mono-operations/suite-shell.css';document.head.append(stylesheet);
 const path=location.pathname;
 const modules=[
   ['../mono-operations/','HOME','/mono-operations/'],
