@@ -20,11 +20,28 @@ const pages=[
 function collect(page,errors){page.on('pageerror',e=>errors.push(`pageerror: ${e.message}`));page.on('response',r=>{if(r.status()>=400)errors.push(`http ${r.status()}: ${r.url()}`)});page.on('requestfailed',r=>errors.push(`requestfailed: ${r.url()} · ${r.failure()?.errorText||'unknown'}`));page.on('console',m=>{if(m.type()==='error')errors.push(`console: ${m.text()}`)})}
 async function goto(page,url){let last;for(let i=1;i<=8;i++){try{const r=await page.goto(url,{waitUntil:'networkidle',timeout:30000});if(!r||r.status()>=400)throw new Error(`HTTP ${r?.status()??'none'} ${url}`);return}catch(e){last=e;await page.waitForTimeout(i*1000)}}throw last}
 async function noOverflow(page,label){const s=await page.evaluate(()=>({clientWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth,bodyScrollWidth:document.body?.scrollWidth||0}));if(s.scrollWidth>s.clientWidth+2||s.bodyScrollWidth>s.clientWidth+2)throw new Error(`${label}: horizontal overflow ${JSON.stringify(s)}`)}
+async function revealPortfolioSections(page,vpName){
+  const items=page.locator('[data-reveal]');
+  const count=await items.count();
+  for(let i=0;i<count;i++){
+    await items.nth(i).scrollIntoViewIfNeeded();
+    await page.waitForTimeout(70);
+  }
+  const mono=page.locator('.mono-portfolio-featured');
+  await mono.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(240);
+  const visual=await mono.evaluate(el=>{const style=getComputedStyle(el);const rect=el.getBoundingClientRect();return {opacity:Number(style.opacity),visibility:style.visibility,display:style.display,width:rect.width,height:rect.height}});
+  if(visual.display==='none'||visual.visibility==='hidden'||visual.opacity<0.98||visual.width<20||visual.height<20)throw new Error(`portfolio/${vpName}: MONO flagship is not visually revealed ${JSON.stringify(visual)}`);
+  await mono.screenshot({path:`${output}/portfolio-mono-${vpName}.png`});
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.waitForTimeout(120);
+}
 for(const spec of pages){for(const vp of viewports){const context=await browser.newContext({viewport:{width:vp.width,height:vp.height},locale:'ko-KR',timezoneId:'Asia/Seoul'});const page=await context.newPage();const errors=[];collect(page,errors);try{await goto(page,spec.url);const body=await page.locator('body').innerText();for(const text of spec.required)if(!body.includes(text))throw new Error(`${spec.name}/${vp.name}: missing ${text}`);if(spec.name==='portfolio'){
       await page.locator('.mono-portfolio-featured').waitFor({state:'visible',timeout:10000});
       const links=page.locator('.mono-portfolio-featured .mono-surface-link');if(await links.count()!==5)throw new Error(`portfolio/${vp.name}: MONO must expose suite home plus four modules`);
       const suiteHref=await links.first().getAttribute('href');if(suiteHref!=='./mono-operations/')throw new Error(`portfolio/${vp.name}: integrated suite link is incorrect`);
       const frameSrc=await page.locator('.mono-live-preview iframe').getAttribute('src');if(frameSrc!=='./mono-operations/')throw new Error(`portfolio/${vp.name}: live preview must render the deployed MONO suite`);
+      await revealPortfolioSections(page,vp.name);
       if(vp.name==='desktop'){
         const frameBody=page.frameLocator('.mono-live-preview iframe').locator('body');await frameBody.waitFor({state:'visible',timeout:10000});const previewText=await frameBody.innerText();if(!previewText.includes('MONO OPERATIONS')||!previewText.includes('통합 업무함'))throw new Error('portfolio/desktop: embedded live MONO screen did not render');
       }

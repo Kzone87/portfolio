@@ -17,6 +17,7 @@ on:
       - '.github/workflows/mono-live-pages-qa.yml'
       - 'test/mono-operations-suite.test.mjs'
       - 'test/mono-portfolio-showcase.test.mjs'
+      - 'test/mono-portfolio-visual-proof.test.mjs'
   workflow_dispatch:
 
 permissions:
