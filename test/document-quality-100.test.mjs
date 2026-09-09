@@ -19,6 +19,7 @@ test('document desk is a complete internal intake product rather than a portfoli
   assert.match(html,/지금 먼저 확인할 업무/);
   assert.match(html,/class="mobile-nav"/);
   assert.match(html,/rel="canonical" href="https:\/\/kzone87\.github\.io\/portfolio\/document-intake-approval\/"/);
+  assert.match(html,/rel="icon" href="data:image\/svg\+xml;base64,/);
   assert.doesNotMatch(html,/← 프로젝트|포트폴리오/);
 });
 
