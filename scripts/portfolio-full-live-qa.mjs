@@ -106,7 +106,11 @@ function captureRuntimeErrors(page, errors) {
     if (response.status() >= 400) errors.push(`http ${response.status()}: ${response.url()}`);
   });
   page.on('console', message => {
-    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+    if (message.type() === 'error') {
+      const location = message.location();
+      const suffix = location?.url ? ` @ ${location.url}:${location.lineNumber ?? 0}:${location.columnNumber ?? 0}` : '';
+      errors.push(`console: ${message.text()}${suffix}`);
+    }
   });
 }
 
@@ -159,7 +163,7 @@ async function assertMainHashLinks(page) {
   );
   for (const hash of rawHashes) {
     const id = decodeURIComponent(hash.slice(1));
-    const target = id ? page.locator(`#${CSS.escape(id)}`) : page.locator('body');
+    const target = id ? page.locator(`[id="${id.replaceAll('"', '\\"')}"]`) : page.locator('body');
     if (await target.count() !== 1) throw new Error(`portfolio hash target missing: ${hash}`);
     await page.locator(`a[href="${hash}"]`).first().click();
     await page.waitForTimeout(80);
@@ -213,11 +217,18 @@ for (const surface of surfaces) {
       if (surface.name === 'portfolio') {
         await page.locator('.mono-portfolio-featured').waitFor({ state: 'visible', timeout: 15_000 });
         await revealAll(page);
-        const frame = page.frameLocator('.mono-live-preview iframe');
-        await frame.locator('body').waitFor({ state: 'visible', timeout: 15_000 });
-        const frameText = await frame.locator('body').innerText();
-        if (!frameText.includes('MONO OPERATIONS') || !frameText.includes('통합 업무함')) {
-          throw new Error(`portfolio/${viewport.name}: MONO embedded live screen failed`);
+        const frameSrc = await page.locator('.mono-live-preview iframe').getAttribute('src');
+        if (frameSrc !== './mono-operations/') throw new Error(`portfolio/${viewport.name}: MONO iframe src incorrect`);
+        if (viewport.width > 760) {
+          const frame = page.frameLocator('.mono-live-preview iframe');
+          await frame.locator('body').waitFor({ state: 'visible', timeout: 15_000 });
+          const frameText = await frame.locator('body').innerText();
+          if (!frameText.includes('MONO OPERATIONS') || !frameText.includes('통합 업무함')) {
+            throw new Error(`portfolio/${viewport.name}: MONO embedded live screen failed`);
+          }
+        } else {
+          const previewDisplay = await page.locator('.mono-live-preview').evaluate(el => getComputedStyle(el).display);
+          if (previewDisplay !== 'none') throw new Error(`portfolio/${viewport.name}: mobile MONO preview should be hidden`);
         }
       }
       const body = await page.locator('body').innerText();
@@ -278,6 +289,7 @@ for (const surface of surfaces) {
     if (!(await page.locator('#extract-output').innerText()).includes('값을 정리했습니다.')) throw new Error('OPS KIT extract action failed');
 
     await page.locator('[data-tab="automation"]').click();
+    await page.locator('.diagnostic-options summary').click();
     await page.locator('#fail-step').selectOption('submit');
     await page.locator('#automation-run').click();
     if (!(await page.locator('#automation-output').innerText()).includes('중간 단계에서 멈췄습니다.')) throw new Error('OPS KIT failure simulation failed');
