@@ -9,11 +9,12 @@
 ## What I build
 
 - **업무 운영 시스템** — 주문, 승인, 문서 검수, 예약·배차, 관리자 업무
+- **예약·문의·고객관리** — 고객 예약 접수, 일정 충돌 방지, 관리자 처리, CRM 메모
 - **데이터 자동화** — Excel/CSV 정리, 검증, 비교, 다중 파일 Batch
 - **API·AI 업무보조** — REST, Webhook, Retry, 근거자료 기반 제안 + Human Review
 - **기업 웹 + 내부 운영** — 외부 고객용 사이트와 직원용 운영도구 연결
 
-## Four public product lines
+## Five public product lines
 
 ### 1. NEXA SERVICE SUITE
 
@@ -30,7 +31,26 @@
 **Customer service:** https://kzone87.github.io/portfolio/nexa-service-domain/  
 **Field operations:** https://kzone87.github.io/portfolio/field-service-ops/
 
-### 2. MONO OPERATIONS
+### 2. BOOKING CRM
+
+홈페이지에서 받은 **예약·문의가 직원 일정관리와 고객관리까지 이어지는** 소규모 사업자용 Booking CRM입니다.
+
+- 서비스 선택 → 날짜·시간 → 예약 요청
+- 예약 전 문의 → 관리자 Inquiry Inbox
+- 예약 Queue → 확정 · 일정 변경 · 취소 · 완료
+- 고객별 예약 연결과 고객 메모
+- slot conflict / capacity guard
+- optimistic `expectedVersion`과 audit
+- Node 24 + SQLite persistence / WAL
+- scrypt password, HttpOnly Session, CSRF, server-side role check
+- 공개 Pages는 개인정보를 저장하지 않는 local demo
+- dedicated 1440 / 768 / 390 real Chrome QA
+
+**Live:** https://kzone87.github.io/portfolio/booking-crm/  
+**Runtime source:** https://github.com/Kzone87/portfolio/tree/main/booking-crm  
+**Delivery Runbook:** https://github.com/Kzone87/portfolio/blob/main/booking-crm/DELIVERY_RUNBOOK.md
+
+### 3. MONO OPERATIONS
 
 주문·문서·고객지원·데이터 연동을 **하나의 직원 계정, 통합 업무함, 권한, 감사이력**으로 운영하는 Back-office Operations Suite입니다.
 
@@ -49,7 +69,7 @@
 **Support:** https://kzone87.github.io/portfolio/ai-workflow-review-desk/  
 **Data Hub:** https://kzone87.github.io/portfolio/integration-control-center/
 
-### 3. Excel Workbench
+### 4. Excel Workbench
 
 별도 TypeScript 저장소에서 운영하는 local-first 데이터 작업 제품입니다.
 
@@ -67,7 +87,7 @@
 **Live:** https://kzone87.github.io/customer-map-planner/  
 **Repository:** https://github.com/Kzone87/customer-map-planner
 
-### 4. OPS KIT
+### 5. OPS KIT
 
 서버 전송이나 외부 사이트 자동조작 없이, 작은 운영 작업을 **입력 → 검사 → 결과 → 증빙**으로 끝내는 local-first Operations Utility Suite입니다.
 

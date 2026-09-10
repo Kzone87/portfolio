@@ -17,3 +17,5 @@
 
   for (const item of items) observer.observe(item);
 })();
+
+import('./booking-portfolio.js');

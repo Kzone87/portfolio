@@ -1,0 +1,80 @@
+name: Booking CRM live Pages QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'booking-crm/**'
+      - 'booking-portfolio.js'
+      - 'home-motion.js'
+      - 'scripts/booking-crm-live-qa.mjs'
+      - '.github/workflows/booking-crm-live-qa.yml'
+      - 'test/booking-crm.test.mjs'
+      - 'test/booking-portfolio.test.mjs'
+  pull_request:
+    paths:
+      - 'booking-crm/**'
+      - 'booking-portfolio.js'
+      - 'home-motion.js'
+      - 'scripts/booking-crm-live-qa.mjs'
+      - '.github/workflows/booking-crm-live-qa.yml'
+      - 'test/booking-crm.test.mjs'
+      - 'test/booking-portfolio.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  live-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Verify booking tests
+        run: node --test test/booking-crm.test.mjs test/booking-portfolio.test.mjs
+      - name: Wait for same-SHA GitHub Pages deployment
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 90); do
+            curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&per_page=50" >/tmp/runs.json
+            state="$(node - <<'NODE'
+          const fs=require('node:fs');const data=JSON.parse(fs.readFileSync('/tmp/runs.json','utf8'));const run=(data.workflow_runs||[]).find(x=>x.name==='pages build and deployment');process.stdout.write(run?`${run.status}|${run.conclusion||''}`:'missing|');
+          NODE
+            )"
+            status="${state%%|*}"; conclusion="${state#*|}"
+            echo "Pages deployment: ${status} ${conclusion} (attempt ${attempt})"
+            if [ "$status" = completed ]; then test "$conclusion" = success; exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Start PR branch static server
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/booking-static.log 2>&1 &
+          echo $! >/tmp/booking-static.pid
+      - name: Locate hosted Chrome
+        run: |
+          CHROME_PATH="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME_PATH"
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+          "$CHROME_PATH" --version
+      - name: Install browser driver only
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright-core@1.55.0
+      - name: Verify Booking CRM in real Chrome
+        env:
+          BOOKING_LIVE_URL: ${{ github.event_name == 'pull_request' && 'http://127.0.0.1:4173/booking-crm/' || 'https://kzone87.github.io/portfolio/booking-crm/' }}
+        run: node scripts/booking-crm-live-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: booking-crm-live-qa
+          path: booking-crm-live-qa-artifacts
+          retention-days: 7
