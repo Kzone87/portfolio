@@ -9,7 +9,8 @@ const workflow=fs.readFileSync('.github/workflows/mono-live-pages-qa.yml','utf8'
 
 test('portfolio upgrades MONO from four demo cards into one flagship operations suite',()=>{
   for(const text of ['FLAGSHIP OPERATIONS SUITE','MONO OPERATIONS','중소기업용 Back-office Operations Suite','MONO MARKET','MONO OFFICE','MONO SUPPORT','MONO DATA HUB','COMMERCIAL DELIVERY EVIDENCE']) assert.ok(js.includes(text),`missing ${text}`);
-  assert.ok(js.includes('src="./mono-operations/"'),'portfolio must embed the actual deployed MONO Operations screen');
+  assert.ok(js.includes("previewFrame('./mono-operations/'"),'portfolio must preserve the actual deployed MONO Operations screen behind deferred loading');
+  assert.ok(js.includes('data-preview-src'),'MONO preview must use the performance gate');
   assert.equal((js.match(/class="mono-surface-link/g)||[]).length,5,'suite home plus four module links must be visible');
   for(const href of ['./mono-operations/','./commerce-ops-console/','./document-intake-approval/','./ai-workflow-review-desk/','./integration-control-center/']) assert.ok(js.includes(`href="${href}"`),`missing ${href}`);
 });
