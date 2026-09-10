@@ -32,8 +32,8 @@ test('durable service case tracks response SLA, deduplicates outbox and accepts 
   try{
     const serviceCase=store.ensureCase(inquiry());assert.equal(serviceCase.tier,'CRITICAL');
     const duplicate=store.ensureCase({...inquiry(),impact:'고장이 아니라 정기점검·설치 작업'});assert.equal(duplicate.tier,'CRITICAL');
-    const first=store.enqueueNotification({requestId:serviceCase.requestId,eventType:'INTAKE_RECEIVED',channel:'SMS',destination:'01012345678',payload:{requestId:serviceCase.requestId},dedupeKey:`${serviceCase.requestId}:INTAKE`});
-    const replay=store.enqueueNotification({requestId:serviceCase.requestId,eventType:'INTAKE_RECEIVED',channel:'SMS',destination:'01012345678',payload:{requestId:serviceCase.requestId},dedupeKey:`${serviceCase.requestId}:INTAKE`});
+    const first=store.enqueueNotification({requestId:serviceCase.requestId,eventType:'INTAKE_RECEIVED',channel:'SMS',destination:'01012345678',payload:{requestId:serviceCase.requestId},dedupeKey:`${serviceCase.requestId}:INTAKE`,createdAt});
+    const replay=store.enqueueNotification({requestId:serviceCase.requestId,eventType:'INTAKE_RECEIVED',channel:'SMS',destination:'01012345678',payload:{requestId:serviceCase.requestId},dedupeKey:`${serviceCase.requestId}:INTAKE`,createdAt});
     assert.equal(replay.id,first.id);assert.equal(store.pendingNotifications(createdAt).length,1);
     const responded=store.markResponded(serviceCase.requestId,'2026-09-10T00:20:00.000Z');assert.equal(serviceCaseState(responded,'2026-09-10T00:40:00.000Z'),'MET');
     assert.throws(()=>store.submitFeedback(serviceCase.requestId,{score:5}),/서비스 완료 후/);
@@ -48,8 +48,8 @@ test('notification dispatcher records success, retry and dead-letter state witho
   const store=createServiceExcellenceStore();
   try{
     store.ensureCase(inquiry('처리량·품질에 큰 영향이 생김'));
-    const good=store.enqueueNotification({requestId:'NX-SERVICE001',eventType:'GOOD',channel:'EMAIL',destination:'customer@example.com',dedupeKey:'good'});
-    const bad=store.enqueueNotification({requestId:'NX-SERVICE001',eventType:'BAD',channel:'EMAIL',destination:'customer@example.com',dedupeKey:'bad'});
+    const good=store.enqueueNotification({requestId:'NX-SERVICE001',eventType:'GOOD',channel:'EMAIL',destination:'customer@example.com',dedupeKey:'good',createdAt});
+    const bad=store.enqueueNotification({requestId:'NX-SERVICE001',eventType:'BAD',channel:'EMAIL',destination:'customer@example.com',dedupeKey:'bad',createdAt});
     const result=await dispatchNotificationBatch(store,async item=>{if(item.id===bad.id)throw new Error('provider down')},{at:new Date(createdAt),maxAttempts:2});
     assert.deepEqual(result.map(row=>row.status),['SENT','RETRY']);
     const retry=store.markNotificationFailed(bad.id,new Error('provider still down'),'2026-09-10T00:02:00.000Z',2);assert.equal(retry.status,'DEAD');assert.equal(retry.attempts,2);
