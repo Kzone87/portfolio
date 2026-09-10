@@ -7,19 +7,21 @@ on:
       - 'booking-crm/**'
       - 'booking-portfolio.js'
       - 'home-motion.js'
-      - 'scripts/booking-crm-live-qa.mjs'
+      - 'scripts/booking-*.mjs'
+      - 'scripts/ops-kit-build-delivery.mjs'
       - '.github/workflows/booking-crm-live-qa.yml'
-      - 'test/booking-crm.test.mjs'
-      - 'test/booking-portfolio.test.mjs'
+      - 'test/booking-*.test.mjs'
+      - 'test/static-delivery-artifacts.test.mjs'
   pull_request:
     paths:
       - 'booking-crm/**'
       - 'booking-portfolio.js'
       - 'home-motion.js'
-      - 'scripts/booking-crm-live-qa.mjs'
+      - 'scripts/booking-*.mjs'
+      - 'scripts/ops-kit-build-delivery.mjs'
       - '.github/workflows/booking-crm-live-qa.yml'
-      - 'test/booking-crm.test.mjs'
-      - 'test/booking-portfolio.test.mjs'
+      - 'test/booking-*.test.mjs'
+      - 'test/static-delivery-artifacts.test.mjs'
   workflow_dispatch:
 
 permissions:
@@ -35,8 +37,10 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Verify booking tests
-        run: node --test test/booking-crm.test.mjs test/booking-portfolio.test.mjs
+      - name: Verify booking runtime and delivery tests
+        run: node --test test/booking-crm.test.mjs test/booking-portfolio.test.mjs test/booking-commercial-hardening.test.mjs test/booking-backup-restore.test.mjs test/static-delivery-artifacts.test.mjs
+      - name: Build verified Booking CRM handover package
+        run: npm run build:booking-delivery
       - name: Wait for same-SHA GitHub Pages deployment
         if: github.event_name != 'pull_request'
         env:
@@ -77,4 +81,9 @@ jobs:
         with:
           name: booking-crm-live-qa
           path: booking-crm-live-qa-artifacts
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: booking-crm-commercial-delivery
+          path: dist/booking-crm-delivery
           retention-days: 7
