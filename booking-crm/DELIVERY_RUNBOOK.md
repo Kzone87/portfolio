@@ -124,4 +124,6 @@ Before customer handover, all of the following must pass on the **same main SHA*
 11. Real Chrome public flow at 1440 / 768 / 390 with no console errors, request failures, HTTP >=400 surprises, or horizontal overflow.
 12. Customer booking → admin confirm → CRM memo → inquiry close end-to-end flow.
 
+Release evidence must explicitly record **same-SHA production public Chrome QA PASS** for the deployed main revision before handover.
+
 The GitHub Pages surface is the public demonstration build and intentionally does not persist customer input. A customer production deployment uses this runbook's Node/SQLite runtime and customer-specific domain, secrets and durable storage.
