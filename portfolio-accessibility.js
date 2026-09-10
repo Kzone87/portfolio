@@ -6,7 +6,7 @@
     const style = document.createElement('style');
     style.id = 'portfolio-a11y-style';
     style.textContent = `
-      .portfolio-experience-tab,.portfolio-experience-links a,.studio-header nav a,.hero-actions a,.proof-links a,.nexa-proof-links a,.mono-proof-links a{min-width:24px;min-height:44px;display:inline-flex;align-items:center}
+      .portfolio-experience-tab,.portfolio-experience-links a,.studio-header .brand,.studio-header nav a,.hero-actions a,.proof-links a,.nexa-proof-links a,.mono-proof-links a{min-width:24px;min-height:44px;display:inline-flex;align-items:center}
       .recruiter-path-list a,.proof-center-chain a,.case-study-actions a{min-width:24px;min-height:44px}
       .studio-header nav a{padding-block:10px}
       :where(a,button,[role="tab"]):focus-visible{outline:3px solid rgba(37,99,235,.48)!important;outline-offset:3px!important}
