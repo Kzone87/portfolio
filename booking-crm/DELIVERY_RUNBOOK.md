@@ -49,7 +49,7 @@ The first administrator is created only when the employee table is empty. A weak
 ## Authentication and authorization
 
 - Passwords are stored with `scrypt` plus per-user random salt.
-- Session bearer values are returned only in an HttpOnly, SameSite=Strict cookie. The database stores only a SHA-256 identifier of the bearer value, not the raw session token.
+- **HttpOnly Session:** the browser receives the bearer value only through an HttpOnly, SameSite=Strict cookie. The database stores only a SHA-256 identifier of the bearer value, not the raw session token.
 - CSRF is required for authenticated mutations.
 - Production cookies are `Secure`.
 - STAFF can operate bookings, inquiries and customer notes.
@@ -109,7 +109,7 @@ The Node application binds to localhost. TLS terminates at the reverse proxy. Ke
 
 ## Acceptance gate
 
-Before customer handover, all of the following must pass on the exact release SHA:
+Before customer handover, all of the following must pass on the **same main SHA** that is packaged and deployed:
 
 1. Repository tests and syntax checks.
 2. `npm run build:booking-delivery` and manifest verification.
