@@ -5,6 +5,7 @@ import {notificationRetryAt,serviceCaseState,serviceTargetForInquiry,validateFee
 
 const nowIso=()=>new Date().toISOString();
 const text=(value,max=1000)=>String(value??'').trim().slice(0,max);
+const normalizedTime=value=>new Date(value).toISOString();
 const rowCase=row=>row?{
   requestId:row.request_id,
   tier:row.tier,
@@ -81,16 +82,16 @@ export function createServiceExcellenceStore(path=':memory:',options={}){
     },
     case(requestId){return rowCase(db.prepare('SELECT * FROM service_cases WHERE request_id=?').get(text(requestId,80)))},
     markResponded(requestId,at=nowIso()){
-      const row=requireCase(requestId);const when=new Date(at).toISOString();
+      const row=requireCase(requestId);const when=normalizedTime(at);
       db.prepare('UPDATE service_cases SET responded_at=COALESCE(responded_at,?) WHERE request_id=?').run(when,row.request_id);
       return this.case(row.request_id);
     },
     markClosed(requestId,at=nowIso()){
-      const row=requireCase(requestId);const when=new Date(at).toISOString();
+      const row=requireCase(requestId);const when=normalizedTime(at);
       db.prepare('UPDATE service_cases SET closed_at=COALESCE(closed_at,?) WHERE request_id=?').run(when,row.request_id);
       return this.case(row.request_id);
     },
-    enqueueNotification({requestId,eventType,channel='WEBHOOK',destination,payload={},dedupeKey}){
+    enqueueNotification({requestId,eventType,channel='WEBHOOK',destination,payload={},dedupeKey,createdAt=nowIso()}){
       requireCase(requestId);
       const type=text(eventType,80),kind=text(channel,20).toUpperCase(),target=text(destination,240),key=text(dedupeKey||`${requestId}:${type}:${kind}`,240);
       if(!type)throw new ServiceExcellenceError('EVENT_TYPE_REQUIRED','알림 이벤트 유형이 필요합니다.');
@@ -99,17 +100,17 @@ export function createServiceExcellenceStore(path=':memory:',options={}){
       let json;
       try{json=JSON.stringify(payload??{})}catch{throw new ServiceExcellenceError('INVALID_NOTIFICATION_PAYLOAD','알림 payload를 직렬화할 수 없습니다.');}
       if(Buffer.byteLength(json)>16_384)throw new ServiceExcellenceError('NOTIFICATION_PAYLOAD_TOO_LARGE','알림 payload가 너무 큽니다.',413);
-      const createdAt=nowIso();
+      const when=normalizedTime(createdAt);
       db.prepare(`INSERT OR IGNORE INTO notification_outbox(request_id,event_type,channel,destination,payload_json,dedupe_key,status,attempts,next_attempt_at,created_at)
-        VALUES(?,?,?,?,?,?,'PENDING',0,?,?)`).run(text(requestId,80),type,kind,target,json,key,createdAt,createdAt);
+        VALUES(?,?,?,?,?,?,'PENDING',0,?,?)`).run(text(requestId,80),type,kind,target,json,key,when,when);
       return rowNotification(db.prepare('SELECT * FROM notification_outbox WHERE dedupe_key=?').get(key));
     },
     pendingNotifications(at=nowIso(),limit=20){
-      const safeLimit=Math.max(1,Math.min(100,Number(limit)||20));const when=new Date(at).toISOString();
+      const safeLimit=Math.max(1,Math.min(100,Number(limit)||20));const when=normalizedTime(at);
       return db.prepare(`SELECT * FROM notification_outbox WHERE status IN ('PENDING','RETRY') AND (next_attempt_at IS NULL OR next_attempt_at<=?) ORDER BY id LIMIT ?`).all(when,safeLimit).map(rowNotification);
     },
     markNotificationSent(id,at=nowIso()){
-      const when=new Date(at).toISOString();
+      const when=normalizedTime(at);
       const result=db.prepare(`UPDATE notification_outbox SET status='SENT',attempts=attempts+1,sent_at=?,next_attempt_at=NULL,last_error='' WHERE id=? AND status IN ('PENDING','RETRY')`).run(when,Number(id));
       if(!result.changes)throw new ServiceExcellenceError('NOTIFICATION_NOT_PENDING','전송 대기 알림을 찾을 수 없습니다.',409);
       return rowNotification(db.prepare('SELECT * FROM notification_outbox WHERE id=?').get(Number(id)));
@@ -117,7 +118,7 @@ export function createServiceExcellenceStore(path=':memory:',options={}){
     markNotificationFailed(id,error,at=nowIso(),maxAttempts=5){
       const row=db.prepare('SELECT * FROM notification_outbox WHERE id=?').get(Number(id));
       if(!row||!['PENDING','RETRY'].includes(row.status))throw new ServiceExcellenceError('NOTIFICATION_NOT_PENDING','전송 대기 알림을 찾을 수 없습니다.',409);
-      const attempts=Number(row.attempts)+1,dead=attempts>=Math.max(1,Number(maxAttempts)||5),when=new Date(at).toISOString();
+      const attempts=Number(row.attempts)+1,dead=attempts>=Math.max(1,Number(maxAttempts)||5),when=normalizedTime(at);
       const retry=dead?null:notificationRetryAt(attempts,when);
       db.prepare('UPDATE notification_outbox SET status=?,attempts=?,next_attempt_at=?,last_error=? WHERE id=?').run(dead?'DEAD':'RETRY',attempts,retry,text(error?.message||error,500),row.id);
       return rowNotification(db.prepare('SELECT * FROM notification_outbox WHERE id=?').get(row.id));
@@ -125,7 +126,7 @@ export function createServiceExcellenceStore(path=':memory:',options={}){
     submitFeedback(requestId,input,at=nowIso()){
       const serviceCase=rowCase(requireCase(requestId));
       if(!serviceCase.closedAt)throw new ServiceExcellenceError('SERVICE_NOT_CLOSED','서비스 완료 후 만족도를 남길 수 있습니다.',409);
-      const value=validateFeedback(input),createdAt=new Date(at).toISOString();
+      const value=validateFeedback(input),createdAt=normalizedTime(at);
       try{db.prepare('INSERT INTO csat_feedback(request_id,score,comment,created_at) VALUES(?,?,?,?)').run(serviceCase.requestId,value.score,value.comment,createdAt)}
       catch(error){if(String(error.message).includes('UNIQUE'))throw new ServiceExcellenceError('CSAT_ALREADY_SUBMITTED','이미 만족도를 제출했습니다.',409);throw error}
       return this.feedback(serviceCase.requestId);
