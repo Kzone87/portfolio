@@ -9,7 +9,9 @@ on:
       - 'test/mini-labs.test.mjs'
       - 'test/mini-ui-quality.test.mjs'
       - 'test/ops-kit-service-grade.test.mjs'
+      - 'test/static-delivery-artifacts.test.mjs'
       - 'scripts/ops-kit-live-page-qa.mjs'
+      - 'scripts/ops-kit-build-delivery.mjs'
       - '.github/workflows/ops-kit-live-pages-qa.yml'
   push:
     branches:
@@ -19,7 +21,9 @@ on:
       - 'test/mini-labs.test.mjs'
       - 'test/mini-ui-quality.test.mjs'
       - 'test/ops-kit-service-grade.test.mjs'
+      - 'test/static-delivery-artifacts.test.mjs'
       - 'scripts/ops-kit-live-page-qa.mjs'
+      - 'scripts/ops-kit-build-delivery.mjs'
       - '.github/workflows/ops-kit-live-pages-qa.yml'
   workflow_dispatch:
 
@@ -38,6 +42,8 @@ jobs:
           node-version: '24'
       - name: Verify source and regression tests
         run: npm test
+      - name: Build verified OPS KIT handover package
+        run: npm run build:ops-kit-delivery
       - name: Wait for same-SHA GitHub Pages deployment
         if: github.event_name == 'push'
         shell: bash
@@ -103,4 +109,10 @@ jobs:
           name: ops-kit-live-pages-qa
           path: ops-kit-live-qa-artifacts
           if-no-files-found: warn
+          retention-days: 7
+      - name: Upload OPS KIT delivery package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-kit-commercial-delivery
+          path: dist/ops-kit-delivery
           retention-days: 7
