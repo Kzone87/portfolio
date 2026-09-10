@@ -10,6 +10,7 @@ const verifyPassword=(password,salt,expected)=>{try{const actual=Buffer.from(scr
 const cleanEmail=value=>String(value||'').trim().toLowerCase();
 const cleanName=value=>String(value||'').trim().slice(0,80);
 const cleanRole=value=>String(value||'').trim().toUpperCase();
+const publicEmployee=row=>row?{...row,active:Boolean(row.active)}:null;
 
 export function validateEmployeePassword(value){
   const password=String(value||'');
@@ -65,8 +66,8 @@ export class BookingStore{
   verifyCsrf(session,token){return Boolean(session&&token&&sha(token)===session.csrfHash)}
   logout(sessionId){if(sessionId)this.db.prepare('DELETE FROM sessions WHERE id=?').run(sha(sessionId))}
   cleanupSessions(){this.db.prepare('DELETE FROM sessions WHERE expires_at<=?').run(now())}
-  listEmployees(){return this.db.prepare('SELECT id,email,name,role,active,created_at FROM employees ORDER BY created_at,id').all().map(row=>({...row,active:Boolean(row.active)}))}
-  employeeById(employeeId){return this.db.prepare('SELECT id,email,name,role,active,created_at FROM employees WHERE id=?').get(String(employeeId||''))}
+  listEmployees(){return this.db.prepare('SELECT id,email,name,role,active,created_at FROM employees ORDER BY created_at,id').all().map(publicEmployee)}
+  employeeById(employeeId){return publicEmployee(this.db.prepare('SELECT id,email,name,role,active,created_at FROM employees WHERE id=?').get(String(employeeId||'')))}
   createEmployee(input,actorId='system'){
     const value=validateEmployeeInput(input||{}),employeeId=id('E'),p=hashPassword(value.password),createdAt=now();
     try{this.db.prepare('INSERT INTO employees VALUES(?,?,?,?,?,?,?,?)').run(employeeId,value.email,value.name,value.role,p.salt,p.hash,1,createdAt)}catch(error){if(String(error.message).includes('UNIQUE'))throw Object.assign(new Error('EMPLOYEE_EMAIL_EXISTS'),{status:409});throw error}
