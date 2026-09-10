@@ -17,16 +17,33 @@
 
   for (const item of items) observer.observe(item);
 
-  // Reveal animation must never become a content-visibility dependency. This fallback
-  // prevents fast anchor jumps, full-page captures and unusual viewport behavior from
-  // leaving entire sections transparent after the initial motion window.
+  // Reveal motion is decoration only. Dynamic portfolio sections may mount after the
+  // initial scan, so the bounded fallback always queries the current DOM. Any content
+  // added after that fallback is made visible immediately instead of inheriting the
+  // global hidden reveal state indefinitely.
   let fallbackDone = false;
+  const revealCurrentDom = () => {
+    for (const item of document.querySelectorAll('[data-reveal]')) item.classList.add('is-visible');
+  };
   const revealAll = () => {
     if (fallbackDone) return;
     fallbackDone = true;
-    for (const item of items) item.classList.add('is-visible');
+    revealCurrentDom();
     observer.disconnect();
   };
+
+  const lateRevealObserver = new MutationObserver((records) => {
+    if (!fallbackDone) return;
+    for (const record of records) {
+      for (const node of record.addedNodes) {
+        if (!(node instanceof Element)) continue;
+        if (node.matches('[data-reveal]')) node.classList.add('is-visible');
+        for (const child of node.querySelectorAll('[data-reveal]')) child.classList.add('is-visible');
+      }
+    }
+  });
+  lateRevealObserver.observe(document.body, { childList:true, subtree:true });
+
   window.setTimeout(revealAll, 1200);
   window.addEventListener('hashchange', revealAll, { once:true });
 })();
