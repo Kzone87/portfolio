@@ -117,6 +117,9 @@ async function verify(viewport) {
     if (viewport.width > 900 && visual.proofColumns !== 2) throw new Error(`${viewport.name}: desktop proof center must be compact 2-column ${JSON.stringify(visual)}`);
     if (viewport.width <= 900 && visual.proofColumns !== 1) throw new Error(`${viewport.name}: compact viewport proof center must be 1-column ${JSON.stringify(visual)}`);
     if (viewport.width <= 640 && visual.chainColumns !== 2) throw new Error(`${viewport.name}: mobile evidence chain must be compact 2-column ${JSON.stringify(visual)}`);
+    if (!visual.gate.recruiterContained) throw new Error(`${viewport.name}: recruiter path must remain a contained review strip ${JSON.stringify(visual)}`);
+    const proofStoryRatio = visual.gate.proofStoryParentWidth ? visual.gate.proofStoryWidth / visual.gate.proofStoryParentWidth : 0;
+    if (proofStoryRatio < 0.97) throw new Error(`${viewport.name}: proof story leaves an unintended empty column ${JSON.stringify(visual)}`);
 
     const dimensions = await page.evaluate(() => ({ client:document.documentElement.clientWidth, scroll:document.documentElement.scrollWidth }));
     if (dimensions.scroll > dimensions.client + 2) throw new Error(`${viewport.name}: horizontal overflow ${JSON.stringify(dimensions)}`);
