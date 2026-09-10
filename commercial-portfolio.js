@@ -65,7 +65,7 @@ function upgradeNexaLivePreview(){
   preview.innerHTML=`
     <div class="browser-bar"><i></i><i></i><i></i><span>LIVE · NEXA TECH SERVICE</span></div>
     <div class="nexa-live-frame-wrap">
-      <iframe src="./nexa-tech-service/" title="NEXA TECH SERVICE 실제 공개 화면 미리보기" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
+      <iframe data-src="./nexa-tech-service/" title="NEXA TECH SERVICE 실제 공개 화면 미리보기" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
       <span class="product-live-badge"><i></i> ACTUAL LIVE SCREEN</span>
     </div>`;
 }
@@ -79,7 +79,7 @@ function upgradeExcelLivePreview(){
   preview.innerHTML=`
     <div class="browser-bar"><i></i><i></i><i></i><span>LIVE · EXCEL WORKBENCH</span></div>
     <div class="excel-live-frame-wrap">
-      <iframe src="https://kzone87.github.io/customer-map-planner/" title="Excel Workbench 실제 공개 화면 미리보기" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
+      <iframe data-src="https://kzone87.github.io/customer-map-planner/" title="Excel Workbench 실제 공개 화면 미리보기" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
       <span class="product-live-badge"><i></i> ACTUAL LIVE SCREEN</span>
     </div>`;
 }
@@ -116,7 +116,7 @@ function upgradeMonoPortfolioShowcase(){
     preview.innerHTML=`
       <div class="browser-bar"><i></i><i></i><i></i><span>LIVE · MONO OPERATIONS</span></div>
       <div class="mono-live-frame-wrap">
-        <iframe src="./mono-operations/" title="MONO OPERATIONS 실제 통합 업무함 미리보기" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
+        <iframe data-src="./mono-operations/" title="MONO OPERATIONS 실제 통합 업무함 미리보기" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
         <span class="product-live-badge"><i></i> ACTUAL LIVE SCREEN</span>
       </div>`;
   }
