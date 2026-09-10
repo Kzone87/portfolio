@@ -41,7 +41,7 @@ async function verify(viewport) {
     await page.locator('#recruiter-path').waitFor({ state:'attached', timeout:15_000 });
     await page.locator('#proof-center').waitFor({ state:'attached', timeout:15_000 });
     await page.locator('#case-studies').waitFor({ state:'attached', timeout:15_000 });
-    await page.waitForFunction(() => window.KZONE_PERFORMANCE_GATE && window.KZONE_ACCESSIBILITY_GATE && window.KZONE_SEO_GATE, null, { timeout:15_000 });
+    await page.waitForFunction(() => window.KZONE_PERFORMANCE_GATE && window.KZONE_ACCESSIBILITY_GATE && window.KZONE_SEO_GATE && window.KZONE_VISUAL_POLISH, null, { timeout:15_000 });
 
     const body = await page.locator('body').innerText();
     for (const phrase of ['RECRUITER 90-SECOND FLOW','설명 대신 5단계 증거로 확인하세요.','EVIDENCE-DRIVEN CASE STUDIES','PROBLEM','HARD EDGE','VERIFICATION']) {
@@ -90,12 +90,40 @@ async function verify(viewport) {
     if (!robots?.includes('index,follow')) throw new Error(`${viewport.name}: robots meta missing`);
     if ((await page.locator('meta[property="og:site_name"]').getAttribute('content')) !== 'Kzone87 Portfolio') throw new Error(`${viewport.name}: og:site_name missing`);
 
+    // Motion is decoration, never a content-visibility dependency. Wait for the bounded
+    // fallback and assert that no offscreen section remains transparent in a full-page view.
+    await page.waitForTimeout(1300);
+    const visual = await page.evaluate(() => {
+      const hiddenReveal = [...document.querySelectorAll('[data-reveal]')]
+        .filter((element) => getComputedStyle(element).opacity === '0').length;
+      const proofGrid = document.querySelector('.proof-center-grid');
+      const firstChain = document.querySelector('.proof-center-chain');
+      const evidenceRail = document.querySelector('#evidence .proof-rail');
+      const columnCount = (element) => {
+        if (!element) return 0;
+        const columns = getComputedStyle(element).gridTemplateColumns.trim();
+        return columns ? columns.split(/\s+/).length : 0;
+      };
+      return {
+        hiddenReveal,
+        proofColumns:columnCount(proofGrid),
+        chainColumns:columnCount(firstChain),
+        evidenceRail:evidenceRail ? getComputedStyle(evidenceRail).display : '',
+        gate:window.KZONE_VISUAL_POLISH.inspect()
+      };
+    });
+    if (visual.hiddenReveal !== 0) throw new Error(`${viewport.name}: unrevealed content remains hidden ${JSON.stringify(visual)}`);
+    if (visual.evidenceRail !== 'none') throw new Error(`${viewport.name}: duplicate legacy proof rail is visible ${JSON.stringify(visual)}`);
+    if (viewport.width > 900 && visual.proofColumns !== 2) throw new Error(`${viewport.name}: desktop proof center must be compact 2-column ${JSON.stringify(visual)}`);
+    if (viewport.width <= 900 && visual.proofColumns !== 1) throw new Error(`${viewport.name}: compact viewport proof center must be 1-column ${JSON.stringify(visual)}`);
+    if (viewport.width <= 640 && visual.chainColumns !== 2) throw new Error(`${viewport.name}: mobile evidence chain must be compact 2-column ${JSON.stringify(visual)}`);
+
     const dimensions = await page.evaluate(() => ({ client:document.documentElement.clientWidth, scroll:document.documentElement.scrollWidth }));
     if (dimensions.scroll > dimensions.client + 2) throw new Error(`${viewport.name}: horizontal overflow ${JSON.stringify(dimensions)}`);
 
     await page.screenshot({ path:`${output}/elite-${viewport.name}.png`, fullPage:true });
     if (runtimeErrors.length) throw new Error(`${viewport.name}: ${runtimeErrors.join(' | ')}`);
-    console.log(`PASS elite portfolio ${viewport.width}x${viewport.height} · performance + proof + recruiter + a11y + SEO + case study`);
+    console.log(`PASS elite portfolio ${viewport.width}x${viewport.height} · performance + proof + recruiter + a11y + SEO + visual polish + case study`);
   } finally {
     await context.close();
   }
