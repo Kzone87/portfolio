@@ -21,9 +21,9 @@ function bootBookingPortfolio(){
       <div class="booking-portfolio-flow"><span>예약 요청</span><i>→</i><span>일정 확인</span><i>→</i><span>확정</span><i>→</i><span>고객 메모</span><i>→</i><span>완료</span></div>
       <div class="booking-portfolio-actions">
         <a class="booking-primary" href="./booking-crm/">BOOKING CRM 실제 화면 열기 →</a>
-        <a href="https://github.com/Kzone87/portfolio/tree/main/booking-crm" target="_blank" rel="noreferrer">Runtime Source ↗</a>
-        <a href="https://github.com/Kzone87/portfolio/blob/main/booking-crm/DELIVERY_RUNBOOK.md" target="_blank" rel="noreferrer">Delivery Runbook ↗</a>
-        <a href="https://github.com/Kzone87/portfolio/blob/main/test/booking-crm.test.mjs" target="_blank" rel="noreferrer">Tests ↗</a>
+        <a href="https://github.com/Kzone87/portfolio/tree/e281485e8ce4b9db3133d2ee2b5bf07aa9e49cd1/booking-crm" target="_blank" rel="noreferrer">Verified Runtime Source ↗</a>
+        <a href="https://github.com/Kzone87/portfolio/blob/e281485e8ce4b9db3133d2ee2b5bf07aa9e49cd1/booking-crm/DELIVERY_RUNBOOK.md" target="_blank" rel="noreferrer">Verified Delivery Runbook ↗</a>
+        <a href="https://github.com/Kzone87/portfolio/blob/e281485e8ce4b9db3133d2ee2b5bf07aa9e49cd1/test/booking-crm.test.mjs" target="_blank" rel="noreferrer">Verified Tests ↗</a>
       </div>
       <div class="booking-portfolio-proof">
         <article><b>SCHEDULE</b><span>Slot Conflict · Capacity</span></article>
