@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -15,10 +16,15 @@ const accessibility = read('portfolio-accessibility.js');
 const seo = read('portfolio-seo.js');
 const robots = read('robots.txt');
 
-test('elite portfolio layers are loaded from the home entry', () => {
-  for (const file of ['portfolio-performance.js','portfolio-proof-center.js','portfolio-accessibility.js','portfolio-seo.js']) {
-    assert.ok(motion.includes(`import('./${file}')`), `home entry must load ${file}`);
+test('elite portfolio client layers have valid JavaScript syntax', () => {
+  for (const path of ['portfolio-performance.js','portfolio-proof-center.js','portfolio-accessibility.js','portfolio-seo.js','commercial-portfolio.js','booking-portfolio.js']) {
+    const result = spawnSync(process.execPath, ['--check', join(root, path)], { encoding:'utf8' });
+    assert.equal(result.status, 0, `${path}: ${result.stderr || result.stdout}`);
   }
+});
+
+test('elite portfolio layers are loaded from the home entry', () => {
+  for (const file of ['portfolio-performance.js','portfolio-proof-center.js','portfolio-accessibility.js','portfolio-seo.js']) assert.ok(motion.includes(`import('./${file}')`), `home entry must load ${file}`);
 });
 
 test('performance gate defers every embedded live product preview', () => {
