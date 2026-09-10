@@ -51,14 +51,6 @@ async function noOverflow(page, label) {
   if (size.doc > size.client + 2 || size.body > size.client + 2) throw new Error(`${label}: horizontal overflow ${JSON.stringify(size)}`);
 }
 
-async function reveal(page) {
-  const items = page.locator('[data-reveal]');
-  for (let i=0; i<await items.count(); i+=1) {
-    await items.nth(i).scrollIntoViewIfNeeded();
-    await page.waitForTimeout(35);
-  }
-}
-
 async function assertFrame(frameLocator, required, label) {
   const body = frameLocator.locator('body');
   await body.waitFor({ state:'visible', timeout:20_000 });
@@ -99,23 +91,159 @@ async function verifyReviewExperience(page, label) {
   }
 }
 
+async function verifyQualitySections(page, label) {
+  await page.locator('html[data-quality-suite="ready"]').waitFor({ state:'attached', timeout:15_000 });
+  await page.locator('html[data-seo-layer="ready"]').waitFor({ state:'attached', timeout:15_000 });
+
+  const recruiter = page.locator('#recruiter-path');
+  const proof = page.locator('#proof-center');
+  const cases = page.locator('#case-studies');
+  await recruiter.waitFor({ state:'visible', timeout:15_000 });
+  await proof.waitFor({ state:'attached', timeout:15_000 });
+  await cases.waitFor({ state:'attached', timeout:15_000 });
+
+  if (await recruiter.locator('.recruiter-path-card').count() !== 3) throw new Error(`${label}: recruiter path must have 3 steps`);
+  if (await proof.locator('.proof-product').count() !== 5) throw new Error(`${label}: proof center must have 5 products`);
+  for (let i=0; i<5; i+=1) {
+    const linkCount = await proof.locator('.proof-product').nth(i).locator('.proof-chain a').count();
+    if (linkCount !== 5) throw new Error(`${label}: proof product ${i} must expose five evidence stages, got ${linkCount}`);
+  }
+  if (await cases.locator('.case-study-card').count() !== 3) throw new Error(`${label}: expected three engineering case studies`);
+  const caseText = await cases.innerText();
+  for (const phrase of ['PROBLEM','DESIGN DECISION','HARD EDGE','IMPLEMENTATION','VERIFICATION']) {
+    if (!caseText.includes(phrase)) throw new Error(`${label}: case study missing ${phrase}`);
+  }
+}
+
+async function verifySeo(page, label) {
+  const result = await page.evaluate(() => {
+    const json = document.getElementById('kzone87-structured-data')?.textContent || '';
+    const parsed = JSON.parse(json);
+    return {
+      types: parsed['@graph'].map(item => item['@type']),
+      canonical: document.querySelector('link[rel="canonical"]')?.href || '',
+      robots: document.querySelector('meta[name="robots"]')?.content || '',
+      ogSiteName: document.querySelector('meta[property="og:site_name"]')?.content || '',
+      ogLocale: document.querySelector('meta[property="og:locale"]')?.content || '',
+      twitterCard: document.querySelector('meta[name="twitter:card"]')?.content || '',
+      relMe: document.querySelector('link[rel="me"]')?.href || ''
+    };
+  });
+  for (const type of ['WebSite','ProfilePage','Person']) if (!result.types.includes(type)) throw new Error(`${label}: structured data missing ${type}`);
+  if (result.canonical !== 'https://kzone87.github.io/portfolio/') throw new Error(`${label}: canonical mismatch ${result.canonical}`);
+  if (!result.robots.includes('index,follow')) throw new Error(`${label}: robots meta missing index/follow`);
+  if (result.ogSiteName !== 'Kzone87 Portfolio' || result.ogLocale !== 'ko_KR') throw new Error(`${label}: OG metadata incomplete`);
+  if (result.twitterCard !== 'summary') throw new Error(`${label}: twitter card missing`);
+  if (result.relMe !== 'https://github.com/Kzone87') throw new Error(`${label}: rel=me identity link mismatch`);
+}
+
+async function verifyAccessibilityGate(page, viewport, label) {
+  const expectedOffset = viewport.width <= 760 ? '76px' : '92px';
+  const offsets = await page.evaluate(() => ({
+    scrollPaddingTop: getComputedStyle(document.documentElement).scrollPaddingTop,
+    proofMargin: getComputedStyle(document.getElementById('proof-center')).scrollMarginTop
+  }));
+  if (offsets.scrollPaddingTop !== expectedOffset || offsets.proofMargin !== expectedOffset) {
+    throw new Error(`${label}: fixed-header focus/anchor offset mismatch ${JSON.stringify(offsets)}`);
+  }
+
+  const representative = [
+    '.studio-header nav a',
+    '.portfolio-experience-tab',
+    '.recruiter-path-card',
+    '.proof-chain a',
+    '.case-study-card>a'
+  ];
+  for (const selector of representative) {
+    const target = page.locator(selector).first();
+    await target.scrollIntoViewIfNeeded();
+    const box = await target.boundingBox();
+    if (!box) throw new Error(`${label}: no box for ${selector}`);
+    if (box.width < 24 || box.height < 24) throw new Error(`${label}: target below WCAG 2.2 minimum ${selector} ${box.width}x${box.height}`);
+  }
+
+  const focusTarget = page.locator('.portfolio-experience-tab').first();
+  await focusTarget.scrollIntoViewIfNeeded();
+  await focusTarget.focus();
+  const focus = await focusTarget.evaluate((el) => {
+    const style = getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    const header = document.querySelector('.site-header')?.getBoundingClientRect();
+    return {
+      outlineStyle: style.outlineStyle,
+      outlineWidth: parseFloat(style.outlineWidth),
+      top: rect.top,
+      bottom: rect.bottom,
+      headerBottom: header?.bottom || 0,
+      viewportHeight: innerHeight
+    };
+  });
+  if (focus.outlineStyle === 'none' || focus.outlineWidth < 3) throw new Error(`${label}: focus indicator is not sufficiently visible ${JSON.stringify(focus)}`);
+  if (focus.top < focus.headerBottom - 1 || focus.bottom > focus.viewportHeight + 1) throw new Error(`${label}: focused control obscured ${JSON.stringify(focus)}`);
+}
+
+async function verifyPerformanceGate(page, viewport, previewRequests, label) {
+  const frames = page.locator('iframe[data-src]');
+  await page.waitForTimeout(250);
+  const count = await frames.count();
+  if (count !== 4) throw new Error(`${label}: expected four deferred live previews, got ${count}`);
+  const eagerLoaded = await page.locator('iframe[data-preview-loaded="true"]').count();
+  if (eagerLoaded !== 0) throw new Error(`${label}: ${eagerLoaded} live previews loaded before user approached them`);
+  if (previewRequests.length !== 0) throw new Error(`${label}: live preview network request started eagerly: ${previewRequests.join(' | ')}`);
+
+  const previews = [
+    ['.nexa-live-preview', ['NEXA TECH SERVICE'], 'NEXA'],
+    ['.booking-portfolio-preview', ['BOOKING CRM','고객 예약·문의'], 'BOOKING'],
+    ['.mono-live-preview', ['MONO OPERATIONS','통합 업무함'], 'MONO'],
+    ['.excel-live-preview', ['Excel 정리 작업실','한 파일 정리'], 'Excel']
+  ];
+
+  if (viewport.width <= 760) {
+    for (const [selector] of previews) {
+      const display = await page.locator(selector).evaluate(el => getComputedStyle(el).display);
+      if (display !== 'none') throw new Error(`${label}: ${selector} should use compact mobile fallback`);
+    }
+    if (await page.locator('iframe[data-preview-loaded="true"]').count() !== 0) throw new Error(`${label}: mobile must not load preview iframes`);
+    return;
+  }
+
+  for (const [selector, required, name] of previews) {
+    const preview = page.locator(selector);
+    await preview.scrollIntoViewIfNeeded();
+    const iframe = preview.locator('iframe');
+    await iframe.waitFor({ state:'attached', timeout:10_000 });
+    await page.waitForFunction((el) => el.getAttribute('src') && el.dataset.previewLoaded === 'true', await iframe.elementHandle(), { timeout:15_000 });
+    await assertFrame(page.frameLocator(`${selector} iframe`), required, `${label}/${name}`);
+  }
+}
+
 for (const viewport of viewports) {
   const context = await browser.newContext({ viewport:{ width:viewport.width, height:viewport.height }, locale:'ko-KR', timezoneId:'Asia/Seoul', acceptDownloads:true });
   const page = await context.newPage();
   const errors = [];
+  const previewRequests = [];
   captureErrors(page, errors);
+  page.on('request', request => {
+    const url = request.url();
+    const isPreview = url.includes('/portfolio/nexa-tech-service/') || url.includes('/portfolio/booking-crm/') || url.includes('/portfolio/mono-operations/') || url.includes('kzone87.github.io/customer-map-planner/');
+    if (isPreview && request.resourceType() === 'document') previewRequests.push(url);
+  });
   try {
     await goto(page, `${base}/`);
     await page.locator('#delivery').waitFor({ state:'attached', timeout:15_000 });
     await page.locator('.booking-portfolio-showcase').waitFor({ state:'visible', timeout:15_000 });
     await page.locator('.mono-portfolio-featured').waitFor({ state:'visible', timeout:15_000 });
     await page.locator('[data-portfolio-experience="true"]').waitFor({ state:'visible', timeout:15_000 });
-    await reveal(page);
+    await verifyQualitySections(page, `portfolio/${viewport.name}/quality`);
+    await verifySeo(page, `portfolio/${viewport.name}/seo`);
+    await verifyPerformanceGate(page, viewport, previewRequests, `portfolio/${viewport.name}/performance`);
+
     const bodyText = await page.locator('body').innerText();
     for (const phrase of [
       '05', 'PRODUCT LINES', 'NEXA SERVICE SUITE', 'BOOKING CRM', 'MONO OPERATIONS', 'Excel Workbench', 'OPS KIT',
       '실제 납품은 화면에서 끝나지 않습니다.', '프로젝트 의뢰서 →', 'OPS KIT 실제 도구 열기 →',
-      '무엇을 확인하러 오셨나요?', '채용 검토', '프로젝트 의뢰', '기술 검토'
+      '무엇을 확인하러 오셨나요?', '채용 검토', '프로젝트 의뢰', '기술 검토',
+      'RECRUITER · 90 SECOND REVIEW', 'PROOF CENTER · FIVE-STEP TRACE', 'ENGINEERING CASE STUDIES'
     ]) if (!bodyText.includes(phrase)) throw new Error(`portfolio/${viewport.name}: missing ${phrase}`);
 
     const count = (await page.locator('.studio-meta .live-mark strong').innerText()).trim();
@@ -125,28 +253,17 @@ for (const viewport of viewports) {
     if (stack.includes('Spring') || !stack.includes('SQLite/SQL')) throw new Error(`portfolio/${viewport.name}: public stack is not evidence-aligned: ${stack}`);
 
     await verifyReviewExperience(page, `portfolio/${viewport.name}/review-experience`);
+    await verifyAccessibilityGate(page, viewport, `portfolio/${viewport.name}/accessibility`);
 
     const deliveryLink = page.locator('.studio-header nav a[href="#delivery"]');
     if (await deliveryLink.count() !== 1) throw new Error(`portfolio/${viewport.name}: delivery nav missing`);
     await deliveryLink.click();
     if (!page.url().endsWith('#delivery')) throw new Error(`portfolio/${viewport.name}: delivery nav failed`);
 
-    if (viewport.width > 760) {
-      await assertFrame(page.frameLocator('.nexa-live-preview iframe'), ['NEXA TECH SERVICE'], `portfolio/${viewport.name}/NEXA`);
-      await assertFrame(page.frameLocator('.booking-portfolio-preview iframe'), ['BOOKING CRM','고객 예약·문의'], `portfolio/${viewport.name}/BOOKING`);
-      await assertFrame(page.frameLocator('.mono-live-preview iframe'), ['MONO OPERATIONS','통합 업무함'], `portfolio/${viewport.name}/MONO`);
-      await assertFrame(page.frameLocator('.excel-live-preview iframe'), ['Excel 정리 작업실','한 파일 정리'], `portfolio/${viewport.name}/Excel`);
-    } else {
-      for (const selector of ['.nexa-live-preview','.booking-portfolio-preview','.mono-live-preview','.excel-live-preview']) {
-        const display = await page.locator(selector).evaluate(el => getComputedStyle(el).display);
-        if (display !== 'none') throw new Error(`portfolio/mobile: ${selector} should use compact no-iframe fallback`);
-      }
-    }
-
     await noOverflow(page, `portfolio/${viewport.name}`);
     await page.screenshot({ path:`${output}/portfolio-client-${viewport.name}.png`, fullPage:true });
     if (errors.length) throw new Error(`portfolio/${viewport.name}: ${errors.join(' | ')}`);
-    console.log(`PASS client portfolio ${viewport.width}x${viewport.height} + guided review modes + five live product lines`);
+    console.log(`PASS client portfolio ${viewport.width}x${viewport.height} + performance/proof/recruiter/accessibility/SEO/case-study gates`);
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   } finally {

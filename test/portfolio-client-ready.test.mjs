@@ -24,14 +24,18 @@ test('client-ready presentation exposes five truthful product lines and a delive
   assert.doesNotMatch(combined, /Java\/Spring/);
 });
 
-test('portfolio uses real deployed screens for NEXA BOOKING MONO and Excel on supported viewports', async () => {
+test('portfolio uses deferred real deployed screens for NEXA BOOKING MONO and Excel on supported viewports', async () => {
   const script = await load('commercial-portfolio.js');
   const booking = await load('booking-portfolio.js');
+  const quality = await load('portfolio-quality.js');
   const css = await load('commercial-portfolio.css');
-  assert.match(script, /iframe src="\.\/nexa-tech-service\/"/);
-  assert.match(booking, /iframe src="\.\/booking-crm\/"/);
-  assert.match(script, /iframe src="\.\/mono-operations\/"/);
-  assert.match(script, /iframe src="https:\/\/kzone87\.github\.io\/customer-map-planner\/"/);
+  assert.match(script, /iframe data-src="\.\/nexa-tech-service\/"/);
+  assert.match(booking, /iframe data-src="\.\/booking-crm\/"/);
+  assert.match(script, /iframe data-src="\.\/mono-operations\/"/);
+  assert.match(script, /iframe data-src="https:\/\/kzone87\.github\.io\/customer-map-planner\/"/);
+  assert.doesNotMatch(`${script}\n${booking}`, /iframe src=/);
+  assert.match(quality, /IntersectionObserver/);
+  assert.match(quality, /frame\.src = frame\.dataset\.src/);
   assert.match(`${script}\n${booking}`, /ACTUAL LIVE SCREEN/);
   assert.match(css, /\.nexa-live-preview/);
   assert.match(css, /\.excel-live-preview/);
