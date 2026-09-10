@@ -50,11 +50,12 @@ test('homepage stays directly runnable while putting work before explanation', (
   for (const removed of ['./services/', './work/', './scope-estimator/', 'Business Ops', '견적 문의', '60초 검토 순서', '운영 제품 바로가기']) assert.ok(!home.includes(removed), `obsolete or duplicated homepage content returned: ${removed}`);
 });
 
-test('sitemap publishes all runnable portfolio and corporate pages', () => {
+test('sitemap publishes all runnable portfolio, primary product and corporate pages', () => {
   const locs = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
-  assert.equal(locs.length, 15);
+  assert.equal(locs.length, 18);
   assert.equal(locs[0], 'https://kzone87.github.io/portfolio/');
   assert.ok(locs.includes('https://kzone87.github.io/portfolio/nexa-service-domain/'), 'missing NEXA service flow page');
+  for (const primary of ['booking-crm/','mono-operations/','project-inquiry/']) assert.ok(locs.includes(`https://kzone87.github.io/portfolio/${primary}`), `missing primary sitemap route: ${primary}`);
   for (const demo of demos) assert.ok(locs.includes(`https://kzone87.github.io/portfolio/${demo.route}`), `missing runnable sitemap route: ${demo.route}`);
   for (const page of corporatePages) assert.ok(locs.includes(`https://kzone87.github.io/portfolio/${page}`), `missing corporate sitemap route: ${page}`);
   for (const removed of ['/services/', '/work/', '/scope-estimator/']) assert.ok(!sitemap.includes(removed));
