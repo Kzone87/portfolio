@@ -1,92 +1,127 @@
 # BOOKING CRM Delivery Runbook
 
-## 1. Scope
+BOOKING CRM is a single-node small-business booking and customer-management application. The production package contains a Node.js 24 HTTP application, persistent SQLite storage, employee authentication, CSRF protection, audit history, verified backup/restore commands, deployment templates, and an integrity manifest.
 
-단일 사업장 또는 소규모 팀을 위한 예약·문의·고객관리 서비스 기준입니다. 공개 포트폴리오의 가상 브랜드/데이터를 실제 고객 정보로 교체한 뒤 운영합니다.
+## Supported commercial scope
 
-## 2. Runtime requirements
+- One customer organization per deployed instance.
+- One Node.js 24 application process behind an HTTPS reverse proxy.
+- Persistent SQLite database on local durable storage.
+- ADMIN and STAFF employee roles.
+- Public booking and inquiry intake; staff booking/customer/inquiry operations.
+- Optimistic concurrency (`expectedVersion`) and slot conflict control.
+- Server-side audit records for customer, booking, inquiry, and employee-administration changes.
 
-- Node.js 24+
-- writable persistent directory for SQLite
-- HTTPS reverse proxy (Nginx/Caddy/Cloudflare Tunnel 등)
-- process supervisor (systemd/PM2/container)
-- daily backup destination
+HA clustering, multi-tenant SaaS isolation, SSO, payment processing, regulated medical/financial records, and distributed queues are separate scoped upgrades.
 
-Required production environment:
+## Build the delivery artifact
+
+From the repository root:
+
+```bash
+npm test
+npm run build:booking-delivery
+```
+
+Handover directory:
+
+```text
+dist/booking-crm-delivery/
+```
+
+The directory contains the application, server runtime, deployment templates, backup/restore commands and `MANIFEST.json`. `MANIFEST.json` records SHA-256 and byte size for every delivered file. Do not hand over a package whose manifest does not verify.
+
+## Production configuration
+
+Copy `deploy/.env.example` to a protected environment file and replace every example value. Required settings:
 
 ```text
 NODE_ENV=production
-BOOKING_DB_PATH=/var/lib/booking-crm/booking.sqlite
-BOOKING_ADMIN_PASSWORD=<strong-initial-password>
+BOOKING_DB_PATH=/srv/booking-crm/data/booking.sqlite
+BOOKING_BACKUP_DIR=/srv/booking-crm/backups
+BOOKING_ADMIN_PASSWORD=<unique 12+ character secret containing letters and numbers>
 BOOKING_ALLOWED_ORIGIN=https://booking.example.com
 BOOKING_PORT=8798
 ```
 
-Production은 DB path, admin password, allowed origin 중 하나라도 빠지면 시작하지 않습니다.
+The first administrator is created only when the employee table is empty. A weak first-admin password is rejected. After bootstrap, employee accounts are managed through the ADMIN-only API and password reset/deactivation immediately revokes that employee's sessions.
 
-## 3. Security boundary
+## Authentication and authorization
 
-- 직원 로그인은 scrypt password hash 사용
-- 인증은 HttpOnly Session + SameSite=Strict cookie 사용
-- 관리자 mutation은 CSRF header 필요
-- Role은 브라우저 요청 body가 아니라 서버 session에서 결정
-- 로그인/공개 예약·문의 endpoint에 process-level rate limit 적용
-- 브라우저 Origin allowlist 적용
-- 개인정보/고객 메모는 관리자 API에서만 반환
-- HTTPS와 reverse-proxy rate limit/WAF는 배포환경에서 추가
+- Passwords are stored with `scrypt` plus per-user random salt.
+- Session bearer values are returned only in an HttpOnly, SameSite=Strict cookie. The database stores only a SHA-256 identifier of the bearer value, not the raw session token.
+- CSRF is required for authenticated mutations.
+- Production cookies are `Secure`.
+- STAFF can operate bookings, inquiries and customer notes.
+- Employee list/create/role/activation/password-reset endpoints require ADMIN.
+- The last active ADMIN cannot be deactivated or demoted.
+- Deactivation, role change and password reset revoke existing sessions.
 
-## 4. Data workflow
+Employee lifecycle endpoints:
 
-### Booking
-`REQUESTED → CONFIRMED → COMPLETED`
+```text
+GET   /api/admin/employees
+POST  /api/admin/employees
+PATCH /api/admin/employees/:id
+POST  /api/admin/employees/:id/reset-password
+```
 
-예외: `REQUESTED` 또는 `CONFIRMED`에서 `CANCELLED` 가능.
+## Readiness
 
-- 같은 서비스 capacity를 초과하는 겹치는 시간은 `409 SLOT_CONFLICT`
-- stale version은 `409 STALE_BOOKING`
-- 완료/취소 상태의 재처리는 거부
+`GET /health` is process liveness. `GET /ready` performs SQLite `PRAGMA quick_check`; an unhealthy database returns HTTP 503 and `ready:false`. A process that is alive but cannot safely use its database must not receive production traffic.
 
-### Inquiry
-`NEW → CONTACTED → CLOSED`
+## Backup
 
-### Customer
-연락처 기준으로 기존 고객을 재사용하고 예약/문의와 연결합니다. 고객 메모는 직원 작업으로만 수정합니다.
+With the service online or stopped, create a consistent SQLite snapshot using `VACUUM INTO`:
 
-## 5. Backup / restore
+```bash
+BOOKING_DB_PATH=/srv/booking-crm/data/booking.sqlite \
+BOOKING_BACKUP_DIR=/srv/booking-crm/backups \
+npm run backup:booking
+```
 
-운영 DB는 persistent volume에 둡니다. 최소 하루 1회 백업하며 배포 전에는 반드시 추가 snapshot을 만듭니다.
+The command verifies the source database, creates a SQLite snapshot, verifies the snapshot, and writes a manifest containing byte size and SHA-256. Copy backup sets to storage outside the application host according to the customer's retention policy.
 
-권장 절차:
+## Restore
 
-1. service stop 또는 maintenance window 확보
-2. SQLite WAL checkpoint 확인
-3. DB 파일 + `-wal` / `-shm` 상태 확인 후 일관된 snapshot 생성
-4. backup SHA-256 기록
-5. 별도 경로에서 `/ready`와 핵심 조회로 restore drill
+Stop the application before restore. Restore accepts the backup manifest rather than an arbitrary SQLite file and refuses to proceed without an explicit confirmation value:
 
-## 6. Acceptance gates
+```bash
+sudo systemctl stop booking-crm
+BOOKING_DB_PATH=/srv/booking-crm/data/booking.sqlite \
+BOOKING_RESTORE_CONFIRM=RESTORE_BOOKING \
+npm run restore:booking -- /srv/booking-crm/backups/manifest-<timestamp>.json
+sudo systemctl start booking-crm
+```
 
-- `npm test` PASS
-- booking domain conflict/version/state tests PASS
-- commercial HTTP auth/CSRF/persistence/audit test PASS
-- PR Chrome 1440×1000 / 768×1024 / 390×844 PASS
-- 실제 고객 예약 생성 → 관리자 확인 → 확정 → 메모 → 완료 PASS
-- 문의 생성 → 관리자 CONTACTED → CLOSED PASS
-- console.error / pageerror / requestfailed / unexpected HTTP >=400 없음
-- horizontal overflow 없음
-- main merge 이후 same-SHA GitHub Pages deploy PASS
-- same-SHA production public Chrome QA PASS
+Restore verifies manifest path safety, size, SHA-256 and SQLite `quick_check`, preserves the current database as a `.pre-restore-*` copy, removes stale WAL/SHM sidecars, installs the verified snapshot, and re-runs `quick_check`. If post-restore verification fails, the pre-restore copy is put back.
 
-## 7. Handover
+## Reverse proxy and service supervisor
 
-실제 고객사 납품 시 다음을 고객 정보로 교체/확정합니다.
+Use the provided examples:
 
-- 브랜드명/로고/서비스 목록/예약 소요시간/capacity
-- 영업일/휴무일/시간대
-- 관리자 계정
-- 개인정보 처리 문구 및 보유기간
-- 운영 도메인/HTTPS
-- backup 보존기간과 restore 담당자
-- 알림(SMS/이메일/카카오 등)이 범위에 포함되면 해당 provider credential과 실패 정책
+```text
+deploy/nginx.conf.example
+deploy/booking-crm.service.example
+```
 
-외부 알림 provider는 현재 reference runtime에 임의로 포함하지 않습니다. 실제 계약 범위와 provider가 정해진 뒤 server-side secret으로 연결합니다.
+The Node application binds to localhost. TLS terminates at the reverse proxy. Keep the `.env`, database, backups and TLS private keys out of the public web root and source repository.
+
+## Acceptance gate
+
+Before customer handover, all of the following must pass on the exact release SHA:
+
+1. Repository tests and syntax checks.
+2. `npm run build:booking-delivery` and manifest verification.
+3. Production environment fails closed when required settings are absent.
+4. `/ready` returns 200 only with a healthy database.
+5. Public booking creation and `409 SLOT_CONFLICT` behavior.
+6. ADMIN login, HttpOnly cookie, CSRF rejection and authorized mutation.
+7. Employee create → STAFF login → ADMIN-only block → deactivate/reset → session revocation.
+8. `409 STALE_BOOKING` optimistic-concurrency regression.
+9. Database persistence after process restart.
+10. Backup → data change → verified restore → original state recovered.
+11. Real Chrome public flow at 1440 / 768 / 390 with no console errors, request failures, HTTP >=400 surprises, or horizontal overflow.
+12. Customer booking → admin confirm → CRM memo → inquiry close end-to-end flow.
+
+The GitHub Pages surface is the public demonstration build and intentionally does not persist customer input. A customer production deployment uses this runbook's Node/SQLite runtime and customer-specific domain, secrets and durable storage.
