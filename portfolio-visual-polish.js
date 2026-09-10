@@ -6,7 +6,7 @@
     style.id = 'portfolio-visual-polish-style';
     style.textContent = `
       /* Experience + recruiter flow: read as one guided-review area, not two stacked hero sections. */
-      .portfolio-experience{padding:24px 0 28px}
+      .portfolio-experience{padding:24px 0 22px}
       .portfolio-experience-shell{gap:18px}
       .portfolio-experience-intro,.portfolio-experience-panel{border-radius:20px;box-shadow:0 10px 30px rgba(15,23,42,.055)}
       .portfolio-experience-intro{padding:22px;gap:18px}
@@ -14,15 +14,16 @@
       .portfolio-experience-steps{padding:17px;gap:13px;border-radius:15px}
       .portfolio-experience-foot{margin-top:-8px}
 
-      .recruiter-path-section{padding:36px 0}
-      .recruiter-path-shell{grid-template-columns:minmax(235px,.58fr) minmax(0,1.42fr);gap:26px;align-items:center}
-      .recruiter-path-copy h2{max-width:12ch;font-size:clamp(24px,2.6vw,34px);line-height:1.08}
-      .recruiter-path-copy p{margin:12px 0 0;font-size:13px;line-height:1.65}
-      .recruiter-path-list{gap:8px}
-      .recruiter-path-list a{min-height:70px;grid-template-columns:78px 74px minmax(0,1fr) auto;gap:12px;padding:12px 16px;border-radius:14px}
-      .recruiter-path-list b{font-size:16px}
-      .recruiter-path-list span{font-size:12px;line-height:1.45}
-      .recruiter-path-list em{font-size:11px}
+      /* Keep the explicit recruiter route, but demote it from a second full-width hero to a contained review strip. */
+      .recruiter-path-section{padding:8px 0 42px;background:transparent;color:#fff}
+      .recruiter-path-shell{grid-template-columns:minmax(180px,.38fr) minmax(0,1.62fr);gap:24px;align-items:center;padding:22px 24px;border-radius:20px;background:#0f172a;box-shadow:0 14px 34px rgba(15,23,42,.12)}
+      .recruiter-path-copy h2{max-width:15ch;font-size:clamp(20px,1.9vw,26px);line-height:1.12}
+      .recruiter-path-copy p{margin:9px 0 0;font-size:11px;line-height:1.55;color:#94a3b8}
+      .recruiter-path-list{gap:7px}
+      .recruiter-path-list a{min-height:62px;grid-template-columns:70px 62px minmax(0,1fr) auto;gap:10px;padding:10px 14px;border-radius:12px}
+      .recruiter-path-list b{font-size:14px}
+      .recruiter-path-list span{font-size:11px;line-height:1.4}
+      .recruiter-path-list em{font-size:10px}
 
       /* Proof Center: preserve all five evidence stages while removing repetitive vertical bulk. */
       .proof-center-section{padding:60px 0;background:#f7faff}
@@ -52,7 +53,7 @@
       /* The legacy proof section is retained for failure-flow context, but its duplicate KPI rail is removed. */
       #evidence.proof-section{padding:0 0 72px;background:#fff}
       #evidence .proof-rail{display:none}
-      #evidence .proof-story{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:36px;margin:0;padding:38px 42px;border-radius:22px;background:#0f172a;color:#fff}
+      #evidence .proof-story{width:100%;max-width:none;box-sizing:border-box;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:36px;margin:0;padding:38px 42px;border-radius:22px;background:#0f172a;color:#fff}
       #evidence .proof-story>div>span{color:#60a5fa}
       #evidence .proof-story h2{max-width:12ch;margin-top:7px;color:#fff;font-size:clamp(30px,3.4vw,46px);line-height:1.04}
       #evidence .proof-story p{max-width:620px;margin-top:0;color:#cbd5e1;font-size:.92rem;line-height:1.7}
@@ -65,9 +66,10 @@
       @media(max-width:900px){
         .portfolio-experience-panel{grid-template-columns:1fr;min-height:0}
         .portfolio-experience-steps{grid-template-columns:repeat(3,1fr)}
-        .recruiter-path-shell{grid-template-columns:1fr;gap:20px}
-        .recruiter-path-copy h2{max-width:18ch}
-        .recruiter-path-list a{grid-template-columns:78px 72px minmax(0,1fr)}
+        .recruiter-path-section{padding:6px 0 34px}
+        .recruiter-path-shell{grid-template-columns:1fr;gap:16px;padding:20px}
+        .recruiter-path-copy h2{max-width:22ch}
+        .recruiter-path-list a{grid-template-columns:70px 62px minmax(0,1fr)}
         .recruiter-path-list em{display:none}
         .proof-center-grid{grid-template-columns:1fr}
         .proof-center-card:last-child{grid-column:auto}
@@ -77,17 +79,18 @@
       }
 
       @media(max-width:640px){
-        .portfolio-experience{padding:14px 0 20px}
+        .portfolio-experience{padding:14px 0 16px}
         .portfolio-experience-intro,.portfolio-experience-panel{padding:18px;border-radius:16px}
         .portfolio-experience-intro{gap:14px}
         .portfolio-experience-steps{grid-template-columns:1fr;gap:10px;padding:14px}
         .portfolio-experience-steps li{font-size:12px}
         .portfolio-experience-foot{margin-top:-4px}
 
-        .recruiter-path-section{padding:30px 0}
-        .recruiter-path-copy h2{max-width:none;font-size:26px}
-        .recruiter-path-copy p{font-size:12px}
-        .recruiter-path-list a{grid-template-columns:68px minmax(0,1fr);gap:5px 10px;min-height:0;padding:13px 14px}
+        .recruiter-path-section{padding:4px 0 30px}
+        .recruiter-path-shell{padding:18px 16px;border-radius:16px}
+        .recruiter-path-copy h2{max-width:none;font-size:22px}
+        .recruiter-path-copy p{font-size:11px}
+        .recruiter-path-list a{grid-template-columns:62px minmax(0,1fr);gap:4px 9px;min-height:56px;padding:11px 12px}
         .recruiter-path-list i{grid-column:1;grid-row:1}
         .recruiter-path-list b{grid-column:2;grid-row:1}
         .recruiter-path-list span{grid-column:2;grid-row:2}
@@ -126,11 +129,16 @@
     const proofGrid = document.querySelector('.proof-center-grid');
     const evidenceRail = document.querySelector('#evidence .proof-rail');
     const recruiter = document.querySelector('.recruiter-path-section');
+    const recruiterShell = document.querySelector('.recruiter-path-shell');
+    const proofStory = document.querySelector('#evidence .proof-story');
     return {
       installed: Boolean(document.getElementById('portfolio-visual-polish-style')),
       proofGrid: proofGrid ? getComputedStyle(proofGrid).gridTemplateColumns : '',
       evidenceRail: evidenceRail ? getComputedStyle(evidenceRail).display : '',
-      recruiterHeight: recruiter ? Math.round(recruiter.getBoundingClientRect().height) : 0
+      recruiterHeight: recruiter ? Math.round(recruiter.getBoundingClientRect().height) : 0,
+      recruiterContained: Boolean(recruiter && recruiterShell && recruiterShell.getBoundingClientRect().width < recruiter.getBoundingClientRect().width),
+      proofStoryWidth: proofStory ? Math.round(proofStory.getBoundingClientRect().width) : 0,
+      proofStoryParentWidth: proofStory?.parentElement ? Math.round(proofStory.parentElement.getBoundingClientRect().width) : 0
     };
   }
 
