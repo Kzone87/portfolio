@@ -18,5 +18,6 @@
   for (const item of items) observer.observe(item);
 })();
 
+import('./portfolio-quality.js');
 import('./portfolio-experience.js');
 import('./booking-portfolio.js');
