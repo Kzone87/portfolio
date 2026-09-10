@@ -18,5 +18,9 @@
   for (const item of items) observer.observe(item);
 })();
 
+import('./portfolio-performance.js');
 import('./portfolio-experience.js');
 import('./booking-portfolio.js');
+import('./portfolio-proof-center.js');
+import('./portfolio-accessibility.js');
+import('./portfolio-seo.js');
