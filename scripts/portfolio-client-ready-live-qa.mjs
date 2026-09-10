@@ -66,6 +66,39 @@ async function assertFrame(frameLocator, required, label) {
   for (const phrase of required) if (!text.includes(phrase)) throw new Error(`${label}: embedded live screen missing ${phrase}`);
 }
 
+async function verifyReviewExperience(page, label) {
+  const section = page.locator('[data-portfolio-experience="true"]');
+  await section.waitFor({ state:'visible', timeout:15_000 });
+  const tabs = section.locator('.portfolio-experience-tab');
+  if (await tabs.count() !== 3) throw new Error(`${label}: expected three review modes`);
+
+  const hiring = section.locator('[data-mode="hiring"]');
+  const project = section.locator('[data-mode="project"]');
+  const technical = section.locator('[data-mode="technical"]');
+  if (await hiring.getAttribute('aria-selected') !== 'true') throw new Error(`${label}: hiring review should be the default mode`);
+
+  await project.click();
+  if (await project.getAttribute('aria-selected') !== 'true') throw new Error(`${label}: project review selection failed`);
+  const projectText = await section.innerText();
+  for (const phrase of ['PROJECT REVIEW · PROBLEM FIRST', 'Booking CRM', '프로젝트 의뢰서']) {
+    if (!projectText.includes(phrase)) throw new Error(`${label}: project mode missing ${phrase}`);
+  }
+
+  await project.press('ArrowRight');
+  if (await technical.getAttribute('aria-selected') !== 'true') throw new Error(`${label}: keyboard tab navigation failed`);
+  const technicalText = await section.innerText();
+  for (const phrase of ['TECHNICAL REVIEW · EVIDENCE FIRST', 'Engineering Evidence', 'GitHub Repository']) {
+    if (!technicalText.includes(phrase)) throw new Error(`${label}: technical mode missing ${phrase}`);
+  }
+
+  await page.reload({ waitUntil:'networkidle' });
+  const restored = page.locator('[data-portfolio-experience="true"]');
+  await restored.waitFor({ state:'visible', timeout:15_000 });
+  if (await restored.locator('[data-mode="technical"]').getAttribute('aria-selected') !== 'true') {
+    throw new Error(`${label}: session review mode was not restored after reload`);
+  }
+}
+
 for (const viewport of viewports) {
   const context = await browser.newContext({ viewport:{ width:viewport.width, height:viewport.height }, locale:'ko-KR', timezoneId:'Asia/Seoul', acceptDownloads:true });
   const page = await context.newPage();
@@ -76,11 +109,13 @@ for (const viewport of viewports) {
     await page.locator('#delivery').waitFor({ state:'attached', timeout:15_000 });
     await page.locator('.booking-portfolio-showcase').waitFor({ state:'visible', timeout:15_000 });
     await page.locator('.mono-portfolio-featured').waitFor({ state:'visible', timeout:15_000 });
+    await page.locator('[data-portfolio-experience="true"]').waitFor({ state:'visible', timeout:15_000 });
     await reveal(page);
     const bodyText = await page.locator('body').innerText();
     for (const phrase of [
       '05', 'PRODUCT LINES', 'NEXA SERVICE SUITE', 'BOOKING CRM', 'MONO OPERATIONS', 'Excel Workbench', 'OPS KIT',
-      '실제 납품은 화면에서 끝나지 않습니다.', '프로젝트 의뢰서 →', 'OPS KIT 실제 도구 열기 →'
+      '실제 납품은 화면에서 끝나지 않습니다.', '프로젝트 의뢰서 →', 'OPS KIT 실제 도구 열기 →',
+      '무엇을 확인하러 오셨나요?', '채용 검토', '프로젝트 의뢰', '기술 검토'
     ]) if (!bodyText.includes(phrase)) throw new Error(`portfolio/${viewport.name}: missing ${phrase}`);
 
     const count = (await page.locator('.studio-meta .live-mark strong').innerText()).trim();
@@ -88,6 +123,8 @@ for (const viewport of viewports) {
 
     const stack = await page.locator('.studio-stack').innerText();
     if (stack.includes('Spring') || !stack.includes('SQLite/SQL')) throw new Error(`portfolio/${viewport.name}: public stack is not evidence-aligned: ${stack}`);
+
+    await verifyReviewExperience(page, `portfolio/${viewport.name}/review-experience`);
 
     const deliveryLink = page.locator('.studio-header nav a[href="#delivery"]');
     if (await deliveryLink.count() !== 1) throw new Error(`portfolio/${viewport.name}: delivery nav missing`);
@@ -109,7 +146,7 @@ for (const viewport of viewports) {
     await noOverflow(page, `portfolio/${viewport.name}`);
     await page.screenshot({ path:`${output}/portfolio-client-${viewport.name}.png`, fullPage:true });
     if (errors.length) throw new Error(`portfolio/${viewport.name}: ${errors.join(' | ')}`);
-    console.log(`PASS client portfolio ${viewport.width}x${viewport.height} + five live product lines`);
+    console.log(`PASS client portfolio ${viewport.width}x${viewport.height} + guided review modes + five live product lines`);
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   } finally {
