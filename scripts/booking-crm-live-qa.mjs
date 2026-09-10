@@ -37,7 +37,22 @@ for(const [width,height] of viewports){
   const body=await page.locator('.booking-portfolio-showcase').innerText();
   for(const phrase of ['BOOKING CRM','예약 요청','고객 메모']) if(!body.includes(phrase)) throw new Error(`portfolio booking missing ${phrase} at ${width}`);
   const count=await page.locator('.studio-meta .live-mark strong').innerText();if(count.trim()!=='05')throw new Error(`portfolio product line count ${count}`);
-  if(width>760){const frame=page.frameLocator('.booking-portfolio-preview iframe');await frame.locator('body').waitFor({state:'visible',timeout:15000});const text=await frame.locator('body').innerText();if(!text.includes('BOOKING CRM')||!text.includes('고객 예약·문의'))throw new Error(`portfolio booking live iframe missing at ${width}`)}else{const display=await page.locator('.booking-portfolio-preview').evaluate(el=>getComputedStyle(el).display);if(display!=='none')throw new Error('booking portfolio mobile iframe should be hidden')}
+  if(width>760){
+    const preview=page.locator('.booking-portfolio-preview');
+    const iframe=preview.locator('iframe[data-src="./booking-crm/"]');
+    if(await iframe.getAttribute('src')) throw new Error(`portfolio booking iframe loaded eagerly at ${width}`);
+    await preview.scrollIntoViewIfNeeded();
+    const handle=await iframe.elementHandle();
+    await page.waitForFunction(el=>el?.dataset.previewLoaded==='true'&&Boolean(el.getAttribute('src')),handle,{timeout:15000});
+    const frame=page.frameLocator('.booking-portfolio-preview iframe');
+    await frame.locator('body').waitFor({state:'visible',timeout:15000});
+    const text=await frame.locator('body').innerText();
+    if(!text.includes('BOOKING CRM')||!text.includes('고객 예약·문의'))throw new Error(`portfolio booking deferred live iframe missing at ${width}`)
+  }else{
+    const display=await page.locator('.booking-portfolio-preview').evaluate(el=>getComputedStyle(el).display);
+    if(display!=='none')throw new Error('booking portfolio mobile iframe should be hidden');
+    if(await page.locator('.booking-portfolio-preview iframe').getAttribute('src'))throw new Error('booking portfolio mobile iframe must not load');
+  }
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth+2);if(overflow)throw new Error(`portfolio horizontal overflow ${width}x${height}`);
   await page.screenshot({path:path.join(out,`portfolio-booking-${width}.png`),fullPage:true});guard();await page.close();console.log(`PASS portfolio BOOKING CRM ${width}x${height}`);
 }
