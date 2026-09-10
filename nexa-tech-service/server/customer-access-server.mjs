@@ -297,7 +297,13 @@ export function createCustomerAccessServer(options = {}) {
         return;
       }
       if (req.method === 'GET' && path === '/api/customer/access/ready') {
-        send(req, res, config, 200, { ready: true, service: 'nexa-customer-access' });
+        try {
+          config.accessStore.cleanup();
+          config.inquiryStore.list();
+          send(req, res, config, 200, { ready: true, service: 'nexa-customer-access', inquiryDatabase: true, accessDatabase: true });
+        } catch {
+          send(req, res, config, 503, { ready: false, service: 'nexa-customer-access', inquiryDatabase: false, accessDatabase: false });
+        }
         return;
       }
 

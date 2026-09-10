@@ -4,9 +4,27 @@ import {SERVICES,normalizePhone} from '../engine.mjs';
 
 const now=()=>new Date().toISOString();
 const id=(prefix)=>`${prefix}-${randomBytes(6).toString('hex')}`;
+const sha=value=>createHash('sha256').update(String(value||'')).digest('hex');
 const hashPassword=(password,salt=randomBytes(16).toString('hex'))=>({salt,hash:scryptSync(password,salt,64).toString('hex')});
-const verifyPassword=(password,salt,expected)=>timingSafeEqual(Buffer.from(scryptSync(password,salt,64).toString('hex')),Buffer.from(expected));
-const sha=value=>createHash('sha256').update(value).digest('hex');
+const verifyPassword=(password,salt,expected)=>{try{const actual=Buffer.from(scryptSync(password,salt,64).toString('hex'));const wanted=Buffer.from(String(expected));return actual.length===wanted.length&&timingSafeEqual(actual,wanted)}catch{return false}};
+const cleanEmail=value=>String(value||'').trim().toLowerCase();
+const cleanName=value=>String(value||'').trim().slice(0,80);
+const cleanRole=value=>String(value||'').trim().toUpperCase();
+const publicEmployee=row=>row?{...row,active:Boolean(row.active)}:null;
+
+export function validateEmployeePassword(value){
+  const password=String(value||'');
+  if(password.length<12||password.length>200||!/[A-Za-z]/.test(password)||!/\d/.test(password)) throw Object.assign(new Error('WEAK_PASSWORD'),{status:400});
+  return password;
+}
+
+function validateEmployeeInput({email,name,role,password}){
+  const normalizedEmail=cleanEmail(email),normalizedName=cleanName(name),normalizedRole=cleanRole(role);
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) throw Object.assign(new Error('INVALID_EMPLOYEE_EMAIL'),{status:400});
+  if(normalizedName.length<2) throw Object.assign(new Error('INVALID_EMPLOYEE_NAME'),{status:400});
+  if(!['STAFF','ADMIN'].includes(normalizedRole)) throw Object.assign(new Error('INVALID_EMPLOYEE_ROLE'),{status:400});
+  return {email:normalizedEmail,name:normalizedName,role:normalizedRole,password:validateEmployeePassword(password)};
+}
 
 export class BookingStore{
   constructor({dbPath=':memory:',adminPassword='booking-demo-1234'}={}){
@@ -30,23 +48,44 @@ export class BookingStore{
   }
   seed(adminPassword){
     const count=this.db.prepare('SELECT COUNT(*) n FROM employees').get().n;
-    if(!count){const p=hashPassword(adminPassword);this.db.prepare('INSERT INTO employees VALUES(?,?,?,?,?,?,?,?)').run('E-ADMIN','admin@booking.local','관리자','ADMIN',p.salt,p.hash,1,now());}
+    if(!count){const password=validateEmployeePassword(adminPassword);const p=hashPassword(password);this.db.prepare('INSERT INTO employees VALUES(?,?,?,?,?,?,?,?)').run('E-ADMIN','admin@booking.local','관리자','ADMIN',p.salt,p.hash,1,now());}
   }
   login(email,password){
-    const employee=this.db.prepare('SELECT * FROM employees WHERE email=? AND active=1').get(String(email||'').trim().toLowerCase());
+    this.cleanupSessions();
+    const employee=this.db.prepare('SELECT * FROM employees WHERE email=? AND active=1').get(cleanEmail(email));
     if(!employee||!verifyPassword(String(password||''),employee.password_salt,employee.password_hash)) return null;
     const session=id('S'),csrf=randomBytes(24).toString('base64url'),expires=new Date(Date.now()+8*3600_000).toISOString();
-    this.db.prepare('INSERT INTO sessions VALUES(?,?,?,?,?)').run(session,employee.id,sha(csrf),expires,now());
+    this.db.prepare('INSERT INTO sessions VALUES(?,?,?,?,?)').run(sha(session),employee.id,sha(csrf),expires,now());
     return {session,csrf,employee:{id:employee.id,email:employee.email,name:employee.name,role:employee.role},expiresAt:expires};
   }
   session(sessionId){
     if(!sessionId) return null;
-    const row=this.db.prepare('SELECT s.*,e.email,e.name,e.role,e.active FROM sessions s JOIN employees e ON e.id=s.employee_id WHERE s.id=? AND s.expires_at>? AND e.active=1').get(sessionId,now());
+    const row=this.db.prepare('SELECT s.*,e.email,e.name,e.role,e.active FROM sessions s JOIN employees e ON e.id=s.employee_id WHERE s.id=? AND s.expires_at>? AND e.active=1').get(sha(sessionId),now());
     return row?{id:row.id,employee:{id:row.employee_id,email:row.email,name:row.name,role:row.role},csrfHash:row.csrf_hash}:null;
   }
   verifyCsrf(session,token){return Boolean(session&&token&&sha(token)===session.csrfHash)}
-  logout(sessionId){if(sessionId)this.db.prepare('DELETE FROM sessions WHERE id=?').run(sessionId)}
+  logout(sessionId){if(sessionId)this.db.prepare('DELETE FROM sessions WHERE id=?').run(sha(sessionId))}
   cleanupSessions(){this.db.prepare('DELETE FROM sessions WHERE expires_at<=?').run(now())}
+  listEmployees(){return this.db.prepare('SELECT id,email,name,role,active,created_at FROM employees ORDER BY created_at,id').all().map(publicEmployee)}
+  employeeById(employeeId){return publicEmployee(this.db.prepare('SELECT id,email,name,role,active,created_at FROM employees WHERE id=?').get(String(employeeId||'')))}
+  createEmployee(input,actorId='system'){
+    const value=validateEmployeeInput(input||{}),employeeId=id('E'),p=hashPassword(value.password),createdAt=now();
+    try{this.db.prepare('INSERT INTO employees VALUES(?,?,?,?,?,?,?,?)').run(employeeId,value.email,value.name,value.role,p.salt,p.hash,1,createdAt)}catch(error){if(String(error.message).includes('UNIQUE'))throw Object.assign(new Error('EMPLOYEE_EMAIL_EXISTS'),{status:409});throw error}
+    this.audit(actorId,'EMPLOYEE_CREATED','employee',employeeId,`${value.email} ${value.role}`);return this.employeeById(employeeId);
+  }
+  setEmployeeRole(employeeId,role,actorId='system'){
+    const employee=this.employeeById(employeeId);if(!employee)throw Object.assign(new Error('EMPLOYEE_NOT_FOUND'),{status:404});const next=cleanRole(role);if(!['STAFF','ADMIN'].includes(next))throw Object.assign(new Error('INVALID_EMPLOYEE_ROLE'),{status:400});
+    if(employee.role==='ADMIN'&&next!=='ADMIN'&&employee.active){const count=this.db.prepare("SELECT COUNT(*) n FROM employees WHERE role='ADMIN' AND active=1").get().n;if(count<=1)throw Object.assign(new Error('LAST_ADMIN_REQUIRED'),{status:409})}
+    this.db.prepare('UPDATE employees SET role=? WHERE id=?').run(next,employee.id);this.db.prepare('DELETE FROM sessions WHERE employee_id=?').run(employee.id);this.audit(actorId,'EMPLOYEE_ROLE_CHANGED','employee',employee.id,`${employee.role} → ${next}`);return this.employeeById(employee.id);
+  }
+  setEmployeeActive(employeeId,active,actorId='system'){
+    const employee=this.employeeById(employeeId);if(!employee)throw Object.assign(new Error('EMPLOYEE_NOT_FOUND'),{status:404});const next=Boolean(active);
+    if(employee.role==='ADMIN'&&employee.active&&!next){const count=this.db.prepare("SELECT COUNT(*) n FROM employees WHERE role='ADMIN' AND active=1").get().n;if(count<=1)throw Object.assign(new Error('LAST_ADMIN_REQUIRED'),{status:409})}
+    this.db.prepare('UPDATE employees SET active=? WHERE id=?').run(next?1:0,employee.id);if(!next)this.db.prepare('DELETE FROM sessions WHERE employee_id=?').run(employee.id);this.audit(actorId,next?'EMPLOYEE_ACTIVATED':'EMPLOYEE_DEACTIVATED','employee',employee.id,employee.email);return this.employeeById(employee.id);
+  }
+  resetEmployeePassword(employeeId,password,actorId='system'){
+    const employee=this.employeeById(employeeId);if(!employee)throw Object.assign(new Error('EMPLOYEE_NOT_FOUND'),{status:404});const p=hashPassword(validateEmployeePassword(password));this.db.prepare('UPDATE employees SET password_salt=?,password_hash=? WHERE id=?').run(p.salt,p.hash,employee.id);this.db.prepare('DELETE FROM sessions WHERE employee_id=?').run(employee.id);this.audit(actorId,'EMPLOYEE_PASSWORD_RESET','employee',employee.id,employee.email);return this.employeeById(employee.id);
+  }
   getOrCreateCustomer({name,phone}){
     const normalized=normalizePhone(phone);let row=this.db.prepare('SELECT * FROM customers WHERE phone=?').get(normalized);
     if(row)return row;

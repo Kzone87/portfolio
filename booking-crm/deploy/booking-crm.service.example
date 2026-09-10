@@ -1,0 +1,21 @@
+[Unit]
+Description=BOOKING CRM
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/srv/booking-crm
+EnvironmentFile=/srv/booking-crm/.env
+ExecStart=/usr/bin/node server/app.mjs
+Restart=on-failure
+RestartSec=3
+User=booking-crm
+Group=booking-crm
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/srv/booking-crm/data /srv/booking-crm/backups
+
+[Install]
+WantedBy=multi-user.target
