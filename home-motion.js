@@ -20,5 +20,6 @@
 
 import('./portfolio-seo.js');
 import('./portfolio-quality.js');
+import('./portfolio-a11y-fix.js');
 import('./portfolio-experience.js');
 import('./booking-portfolio.js');
